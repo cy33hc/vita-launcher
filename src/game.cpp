@@ -15,7 +15,6 @@
 
 Game *games;
 int game_count = 0;
-Game *selected_game;
 int page_num = 1;
 int max_page;
 
@@ -65,7 +64,6 @@ namespace GAME {
         }
         qsort(games, game_count, sizeof(Game), GameComparator);
         max_page = (game_count + 18 - 1) / 18;
-        selected_game = &games[0];
     }
 
     void Launch(const char *title_id) {
@@ -122,7 +120,29 @@ namespace GAME {
         }
     };
 
-    void LoadGameImages(int page) {
+    void LoadGameImages(int prev_page, int page) {
+        int del_page = 0;
+        if ((page > prev_page) or (prev_page == max_page && page == 1))
+        {
+            del_page = DecrementPage(page, 10);
+        } else if ((page < prev_page) or (prev_page == 1 && page == max_page))
+        {
+            del_page = IncrementPage(page, 10);
+        }
+
+        if (del_page > 0)
+        {
+            for (int i=del_page*18; i<(del_page*18)+18; i++)
+            {
+                Game *game = &games[i];
+                if (game->tex.id != no_icon.id)
+                {
+                    Textures::Free(&game->tex);
+                    game->tex = no_icon;
+                }
+            }
+        }
+
         int high = page * 18;
         int low = high - 18;
         for(std::size_t i = low; (i < high && i < game_count); i++) {
@@ -134,11 +154,39 @@ namespace GAME {
         }
     }
 
+    int IncrementPage(int page, int num_of_pages)
+    {
+        int new_page = page + num_of_pages;
+        if (new_page > max_page)
+        {
+            new_page = new_page % max_page;
+        }
+        return new_page;
+    }
+
+    int DecrementPage(int page, int num_of_pages)
+    {
+        int new_page = page - num_of_pages;
+        if (new_page > 0)
+        {
+            return new_page;
+        }
+        return new_page + max_page;
+    }
+
     void LoadGameImage(Game *game) {
         Tex tex;
         if (FS::FileExists(game->icon_path)) {
-            Textures::LoadImageFile(game->icon_path, &tex);
-            game->tex = tex;
+            if (Textures::LoadImageFile(game->icon_path, &tex))
+            {
+                game->tex = tex;
+            }
+            else
+            {
+                game->tex = no_icon;
+            }
+            
+            
         } else {
             game->tex = no_icon;
         }
@@ -149,8 +197,7 @@ namespace GAME {
     }
 
     int LoadImagesThread(SceSize args, LoadImagesParams *params) {
-        sceKernelDelayThread(500*1000);
-        GAME::LoadGameImages(params->page_num);
+        GAME::LoadGameImages(params->prev_page_num, params->page_num);
         return sceKernelExitDeleteThread(0);
     }
 

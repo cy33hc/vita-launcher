@@ -20,13 +20,13 @@ typedef struct {
 
 extern Game *games;
 extern int game_count;
-extern Game *selected_game;
 extern int page_num;
 extern int max_page;
 
 static SceUID load_images_thid = -1;
 
 typedef struct LoadImagesParams {
+  int prev_page_num;
   int page_num;
 } LoadImagesParams;
 
@@ -40,6 +40,8 @@ namespace GAME {
     void LoadGameImage(Game *game);
     void Exit();
     int LoadImagesThread(SceSize args, LoadImagesParams *argp);
+    int IncrementPage(int page, int num_of_pages);
+    int DecrementPage(int page, int num_of_pages);
 }
 
 #endif
