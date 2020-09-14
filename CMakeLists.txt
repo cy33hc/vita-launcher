@@ -38,7 +38,6 @@ target_link_libraries(${PROJECT_NAME}
   imgui_vita2d
   c
   z
-  debugnet
   SceCommonDialog_stub
   SceLibKernel_stub
   SceDisplay_stub
@@ -53,8 +52,6 @@ target_link_libraries(${PROJECT_NAME}
   m
   SceAppMgr_stub
   SceAppUtil_stub
-  mathneon
-  vitashark
   SceShaccCg_stub
 )
 
