@@ -36,7 +36,7 @@ namespace GAME {
     void Scan();
     void Launch(const char *id);
     void LoadCache();
-    void LoadGameImages(int page_num);
+    void LoadGameImages(int prev_page, int page_num);
     void LoadGameImage(Game *game);
     void Exit();
     int LoadImagesThread(SceSize args, LoadImagesParams *argp);
