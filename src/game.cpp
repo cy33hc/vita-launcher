@@ -122,6 +122,7 @@ namespace GAME {
 
     void LoadGameImages(int prev_page, int page) {
         int del_page = 0;
+
         if ((page > prev_page) or (prev_page == max_page && page == 1))
         {
             del_page = DecrementPage(page, 10);
@@ -130,9 +131,11 @@ namespace GAME {
             del_page = IncrementPage(page, 10);
         }
 
+        int high = del_page * 18;
+        int low = high - 18;
         if (del_page > 0)
         {
-            for (int i=del_page*18; i<(del_page*18)+18; i++)
+            for (int i=low; (i<high && i < game_count); i++)
             {
                 Game *game = &games[i];
                 if (game->tex.id != no_icon.id)
@@ -143,8 +146,8 @@ namespace GAME {
             }
         }
 
-        int high = page * 18;
-        int low = high - 18;
+        high = page * 18;
+        low = high - 18;
         for(std::size_t i = low; (i < high && i < game_count); i++) {
             Game *game = &games[i];
             if (game->tex.id == no_icon.id && page == page_num)
@@ -197,6 +200,7 @@ namespace GAME {
     }
 
     int LoadImagesThread(SceSize args, LoadImagesParams *params) {
+        sceKernelDelayThread(300000);
         GAME::LoadGameImages(params->prev_page_num, params->page_num);
         return sceKernelExitDeleteThread(0);
     }

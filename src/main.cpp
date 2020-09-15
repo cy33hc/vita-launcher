@@ -56,9 +56,6 @@ namespace Services {
 	}
 }
 
-#define ip_server "192.168.100.14"
-#define port_server 18194
-
 int main(int, char**)
 {
 	Services::Init();
