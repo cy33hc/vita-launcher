@@ -12,6 +12,7 @@ namespace Windows {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     };
 
+    void HandleLauncherWindowInput();
     void LauncherWindow(bool *focus, bool *first_item);
 }
 

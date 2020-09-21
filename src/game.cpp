@@ -199,6 +199,16 @@ namespace GAME {
         free(games);
     }
 
+	void StartLoadImagesThread(int prev_page_num, int page)
+	{
+		LoadImagesParams page_param;
+		page_param.prev_page_num = prev_page_num;
+		page_param.page_num = page;
+		load_images_thid = sceKernelCreateThread("load_images_thread", (SceKernelThreadEntry)GAME::LoadImagesThread, 0x10000100, 0x4000, 0, 0, NULL);
+		if (load_images_thid >= 0)
+			sceKernelStartThread(load_images_thid, sizeof(LoadImagesParams), &page_param);
+	}
+
     int LoadImagesThread(SceSize args, LoadImagesParams *params) {
         sceKernelDelayThread(300000);
         GAME::LoadGameImages(params->prev_page_num, params->page_num);

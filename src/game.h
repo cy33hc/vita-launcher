@@ -42,6 +42,7 @@ namespace GAME {
     int LoadImagesThread(SceSize args, LoadImagesParams *argp);
     int IncrementPage(int page, int num_of_pages);
     int DecrementPage(int page, int num_of_pages);
+    void StartLoadImagesThread(int prev_page_num, int page);
 }
 
 #endif

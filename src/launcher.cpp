@@ -6,8 +6,29 @@
 #include "game.h"
 
 int selected_item = -1;
+static SceCtrlData pad_prev;
 
 namespace Windows {
+    void HandleLauncherWindowInput()
+    {
+        SceCtrlData pad;
+        sceCtrlPeekBufferNegative(0, &pad, 1);
+        if ((pad_prev.buttons & SCE_CTRL_LTRIGGER) && !(pad.buttons & SCE_CTRL_LTRIGGER))
+        {
+            int prev_page = page_num;
+            page_num = GAME::DecrementPage(page_num, 1);
+            //GAME::LoadGameImages(page_num);
+            GAME::StartLoadImagesThread(prev_page, page_num);
+        } else if ((pad_prev.buttons & SCE_CTRL_RTRIGGER) && !(pad.buttons & SCE_CTRL_RTRIGGER))
+        {
+            int prev_page = page_num;
+            page_num = GAME::IncrementPage(page_num, 1);
+            //GAME::LoadGameImages(page_num);
+            GAME::StartLoadImagesThread(prev_page, page_num);
+        }
+        pad_prev = pad;
+    }
+
     void LauncherWindow(bool *focus, bool *first_item) {
         Windows::SetupWindow();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -33,29 +54,31 @@ namespace Windows {
                 {
                     ImGui::SetCursorPos(ImVec2(pos.x+(j*160),pos.y+(i*158)));
                     int button_id = (i*6)+j;
-                    ImGui::PushID(button_id);
-                    Game *game = &games[game_start_index+button_id];
-                    if (games->tex.id < 0)
+                    if (game_start_index+button_id < game_count)
                     {
-                        GAME::LoadGameImage(game);
-                    }
-                    if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,130), ImVec2(0,0), ImVec2(1,1))) {
-                        GAME::Launch(game->id);
-                    }
-                    if (button_highlight == button_id)
-                    {
-                        ImGui::SetItemDefaultFocus();
-                    }
-                    if (ImGui::IsItemFocused())
-                        button_highlight = button_id;
-                    ImGui::PopID();
+                        ImGui::PushID(button_id);
+                        Game *game = &games[game_start_index+button_id];
+                        if (games->tex.id < 0)
+                        {
+                            GAME::LoadGameImage(game);
+                        }
+                        if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,130), ImVec2(0,0), ImVec2(1,1))) {
+                            GAME::Launch(game->id);
+                        }
+                        if (button_highlight == button_id)
+                        {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                        if (ImGui::IsItemFocused())
+                            button_highlight = button_id;
+                        ImGui::PopID();
 
-                    ImGui::SetCursorPosX(pos.x+(j*160));
-                    ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), "%.15s", games[game_start_index+button_id].title);
-
+                        ImGui::SetCursorPosX(pos.x+(j*160));
+                        ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), "%.15s", games[game_start_index+button_id].title);
+                    }
                 }
-
             }
+            ImGui::SetCursorPos(ImVec2(pos.x, 524));
             ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), "Page#: %d", page_num);
         }
 
