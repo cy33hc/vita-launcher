@@ -38,11 +38,11 @@ namespace Windows {
 
 			if (button_highlight > -1)
 			{
-				ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), "%s - %s", games[game_start_index+button_highlight].id, games[game_start_index+button_highlight].title);
+				ImGui::Text("%s - %s", games[game_start_index+button_highlight].id, games[game_start_index+button_highlight].title);
 			}
 			else
 			{
-				ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), "No game selected");
+				ImGui::Text("No game selected");
 			}
 
             ImVec2 pos = ImGui::GetCursorPos();
@@ -50,13 +50,13 @@ namespace Windows {
             {
                 for (int j=0; j < 6; j++)
                 {
-                    ImGui::SetCursorPos(ImVec2(pos.x+(j*160),pos.y+(i*158)));
+                    ImGui::SetCursorPos(ImVec2(pos.x+(j*160),pos.y+(i*160)));
                     int button_id = (i*6)+j;
                     if (game_start_index+button_id < games.size())
                     {
                         ImGui::PushID(button_id);
                         Game *game = &games[game_start_index+button_id];
-                        if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,130), ImVec2(0,0), ImVec2(1,1))) {
+                        if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,128), ImVec2(0,0), ImVec2(1,1))) {
                             GAME::Launch(game->id);
                         }
                         if (button_highlight == button_id)
@@ -68,12 +68,12 @@ namespace Windows {
                         ImGui::PopID();
 
                         ImGui::SetCursorPosX(pos.x+(j*160));
-                        ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), "%.15s", games[game_start_index+button_id].title);
+                        ImGui::Text("%.15s", games[game_start_index+button_id].title);
                     }
                 }
             }
             ImGui::SetCursorPos(ImVec2(pos.x, 524));
-            ImGui::TextColored(ImVec4(1.00f, 1.00f, 1.00f, 1.00f), "Page#: %d", page_num);
+            ImGui::Text("Page#: %d", page_num);
         }
 
 		ImGui::End();
