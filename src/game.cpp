@@ -13,15 +13,13 @@
 
 #define GAME_LIST_FILE "ux0:data/SMLA00001/games_list.txt"
 
-Game *games;
-int game_count = 0;
+std::vector<Game> games;
 int page_num = 1;
 int max_page;
 
 namespace GAME {
 
     void Init() {
-        games = reinterpret_cast<Game*>(malloc(MAX_GAMES * sizeof(Game)));
     }
 
     void Scan() {
@@ -50,9 +48,8 @@ namespace GAME {
                     sprintf(line, "%s||%s||%s||%s\n", game.id, game.title, game.category, game.icon_path);
                     FS::Write(fd, line, strlen(line));
 
-                    games[game_count] = game;
-                    games[game_count].tex = no_icon;
-                    game_count++;
+                    game.tex = no_icon;
+                    games.push_back(game);
 
                 }
             }
@@ -62,8 +59,8 @@ namespace GAME {
         else {
             LoadCache();
         }
-        qsort(games, game_count, sizeof(Game), GameComparator);
-        max_page = (game_count + 18 - 1) / 18;
+        qsort(&games[0], games.size(), sizeof(Game), GameComparator);
+        max_page = (games.size() + 18 - 1) / 18;
     }
 
     void Launch(const char *title_id) {
@@ -111,12 +108,13 @@ namespace GAME {
         int position = 0;
         while (position < game_buffer.size())
         {
-            sprintf(games[game_count].id, "%s", nextToken(game_buffer, position).c_str());
-            sprintf(games[game_count].title, "%s", nextToken(game_buffer, position).c_str());
-            sprintf(games[game_count].category, "%s", nextToken(game_buffer, position).c_str());
-            sprintf(games[game_count].icon_path, "%s",  nextToken(game_buffer, position).c_str());
-            games[game_count].tex = no_icon;
-            game_count++;
+            Game game;
+            sprintf(game.id, "%s", nextToken(game_buffer, position).c_str());
+            sprintf(game.title, "%s", nextToken(game_buffer, position).c_str());
+            sprintf(game.category, "%s", nextToken(game_buffer, position).c_str());
+            sprintf(game.icon_path, "%s",  nextToken(game_buffer, position).c_str());
+            game.tex = no_icon;
+            games.push_back(game);
         }
     };
 
@@ -135,7 +133,7 @@ namespace GAME {
         int low = high - 18;
         if (del_page > 0)
         {
-            for (int i=low; (i<high && i < game_count); i++)
+            for (int i=low; (i<high && i < games.size()); i++)
             {
                 Game *game = &games[i];
                 if (game->tex.id != no_icon.id)
@@ -148,7 +146,7 @@ namespace GAME {
 
         high = page * 18;
         low = high - 18;
-        for(std::size_t i = low; (i < high && i < game_count); i++) {
+        for(std::size_t i = low; (i < high && i < games.size()); i++) {
             Game *game = &games[i];
             if (game->tex.id == no_icon.id && page == page_num)
             {
@@ -196,7 +194,6 @@ namespace GAME {
     }
 
     void Exit() {
-        free(games);
     }
 
 	void StartLoadImagesThread(int prev_page_num, int page)

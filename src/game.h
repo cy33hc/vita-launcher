@@ -18,8 +18,7 @@ typedef struct {
 
 #define MAX_GAMES 2000
 
-extern Game *games;
-extern int game_count;
+extern std::vector<Game> games;
 extern int page_num;
 extern int max_page;
 

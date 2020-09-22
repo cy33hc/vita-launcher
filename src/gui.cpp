@@ -17,7 +17,6 @@ namespace GUI {
 		
 		bool done = false, focus = false, first_item = true;
 
-		//GAME::LoadGameImages(page_num);
 		GAME::StartLoadImagesThread(page_num, page_num);
 		while (!done) {
 			vita2d_start_drawing();

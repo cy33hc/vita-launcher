@@ -17,13 +17,11 @@ namespace Windows {
         {
             int prev_page = page_num;
             page_num = GAME::DecrementPage(page_num, 1);
-            //GAME::LoadGameImages(page_num);
             GAME::StartLoadImagesThread(prev_page, page_num);
         } else if ((pad_prev.buttons & SCE_CTRL_RTRIGGER) && !(pad.buttons & SCE_CTRL_RTRIGGER))
         {
             int prev_page = page_num;
             page_num = GAME::IncrementPage(page_num, 1);
-            //GAME::LoadGameImages(page_num);
             GAME::StartLoadImagesThread(prev_page, page_num);
         }
         pad_prev = pad;
@@ -54,14 +52,10 @@ namespace Windows {
                 {
                     ImGui::SetCursorPos(ImVec2(pos.x+(j*160),pos.y+(i*158)));
                     int button_id = (i*6)+j;
-                    if (game_start_index+button_id < game_count)
+                    if (game_start_index+button_id < games.size())
                     {
                         ImGui::PushID(button_id);
                         Game *game = &games[game_start_index+button_id];
-                        if (games->tex.id < 0)
-                        {
-                            GAME::LoadGameImage(game);
-                        }
                         if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,130), ImVec2(0,0), ImVec2(1,1))) {
                             GAME::Launch(game->id);
                         }

@@ -27,7 +27,7 @@ namespace Services {
 
 		ImGui_ImplVita2D_TouchUsage(true);
 		ImGui_ImplVita2D_UseIndirectFrontTouch(false);
-		ImGui_ImplVita2D_UseRearTouch(true);
+		ImGui_ImplVita2D_UseRearTouch(false);
 		ImGui_ImplVita2D_GamepadUsage(true);
 		ImGui_ImplVita2D_MouseStickUsage(false);
 		
