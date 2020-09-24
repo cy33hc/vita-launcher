@@ -16,6 +16,9 @@
 std::vector<Game> games;
 int page_num = 1;
 int max_page;
+bool game_scan_complete = false;
+int games_to_scan = 1;
+Game game_scan_inprogress;
 
 namespace GAME {
 
@@ -29,6 +32,8 @@ namespace GAME {
             void* fd = FS::Create(GAME_LIST_FILE);
 
             std::vector<std::string> dirs = FS::ListDir("ux0:app/");
+            games_to_scan = dirs.size();
+
             for(std::size_t i = 0; i < dirs.size(); ++i) {
                 char sfo_file[256];
                 sprintf(sfo_file, "ux0:app/%s/sce_sys/param.sfo", dirs[i].c_str());
@@ -49,6 +54,7 @@ namespace GAME {
                     FS::Write(fd, line, strlen(line));
 
                     game.tex = no_icon;
+                    game_scan_inprogress = game;
                     games.push_back(game);
 
                 }
@@ -115,6 +121,7 @@ namespace GAME {
             sprintf(game.icon_path, "%s",  nextToken(game_buffer, position).c_str());
             game.tex = no_icon;
             games.push_back(game);
+            games_to_scan = games.size();
         }
     };
 
@@ -209,6 +216,23 @@ namespace GAME {
     int LoadImagesThread(SceSize args, LoadImagesParams *params) {
         sceKernelDelayThread(300000);
         GAME::LoadGameImages(params->prev_page_num, params->page_num);
+        return sceKernelExitDeleteThread(0);
+    }
+
+    void StartScanGamesThread()
+    {
+        scan_games_thid = sceKernelCreateThread("load_images_thread", (SceKernelThreadEntry)GAME::ScanGamesThread, 0x10000100, 0x4000, 0, 0, NULL);
+		if (scan_games_thid >= 0)
+			sceKernelStartThread(scan_games_thid, 0, NULL);
+    }
+
+    int ScanGamesThread(SceSize args, void *argp)
+    {
+        game_scan_complete = false;
+        GAME::Scan();
+        game_scan_complete = true;
+        page_num = 1;
+        GAME::StartLoadImagesThread(1, 1);
         return sceKernelExitDeleteThread(0);
     }
 

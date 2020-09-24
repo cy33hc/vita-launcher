@@ -13,7 +13,8 @@ namespace Windows {
     };
 
     void HandleLauncherWindowInput();
-    void LauncherWindow(bool *focus, bool *first_item);
+    void LauncherWindow();
+    void GameScanWindow();
 }
 
 #endif

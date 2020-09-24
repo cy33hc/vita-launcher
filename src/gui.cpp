@@ -8,24 +8,34 @@
 // Global var used across windows/popups
 //MenuItem item;
 
+#define MODE_SCAN 0
+#define MODE_LAUNCHER 1
+
 bool done = false;
+static int mode = MODE_SCAN;
 
 namespace GUI {
 	int RenderLoop(void) {
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.NavInputs[ImGuiNavInput_Menu] = 0.0f;
 		
-		bool done = false, focus = false, first_item = true;
+		bool done = false;
 
-		GAME::StartLoadImagesThread(page_num, page_num);
 		while (!done) {
 			vita2d_start_drawing();
 			vita2d_clear_screen();
 
 			ImGui_ImplVita2D_NewFrame();
 
-			Windows::HandleLauncherWindowInput();
-			Windows::LauncherWindow(&focus, &first_item);
+			if (!game_scan_complete)
+			{
+				Windows::GameScanWindow();
+			}
+			else
+			{
+				Windows::HandleLauncherWindowInput();
+				Windows::LauncherWindow();
+			}
 			
 			ImGui::Render();
 			ImGui_ImplVita2D_RenderDrawData(ImGui::GetDrawData());

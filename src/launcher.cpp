@@ -27,23 +27,23 @@ namespace Windows {
         pad_prev = pad;
     }
 
-    void LauncherWindow(bool *focus, bool *first_item) {
+    void LauncherWindow() {
         Windows::SetupWindow();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 
-   		if (ImGui::Begin("Game Launcher", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
-			static int button_highlight = -1;
+        if (ImGui::Begin("Game Launcher", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
+            static int button_highlight = -1;
             int game_start_index = (page_num * 18) - 18;
 
-			if (button_highlight > -1)
-			{
-				ImGui::Text("%s - %s", games[game_start_index+button_highlight].id, games[game_start_index+button_highlight].title);
-			}
-			else
-			{
-				ImGui::Text("No game selected");
-			}
+            if (button_highlight > -1)
+            {
+                ImGui::Text("%s - %s", games[game_start_index+button_highlight].id, games[game_start_index+button_highlight].title);
+            }
+            else
+            {
+                ImGui::Text("No game selected");
+            }
 
             ImVec2 pos = ImGui::GetCursorPos();
             for (int i = 0; i < 3; i++)
@@ -79,4 +79,30 @@ namespace Windows {
 		ImGui::End();
         ImGui::PopStyleVar();
     }
+
+    void GameScanWindow()
+    {
+        Windows::SetupWindow();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+
+        if (ImGui::Begin("Game Launcher", nullptr, ImGuiWindowFlags_NoDecoration)) {
+            static float progress = 0.0f;
+            if (games.size() > 0)
+            {
+                progress = (float)games.size() / (float)games_to_scan;
+            }
+            char buf[32];
+            sprintf(buf, "%d/%d", games.size(), games_to_scan);
+            ImGui::SetCursorPos(ImVec2(210, 230));
+            ImGui::Text("Scanning games and creating cache in folder ux0:data/SMLA00001");
+            ImGui::SetCursorPos(ImVec2(210, 260));
+            ImGui::ProgressBar(progress, ImVec2(530, 0), buf);
+            ImGui::SetCursorPos(ImVec2(210, 290));
+            ImGui::Text("Adding %s to cache", game_scan_inprogress.id);
+        }
+        ImGui::End();
+        ImGui::PopStyleVar();
+    }
+
 }

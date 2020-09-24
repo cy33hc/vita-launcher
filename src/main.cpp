@@ -65,7 +65,7 @@ int main(int, char**)
 	Services::InitImGui();
 
 	GAME::Init();
-	GAME::Scan();
+	GAME::StartScanGamesThread();
 
 	GUI::RenderLoop();
 

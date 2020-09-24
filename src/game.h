@@ -21,8 +21,12 @@ typedef struct {
 extern std::vector<Game> games;
 extern int page_num;
 extern int max_page;
+extern bool game_scan_complete;
+extern int games_to_scan;
+extern Game game_scan_inprogress;
 
 static SceUID load_images_thid = -1;
+static SceUID scan_games_thid = -1;
 
 typedef struct LoadImagesParams {
   int prev_page_num;
@@ -42,6 +46,8 @@ namespace GAME {
     int IncrementPage(int page, int num_of_pages);
     int DecrementPage(int page, int num_of_pages);
     void StartLoadImagesThread(int prev_page_num, int page);
+    int ScanGamesThread(SceSize args, void *argp);
+    void StartScanGamesThread();
 }
 
 #endif
