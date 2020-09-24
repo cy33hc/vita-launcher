@@ -11,6 +11,10 @@
 #include "windows.h"
 #include "textures.h"
 
+extern "C" {
+	#include "pfs.h"
+}
+
 #define GAME_LIST_FILE "ux0:data/SMLA00001/games_list.txt"
 
 std::vector<Game> games;
@@ -57,16 +61,53 @@ namespace GAME {
                     game_scan_inprogress = game;
                     games.push_back(game);
 
+                    CopyIcons(game.id);
                 }
             }
             FS::Close(fd);
-
         }
         else {
             LoadCache();
         }
         qsort(&games[0], games.size(), sizeof(Game), GameComparator);
         max_page = (games.size() + 18 - 1) / 18;
+    }
+
+    void CopyIcons(const char* game_id)
+    {
+        char game_path[128];
+        char meta_path[128];
+        char pfs_path[128];
+        char icon_path[128];
+        char meta_icon_path[128];
+
+        sprintf(game_path, "ux0:app/%s", game_id);
+        sprintf(meta_path, "ur0:appmeta/%s", game_id);
+        sprintf(pfs_path, "ux0:app/%s/sce_pfs", game_id);
+        sprintf(icon_path, "ux0:app/%s/sce_sys/icon0.png", game_id);
+        sprintf(meta_icon_path, "ur0:appmeta/%s/icon0.png", game_id);
+
+        int pfs_path_exists = FS::FolderExists(pfs_path);
+        int icon_path_exists = FS::FileExists(icon_path);
+        int meta_icon_path_exists = FS::FileExists(meta_icon_path);
+
+        if (pfs_path_exists && (icon_path_exists && !meta_icon_path_exists))
+        {
+            FS::MkDirs(meta_path);
+            if (pfsMount(game_path))
+            {
+                FS::CopyFile(icon_path, meta_icon_path);
+                pfsUmount();
+            }
+        }
+        else if (icon_path_exists && !meta_icon_path_exists)
+        {
+            FS::MkDirs(meta_path);
+            if (icon_path_exists && !meta_icon_path_exists)
+            {
+                FS::CopyFile(icon_path, meta_icon_path);
+            }
+        }
     }
 
     void Launch(const char *title_id) {

@@ -1,0 +1,16 @@
+VitaShellUser:
+  attributes: 0
+  version:
+    major: 1
+    minor: 0
+  main:
+    start: module_start
+    stop: module_stop
+  modules:
+    VitaShellUserLibrary:
+      syscall: false
+      functions:
+        - shellUserIsUx0Redirected
+        - shellUserRedirectUx0
+        - shellUserMountById
+        - shellUserGetRifVitaKey

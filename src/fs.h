@@ -8,6 +8,8 @@
 
 #include <cstdint>
 
+#define TRANSFER_SIZE (128 * 1024)
+
 namespace FS {
     void MkDirs(const std::string& path);
     void Rm(const std::string& file);
@@ -15,6 +17,7 @@ namespace FS {
     int64_t GetSize(const char* path);
 
     bool FileExists(const std::string& path);
+    bool FolderExists(const std::string& path);
     void Rename(const std::string& from, const std::string& to);
 
     // creates file (if it exists, truncates size to 0)
@@ -23,6 +26,7 @@ namespace FS {
     void* OpenRW(const std::string& path);
     // open file for writing, next write will append data to end of it
     void* Append(const std::string& path);
+    int CopyFile(const char *src_path, const char *dst_path);
 
     void Close(void* f);
 
@@ -35,7 +39,7 @@ namespace FS {
     void Save(const std::string& path, const void* data, uint32_t size);
 
     std::vector<std::string> ListDir(const std::string& path);
-
+    
 }
 
 #endif

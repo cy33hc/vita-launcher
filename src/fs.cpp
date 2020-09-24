@@ -1,3 +1,4 @@
+#include <cstring>
 #include "fs.h"
 
 #include <psp2/io/dirent.h>
@@ -50,6 +51,16 @@ namespace FS {
     {
         SceIoStat stat;
         return sceIoGetstat(path.c_str(), &stat) >= 0;
+    }
+
+    bool FolderExists(const std::string& path)
+    {
+        SceUID dfd = sceIoDopen(path.c_str());
+        if (dfd < 0)
+            return 0;
+
+        sceIoDclose(dfd);
+        return 1;
     }
 
     void Rename(const std::string& from, const std::string& to)
@@ -170,4 +181,64 @@ namespace FS {
 
         return out;
     }
+
+    int CopyFile(const char *src_path, const char *dst_path) {
+
+        SceUID fdsrc = sceIoOpen(src_path, SCE_O_RDONLY, 0);
+        if (fdsrc < 0)
+            return fdsrc;
+
+        SceUID fddst = sceIoOpen(dst_path, SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0777);
+        if (fddst < 0) {
+            sceIoClose(fdsrc);
+            return fddst;
+        }
+
+        char buf[TRANSFER_SIZE];
+
+        while (1) {
+            int read = sceIoRead(fdsrc, buf, TRANSFER_SIZE);
+
+            if (read < 0) {
+                free(buf);
+
+                sceIoClose(fddst);
+                sceIoClose(fdsrc);
+
+                sceIoRemove(dst_path);
+
+                return read;
+            }
+
+            if (read == 0)
+                break;
+
+            int written = sceIoWrite(fddst, buf, read);
+
+            if (written < 0) {
+                free(buf);
+
+                sceIoClose(fddst);
+                sceIoClose(fdsrc);
+
+                sceIoRemove(dst_path);
+
+                return written;
+            }
+        }
+
+        free(buf);
+
+        // Inherit file stat
+        SceIoStat stat;
+        memset(&stat, 0, sizeof(SceIoStat));
+        sceIoGetstatByFd(fdsrc, &stat);
+        sceIoChstatByFd(fddst, &stat, 0x3B);
+
+        sceIoClose(fddst);
+        sceIoClose(fdsrc);
+
+        return 1;
+    }
+
 }

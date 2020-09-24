@@ -86,7 +86,7 @@ namespace Windows {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 
-        if (ImGui::Begin("Game Launcher", nullptr, ImGuiWindowFlags_NoDecoration)) {
+        if (ImGui::Begin("Game Scanning", nullptr, ImGuiWindowFlags_NoDecoration)) {
             static float progress = 0.0f;
             if (games.size() > 0)
             {

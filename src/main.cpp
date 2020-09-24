@@ -13,6 +13,9 @@
 #include "gui.h"
 #include "textures.h"
 #include "game.h"
+extern "C" {
+	#include "init.h"
+}
 
 namespace Services {
 	int InitImGui(void) {
@@ -61,6 +64,8 @@ namespace Services {
 
 int main(int, char**)
 {
+	initLauncher();
+
 	Services::Init();
 	Services::InitImGui();
 

@@ -37,6 +37,7 @@ namespace GAME {
     int GameComparator(const void *v1, const void *v2);
     void Init();
     void Scan();
+    void CopyIcons(const char* game_id);
     void Launch(const char *id);
     void LoadCache();
     void LoadGameImages(int prev_page, int page_num);
