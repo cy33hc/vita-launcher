@@ -13,6 +13,7 @@ typedef struct {
     char title[256];
     char category[5];
     char icon_path[96];
+    bool favorite = false;
     Tex tex;
 } Game;
 
@@ -60,6 +61,7 @@ namespace GAME {
     int ScanGamesThread(SceSize args, void *argp);
     void StartScanGamesThread();
     void DeleteGamesImages(GameCategory *category);
+    void SetMaxPage(GameCategory *category);
 }
 
 #endif

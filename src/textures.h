@@ -11,6 +11,7 @@ typedef struct {
 } Tex;
 
 extern Tex no_icon;
+extern Tex favorite_icon;
 
 namespace Textures {
     void LoadFonts(Tex *font_texture);

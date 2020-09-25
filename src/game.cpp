@@ -66,8 +66,17 @@ namespace GAME {
             LoadCache();
         }
         qsort(&current_category->games[0], current_category->games.size(), sizeof(Game), GameComparator);
-        current_category->max_page = (current_category->games.size() + 18 - 1) / 18;
+        SetMaxPage(current_category);
         current_category->page_num = 1;
+    }
+
+    void SetMaxPage(GameCategory *category)
+    {
+        category->max_page = (category->games.size() + 18 - 1) / 18;
+        if (category->max_page == 0)
+        {
+            category->max_page = 1;
+        }
     }
 
     void Launch(const char *title_id) {

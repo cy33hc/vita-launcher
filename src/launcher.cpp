@@ -5,7 +5,7 @@
 #include "fs.h"
 #include "game.h"
 
-int selected_item = -1;
+Game *selected_game;
 static SceCtrlData pad_prev;
 static int button_highlight = -1;
 
@@ -14,6 +14,31 @@ namespace Windows {
     {
         SceCtrlData pad;
         sceCtrlPeekBufferNegative(0, &pad, 1);
+
+        if ((pad_prev.buttons & SCE_CTRL_SQUARE) && !(pad.buttons & SCE_CTRL_SQUARE))
+        {
+            if (selected_game != nullptr && current_category->id != FAVORITES)
+            {
+                if (!selected_game->favorite)
+                {
+                    Game game = *selected_game;
+                    game.tex = no_icon;
+                    game_categories[FAVORITES].games.push_back(game);
+                    GAME::SetMaxPage(&game_categories[FAVORITES]);
+                    selected_game->favorite = true;
+                }
+                else{
+                    selected_game->favorite = false;
+                    for (int i=0; i < game_categories[FAVORITES].games.size(); i++)
+                    {
+                        if (strcmp(selected_game->id, game_categories[FAVORITES].games[i].id) == 0)
+                        {
+                            game_categories[FAVORITES].games.erase(game_categories[FAVORITES].games.begin()+i);
+                        }
+                    }
+                }
+            }
+        }
 
         if ((pad_prev.buttons & SCE_CTRL_CIRCLE) && !(pad.buttons & SCE_CTRL_CIRCLE))
         {
@@ -25,16 +50,24 @@ namespace Windows {
             GAME::StartLoadImagesThread(current_category->page_num, current_category->page_num);
         }
 
-        if ((pad_prev.buttons & SCE_CTRL_LTRIGGER) && !(pad.buttons & SCE_CTRL_LTRIGGER))
+        if ((pad_prev.buttons & SCE_CTRL_LTRIGGER) &&
+            !(pad.buttons & SCE_CTRL_LTRIGGER) &&
+            current_category->max_page > 1)
         {
             int prev_page = current_category->page_num;
             current_category->page_num = GAME::DecrementPage(current_category->page_num, 1);
             GAME::StartLoadImagesThread(prev_page, current_category->page_num);
-        } else if ((pad_prev.buttons & SCE_CTRL_RTRIGGER) && !(pad.buttons & SCE_CTRL_RTRIGGER))
+            button_highlight = -1;
+            selected_game = nullptr;
+        } else if ((pad_prev.buttons & SCE_CTRL_RTRIGGER) &&
+                   !(pad.buttons & SCE_CTRL_RTRIGGER) &&
+                   current_category->max_page > 1)
         {
             int prev_page = current_category->page_num;
             current_category->page_num = GAME::IncrementPage(current_category->page_num, 1);
             GAME::StartLoadImagesThread(prev_page, current_category->page_num);
+            button_highlight = -1;
+            selected_game = nullptr;
         }
         pad_prev = pad;
     }
@@ -75,11 +108,25 @@ namespace Windows {
                             ImGui::SetItemDefaultFocus();
                         }
                         if (ImGui::IsItemFocused())
+                        {
                             button_highlight = button_id;
+                            selected_game = game;
+                        }
                         ImGui::PopID();
 
                         ImGui::SetCursorPosX(pos.x+(j*160));
-                        ImGui::Text("%.15s", current_category->games[game_start_index+button_id].title);
+                        if (game->favorite)
+                        {
+                            ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
+                            ImGui::SameLine();
+                            ImGui::SetCursorPosX(pos.x+(j*160)+14);
+                            ImGui::Text("%.14s", game->title);
+                        }
+                        else
+                        {
+                            ImGui::SetCursorPosX(pos.x+(j*160));
+                            ImGui::Text("%.15s", game->title);
+                        }
                     }
                 }
             }

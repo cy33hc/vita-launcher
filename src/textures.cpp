@@ -5,6 +5,7 @@
 #include "gui.h"
 
 Tex no_icon;
+Tex favorite_icon;
 
 namespace Textures {
 	
@@ -40,7 +41,7 @@ namespace Textures {
 	
 	void Init(void) {
 		Textures::LoadImageFile("ux0:app/SMLA00001/noicon.png", &no_icon);
-		//Textures::LoadFonts();
+		Textures::LoadImageFile("ux0:app/SMLA00001/favorite.png", &favorite_icon);
 	}
 
 	void Exit(void) {
