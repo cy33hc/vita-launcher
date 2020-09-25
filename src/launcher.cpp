@@ -24,18 +24,16 @@ namespace Windows {
                     Game game = *selected_game;
                     game.tex = no_icon;
                     game_categories[FAVORITES].games.push_back(game);
+                    GAME::SortGames(&game_categories[FAVORITES]);
                     GAME::SetMaxPage(&game_categories[FAVORITES]);
                     selected_game->favorite = true;
+                    GAME::SaveFavorites();
                 }
-                else{
+                else {
                     selected_game->favorite = false;
-                    for (int i=0; i < game_categories[FAVORITES].games.size(); i++)
-                    {
-                        if (strcmp(selected_game->id, game_categories[FAVORITES].games[i].id) == 0)
-                        {
-                            game_categories[FAVORITES].games.erase(game_categories[FAVORITES].games.begin()+i);
-                        }
-                    }
+                    int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game->id);
+                    if (index != -1)
+                        GAME::SaveFavorites();
                 }
             }
         }

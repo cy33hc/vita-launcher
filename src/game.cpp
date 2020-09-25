@@ -12,6 +12,7 @@
 #include "textures.h"
 
 #define GAME_LIST_FILE "ux0:data/SMLA00001/games_list.txt"
+#define FAVORITES_FILE "ux0:data/SMLA00001/favorites.txt"
 
 GameCategory game_categories[4];
 GameCategory *current_category;
@@ -65,7 +66,7 @@ namespace GAME {
         else {
             LoadCache();
         }
-        qsort(&current_category->games[0], current_category->games.size(), sizeof(Game), GameComparator);
+        SortGames(current_category);
         SetMaxPage(current_category);
         current_category->page_num = 1;
     }
@@ -269,5 +270,67 @@ namespace GAME {
                 game->tex = no_icon;
             }
         }
+    }
+
+    void SaveFavorites()
+    {
+        void* fd = FS::Create(FAVORITES_FILE);
+        for (int i=0; i < game_categories[FAVORITES].games.size(); i++)
+        {
+            Game* game = &game_categories[FAVORITES].games[i];
+            char line[512];
+            sprintf(line, "%s||%s||%s||%s\n", game->id, game->title, game->category, game->icon_path);
+            FS::Write(fd, line, strlen(line));
+        }
+        FS::Close(fd);
+    }
+
+    void LoadFavorites()
+    {
+        if (FS::FileExists(FAVORITES_FILE))
+        {
+            std::vector<char> game_buffer = FS::Load(FAVORITES_FILE);
+            int position = 0;
+            while (position < game_buffer.size())
+            {
+                Game game;
+                sprintf(game.id, "%s", nextToken(game_buffer, position).c_str());
+                sprintf(game.title, "%s", nextToken(game_buffer, position).c_str());
+                sprintf(game.category, "%s", nextToken(game_buffer, position).c_str());
+                sprintf(game.icon_path, "%s",  nextToken(game_buffer, position).c_str());
+                game.tex = no_icon;
+                game_categories[FAVORITES].games.push_back(game);
+            }
+        }
+    }
+
+    Game* FindGame(GameCategory *category, char* title_id)
+    {
+        for (int i=0; i < category->games.size(); i++)
+        {
+            if (strcmp(title_id, category->games[i].id) == 0)
+            {
+                return &category->games[i];
+            }
+        }
+        return nullptr;
+    }
+
+    int RemoveGameFromCategory(GameCategory *category, char* title_id)
+    {
+        for (int i=0; i < category->games.size(); i++)
+        {
+            if (strcmp(title_id, category->games[i].id) == 0)
+            {
+                category->games.erase(category->games.begin()+i);
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    void SortGames(GameCategory *category)
+    {
+        qsort(&category->games[0], category->games.size(), sizeof(Game), GameComparator);
     }
 }

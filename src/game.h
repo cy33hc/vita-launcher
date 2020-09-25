@@ -62,6 +62,11 @@ namespace GAME {
     void StartScanGamesThread();
     void DeleteGamesImages(GameCategory *category);
     void SetMaxPage(GameCategory *category);
+    void SaveFavorites();
+    void LoadFavorites();
+    Game* FindGame(GameCategory *category, char* title_id);
+    int RemoveGameFromCategory(GameCategory *category, char* title_id);
+    void SortGames(GameCategory *category);
 }
 
 #endif
