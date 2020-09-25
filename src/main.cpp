@@ -30,7 +30,7 @@ namespace Services {
 		ImGui_ImplVita2D_UseRearTouch(false);
 		ImGui_ImplVita2D_GamepadUsage(true);
 		ImGui_ImplVita2D_MouseStickUsage(false);
-		ImGui_ImplVita2D_DisableButtons(SCE_CTRL_TRIANGLE | SCE_CTRL_SQUARE);
+		ImGui_ImplVita2D_DisableButtons(SCE_CTRL_TRIANGLE | SCE_CTRL_SQUARE | SCE_CTRL_CIRCLE);
 		
 		Textures::Init();
 
