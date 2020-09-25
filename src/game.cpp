@@ -69,6 +69,18 @@ namespace GAME {
         SortGames(current_category);
         SetMaxPage(current_category);
         current_category->page_num = 1;
+
+        LoadFavorites();
+        SortGames(&game_categories[FAVORITES]);
+
+        for (int i=0; i < current_category->games.size(); i++)
+        {
+            Game* game = FindGame(&game_categories[FAVORITES], current_category->games[i].id);
+            if (game != nullptr)
+            {
+                current_category->games[i].favorite = true;
+            }
+        }
     }
 
     void SetMaxPage(GameCategory *category)
@@ -242,6 +254,11 @@ namespace GAME {
         game_scan_complete = false;
         GAME::Scan();
         game_scan_complete = true;
+
+        if (game_categories[FAVORITES].games.size() > 0)
+        {
+            current_category = &game_categories[FAVORITES];
+        }
         current_category->page_num = 1;
         GAME::StartLoadImagesThread(1, 1);
         return sceKernelExitDeleteThread(0);
