@@ -73,15 +73,25 @@ namespace GAME {
         LoadFavorites();
         SortGames(&game_categories[FAVORITES]);
 
-        for (int i=0; i < current_category->games.size(); i++)
+        bool favorites_updated = false;
+        for (std::vector<Game>::iterator it=game_categories[FAVORITES].games.begin(); 
+             it!=game_categories[FAVORITES].games.end(); )
         {
-            Game* game = FindGame(&game_categories[FAVORITES], current_category->games[i].id);
+            Game* game = FindGame(current_category, it->id);
             if (game != nullptr)
             {
-                current_category->games[i].favorite = true;
+                game->favorite = true;
+                ++it;
+            }
+            else
+            {
+                it = game_categories[FAVORITES].games.erase(it);
+                favorites_updated = true;
             }
         }
-    }
+        if (favorites_updated)
+            SaveFavorites();
+}
 
     void SetMaxPage(GameCategory *category)
     {
