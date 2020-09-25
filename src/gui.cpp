@@ -17,7 +17,6 @@ static int mode = MODE_SCAN;
 namespace GUI {
 	int RenderLoop(void) {
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		io.NavInputs[ImGuiNavInput_Menu] = 0.0f;
 		
 		bool done = false;
 

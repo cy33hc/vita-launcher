@@ -17,6 +17,7 @@ typedef struct {
 } Game;
 
 typedef struct {
+    char id;
     char title[16];
     std::vector<Game> games;
     int max_page;
@@ -30,7 +31,7 @@ typedef struct {
 #define FAVORITES 3
 
 extern GameCategory game_categories[];
-extern GameCategory *current_games;
+extern GameCategory *current_category;
 extern bool game_scan_complete;
 extern int games_to_scan;
 extern Game game_scan_inprogress;
@@ -58,6 +59,7 @@ namespace GAME {
     void StartLoadImagesThread(int prev_page_num, int page);
     int ScanGamesThread(SceSize args, void *argp);
     void StartScanGamesThread();
+    void DeleteGamesImages(GameCategory *category);
 }
 
 #endif

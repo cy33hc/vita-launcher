@@ -30,6 +30,7 @@ namespace Services {
 		ImGui_ImplVita2D_UseRearTouch(false);
 		ImGui_ImplVita2D_GamepadUsage(true);
 		ImGui_ImplVita2D_MouseStickUsage(false);
+		ImGui_ImplVita2D_DisableButtons(SCE_CTRL_TRIANGLE | SCE_CTRL_SQUARE);
 		
 		Textures::Init();
 
@@ -49,41 +50,27 @@ namespace Services {
 		vita2d_init();
 		vita2d_set_clear_color(RGBA8(0x00, 0x00, 0x00, 0xFF));
 
-		/*
-		sprintf(vita_games.title, "%s", "Vita Games");
-		vita_games.page_num = 1;
-		vita_games.max_page = 0;
-
-		sprintf(psp_games.title, "%s", "PSP Games");
-		psp_games.page_num = 1;
-		psp_games.max_page = 0;
-
-		sprintf(homebrews.title, "%s", "Homebrews");
-		homebrews.page_num = 1;
-		homebrews.max_page = 0;
-
-		sprintf(favorites.title, "%s", "Favorites");
-		favorites.page_num = 1;
-		favorites.max_page = 0;
-		*/
-
+		game_categories[VITA_GAMES].id = VITA_GAMES;
 		sprintf(game_categories[VITA_GAMES].title, "%s", "Vita Games");
 		game_categories[VITA_GAMES].page_num = 1;
 		game_categories[VITA_GAMES].max_page = 0;
 
+		game_categories[PSP_GAMES].id = PSP_GAMES;
 		sprintf(game_categories[PSP_GAMES].title, "%s", "PSP Games");
 		game_categories[PSP_GAMES].page_num = 1;
 		game_categories[PSP_GAMES].max_page = 0;
 
+		game_categories[HOMEBREWS].id = HOMEBREWS;
 		sprintf(game_categories[HOMEBREWS].title, "%s", "Homebrews");
 		game_categories[HOMEBREWS].page_num = 1;
 		game_categories[HOMEBREWS].max_page = 0;
 
+		game_categories[FAVORITES].id = FAVORITES;
 		sprintf(game_categories[FAVORITES].title, "%s", "Favorites");
 		game_categories[FAVORITES].page_num = 1;
 		game_categories[FAVORITES].max_page = 0;
 
-		current_games = &game_categories[VITA_GAMES];
+		current_category = &game_categories[VITA_GAMES];
 		return 0;
 	}
 	
