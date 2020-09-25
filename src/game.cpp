@@ -13,9 +13,9 @@
 
 #define GAME_LIST_FILE "ux0:data/SMLA00001/games_list.txt"
 
-std::vector<Game> games;
-int page_num = 1;
-int max_page;
+GameCategory game_categories[4];
+GameCategory *current_games;
+
 bool game_scan_complete = false;
 int games_to_scan = 1;
 Game game_scan_inprogress;
@@ -55,7 +55,7 @@ namespace GAME {
 
                     game.tex = no_icon;
                     game_scan_inprogress = game;
-                    games.push_back(game);
+                    current_games->games.push_back(game);
 
                 }
             }
@@ -65,8 +65,9 @@ namespace GAME {
         else {
             LoadCache();
         }
-        qsort(&games[0], games.size(), sizeof(Game), GameComparator);
-        max_page = (games.size() + 18 - 1) / 18;
+        qsort(&current_games->games[0], current_games->games.size(), sizeof(Game), GameComparator);
+        current_games->max_page = (current_games->games.size() + 18 - 1) / 18;
+        current_games->page_num = 1;
     }
 
     void Launch(const char *title_id) {
@@ -120,18 +121,18 @@ namespace GAME {
             sprintf(game.category, "%s", nextToken(game_buffer, position).c_str());
             sprintf(game.icon_path, "%s",  nextToken(game_buffer, position).c_str());
             game.tex = no_icon;
-            games.push_back(game);
-            games_to_scan = games.size();
+            current_games->games.push_back(game);
+            games_to_scan = current_games->games.size();
         }
     };
 
     void LoadGameImages(int prev_page, int page) {
         int del_page = 0;
 
-        if ((page > prev_page) or (prev_page == max_page && page == 1))
+        if ((page > prev_page) or (prev_page == current_games->max_page && page == 1))
         {
             del_page = DecrementPage(page, 10);
-        } else if ((page < prev_page) or (prev_page == 1 && page == max_page))
+        } else if ((page < prev_page) or (prev_page == 1 && page == current_games->max_page))
         {
             del_page = IncrementPage(page, 10);
         }
@@ -140,9 +141,9 @@ namespace GAME {
         int low = high - 18;
         if (del_page > 0)
         {
-            for (int i=low; (i<high && i < games.size()); i++)
+            for (int i=low; (i<high && i < current_games->games.size()); i++)
             {
-                Game *game = &games[i];
+                Game *game = &current_games->games[i];
                 if (game->tex.id != no_icon.id)
                 {
                     Textures::Free(&game->tex);
@@ -153,9 +154,9 @@ namespace GAME {
 
         high = page * 18;
         low = high - 18;
-        for(std::size_t i = low; (i < high && i < games.size()); i++) {
-            Game *game = &games[i];
-            if (game->tex.id == no_icon.id && page == page_num)
+        for(std::size_t i = low; (i < high && i < current_games->games.size()); i++) {
+            Game *game = &current_games->games[i];
+            if (game->tex.id == no_icon.id && page == current_games->page_num)
             {
                 LoadGameImage(game);
             }
@@ -165,9 +166,9 @@ namespace GAME {
     int IncrementPage(int page, int num_of_pages)
     {
         int new_page = page + num_of_pages;
-        if (new_page > max_page)
+        if (new_page > current_games->max_page)
         {
-            new_page = new_page % max_page;
+            new_page = new_page % current_games->max_page;
         }
         return new_page;
     }
@@ -179,7 +180,7 @@ namespace GAME {
         {
             return new_page;
         }
-        return new_page + max_page;
+        return new_page + current_games->max_page;
     }
 
     void LoadGameImage(Game *game) {
@@ -231,7 +232,7 @@ namespace GAME {
         game_scan_complete = false;
         GAME::Scan();
         game_scan_complete = true;
-        page_num = 1;
+        current_games->page_num = 1;
         GAME::StartLoadImagesThread(1, 1);
         return sceKernelExitDeleteThread(0);
     }

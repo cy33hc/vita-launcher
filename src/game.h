@@ -16,11 +16,21 @@ typedef struct {
     Tex tex;
 } Game;
 
-#define MAX_GAMES 2000
+typedef struct {
+    char title[16];
+    std::vector<Game> games;
+    int max_page;
+    int page_num;
+} GameCategory;
 
-extern std::vector<Game> games;
-extern int page_num;
-extern int max_page;
+#define MAX_GAMES 2000
+#define VITA_GAMES 0
+#define PSP_GAMES 1
+#define HOMEBREWS 2
+#define FAVORITES 3
+
+extern GameCategory game_categories[];
+extern GameCategory *current_games;
 extern bool game_scan_complete;
 extern int games_to_scan;
 extern Game game_scan_inprogress;
