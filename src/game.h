@@ -11,7 +11,7 @@
 typedef struct {
     char id[10];
     char title[256];
-    char category[5];
+    char category[10];
     char icon_path[96];
     bool favorite = false;
     Tex tex;
@@ -25,7 +25,6 @@ typedef struct {
     int page_num;
 } GameCategory;
 
-#define MAX_GAMES 2000
 #define VITA_GAMES 0
 #define PSP_GAMES 1
 #define HOMEBREWS 2

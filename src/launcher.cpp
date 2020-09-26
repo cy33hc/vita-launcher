@@ -179,12 +179,12 @@ namespace Windows {
             {
                 progress = (float)current_category->games.size() / (float)games_to_scan;
             }
-            char buf[32];
-            sprintf(buf, "%d/%d", current_category->games.size(), games_to_scan);
+            //char buf[32];
+            //sprintf(buf, "%d/%d", current_category->games.size(), games_to_scan);
             ImGui::SetCursorPos(ImVec2(210, 230));
             ImGui::Text("Scanning games and creating cache in folder ux0:data/SMLA00001");
             ImGui::SetCursorPos(ImVec2(210, 260));
-            ImGui::ProgressBar(progress, ImVec2(530, 0), buf);
+            ImGui::ProgressBar(progress, ImVec2(530, 0));
             ImGui::SetCursorPos(ImVec2(210, 290));
             ImGui::Text("Adding %s to cache", game_scan_inprogress.id);
         }

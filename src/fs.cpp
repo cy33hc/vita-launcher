@@ -52,6 +52,15 @@ namespace FS {
         return sceIoGetstat(path.c_str(), &stat) >= 0;
     }
 
+    bool FolderExists(const std::string& path) {
+        SceUID dfd = sceIoDopen(path.c_str());
+        if (dfd < 0)
+            return 0;
+
+        sceIoDclose(dfd);
+        return 1;
+    }
+
     void Rename(const std::string& from, const std::string& to)
     {
         // try to remove first because sceIoRename does not overwrite

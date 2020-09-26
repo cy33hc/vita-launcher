@@ -15,6 +15,8 @@ namespace FS {
     int64_t GetSize(const char* path);
 
     bool FileExists(const std::string& path);
+    bool FolderExists(const std::string& path);
+    
     void Rename(const std::string& from, const std::string& to);
 
     // creates file (if it exists, truncates size to 0)

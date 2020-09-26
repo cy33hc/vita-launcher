@@ -20,6 +20,9 @@ GameCategory *current_category;
 bool game_scan_complete = false;
 int games_to_scan = 1;
 Game game_scan_inprogress;
+std::string psp = "psp";
+std::string vita = "vita";
+std::string homebrew = "homebrew";
 
 namespace GAME {
 
@@ -28,7 +31,7 @@ namespace GAME {
 
     void Scan() {
         current_category = &game_categories[VITA_GAMES];
-        
+
         if (!FS::FileExists(GAME_LIST_FILE))
         {
             FS::MkDirs("ux0:data/SMLA00001");
@@ -49,8 +52,27 @@ namespace GAME {
 
                     sprintf(game.id, "%s", dirs[i].c_str());
                     sprintf(game.title, "%s", title.c_str());
-                    sprintf(game.category, "%s", SFO::GetString(sfo.data(), sfo.size(), "CATEGORY"));
                     sprintf(game.icon_path, "ur0:appmeta/%s/icon0.png", dirs[i].c_str());
+
+                    if (strncmp(dirs[i].c_str(), "PSPEMU", 6) == 0)
+                    {
+                        sprintf(game.category, "%s", psp.c_str());
+                    }
+                    else if (strncmp(dirs[i].c_str(), "PCSA", 4) == 0 ||
+                             strncmp(dirs[i].c_str(), "PCSB", 4) == 0 ||
+                             strncmp(dirs[i].c_str(), "PCSC", 4) == 0 ||
+                             strncmp(dirs[i].c_str(), "PCSD", 4) == 0 ||
+                             strncmp(dirs[i].c_str(), "PCSE", 4) == 0 ||
+                             strncmp(dirs[i].c_str(), "PCSF", 4) == 0 ||
+                             strncmp(dirs[i].c_str(), "PCSG", 4) == 0 ||
+                             strncmp(dirs[i].c_str(), "PCSH", 4) == 0)
+                    {
+                        sprintf(game.category, "%s", vita.c_str());
+                    }
+                    else
+                    {
+                        sprintf(game.category, "%s", homebrew.c_str());
+                    }
 
                     char line[512];
                     sprintf(line, "%s||%s||%s||%s\n", game.id, game.title, game.category, game.icon_path);
@@ -68,12 +90,8 @@ namespace GAME {
         else {
             LoadCache();
         }
-        SortGames(current_category);
-        SetMaxPage(current_category);
-        current_category->page_num = 1;
 
         LoadFavorites();
-        SortGames(&game_categories[FAVORITES]);
 
         bool favorites_updated = false;
         for (std::vector<Game>::iterator it=game_categories[FAVORITES].games.begin(); 
@@ -94,8 +112,32 @@ namespace GAME {
         if (favorites_updated)
             SaveFavorites();
         
+        
+        for (std::vector<Game>::iterator it=current_category->games.begin();
+            it!=current_category->games.end(); )
+        {
+            if (strcmp(it->category, psp.c_str()) == 0)
+            {
+                game_categories[PSP_GAMES].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else if (strcmp(it->category, homebrew.c_str()) == 0)
+            {
+                game_categories[HOMEBREWS].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        
         for (int i=0; i < 4; i++)
         {
+            SortGames(&game_categories[i]);
+            game_categories[i].page_num = 1;
             SetMaxPage(&game_categories[i]);
         }
 }
