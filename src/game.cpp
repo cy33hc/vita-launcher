@@ -27,6 +27,8 @@ namespace GAME {
     }
 
     void Scan() {
+        current_category = &game_categories[VITA_GAMES];
+        
         if (!FS::FileExists(GAME_LIST_FILE))
         {
             FS::MkDirs("ux0:data/SMLA00001");
@@ -91,6 +93,11 @@ namespace GAME {
         }
         if (favorites_updated)
             SaveFavorites();
+        
+        for (int i=0; i < 4; i++)
+        {
+            SetMaxPage(&game_categories[i]);
+        }
 }
 
     void SetMaxPage(GameCategory *category)
@@ -262,6 +269,12 @@ namespace GAME {
     int ScanGamesThread(SceSize args, void *argp)
     {
         game_scan_complete = false;
+        sceKernelDelayThread(1000000);
+        for (int i=0; i < 4; i++)
+        {
+            game_categories[i].games.clear();
+        }
+
         GAME::Scan();
         game_scan_complete = true;
 
@@ -359,5 +372,11 @@ namespace GAME {
     void SortGames(GameCategory *category)
     {
         qsort(&category->games[0], category->games.size(), sizeof(Game), GameComparator);
+    }
+
+    void RefreshGames()
+    {
+        FS::Rm(GAME_LIST_FILE);
+        StartScanGamesThread();
     }
 }

@@ -8,6 +8,7 @@
 Game *selected_game;
 static SceCtrlData pad_prev;
 static int button_highlight = -1;
+static bool paused = false;
 
 namespace Windows {
     void HandleLauncherWindowInput()
@@ -15,7 +16,7 @@ namespace Windows {
         SceCtrlData pad;
         sceCtrlPeekBufferNegative(0, &pad, 1);
 
-        if ((pad_prev.buttons & SCE_CTRL_SQUARE) && !(pad.buttons & SCE_CTRL_SQUARE))
+        if ((pad_prev.buttons & SCE_CTRL_SQUARE) && !(pad.buttons & SCE_CTRL_SQUARE) && !paused)
         {
             if (selected_game != nullptr && current_category->id != FAVORITES)
             {
@@ -38,7 +39,11 @@ namespace Windows {
             }
         }
 
-        if ((pad_prev.buttons & SCE_CTRL_CIRCLE) && !(pad.buttons & SCE_CTRL_CIRCLE))
+        if ((pad_prev.buttons & SCE_CTRL_TRIANGLE) && !(pad.buttons & SCE_CTRL_TRIANGLE) && !paused)
+        {
+        }
+
+        if ((pad_prev.buttons & SCE_CTRL_CIRCLE) && !(pad.buttons & SCE_CTRL_CIRCLE) && !paused)
         {
             GameCategory *previous_category = current_category;
             current_category = &game_categories[(current_category->id + 1) % 4 ];
@@ -50,7 +55,7 @@ namespace Windows {
 
         if ((pad_prev.buttons & SCE_CTRL_LTRIGGER) &&
             !(pad.buttons & SCE_CTRL_LTRIGGER) &&
-            current_category->max_page > 1)
+            current_category->max_page > 1 && !paused)
         {
             int prev_page = current_category->page_num;
             current_category->page_num = GAME::DecrementPage(current_category->page_num, 1);
@@ -59,7 +64,7 @@ namespace Windows {
             selected_game = nullptr;
         } else if ((pad_prev.buttons & SCE_CTRL_RTRIGGER) &&
                    !(pad.buttons & SCE_CTRL_RTRIGGER) &&
-                   current_category->max_page > 1)
+                   current_category->max_page > 1 && !paused)
         {
             int prev_page = current_category->page_num;
             current_category->page_num = GAME::IncrementPage(current_category->page_num, 1);
@@ -129,7 +134,33 @@ namespace Windows {
                 }
             }
             ImGui::SetCursorPos(ImVec2(pos.x, 524));
-            ImGui::Text("Page#: %d", current_category->page_num);
+            ImGui::Text("Page#: %d/%d", current_category->page_num, current_category->max_page);
+
+            if (io.NavInputs[ImGuiNavInput_Input] == 1.0f)
+            {
+                paused = true;
+                ImGui::OpenPopup("Scan Games");
+            }
+
+            ImGui::SetNextWindowPos(ImVec2(400, 250));
+            if (ImGui::BeginPopupModal("Scan Games"))
+            {
+                ImGui::Text("Refresh games cache?");
+                ImGui::Separator();
+                if (ImGui::Button("OK"))
+                {
+                    GAME::RefreshGames();
+                    paused = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel"))
+                {
+                    paused = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
         }
 
 		ImGui::End();

@@ -67,6 +67,7 @@ namespace GAME {
     Game* FindGame(GameCategory *category, char* title_id);
     int RemoveGameFromCategory(GameCategory *category, char* title_id);
     void SortGames(GameCategory *category);
+    void RefreshGames();
 }
 
 #endif
