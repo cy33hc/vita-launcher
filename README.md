@@ -17,14 +17,14 @@ to manage my library of games so I decided to create my own.
 
 ## Controls
 
-up/down/left/right - for browsing your games 
-left analog stick - for browsing your games
-square - add the selected game to favorites
-circle - switch game/app category
-triangle - scan games and rebuild the cache.
-cross - start the selected game/app
-L-trigger - previous page
-R-trigger - next page
+- up/down/left/right - for browsing your games 
+- left analog stick - for browsing your games
+- square - add the selected game to favorites
+- circle - switch game/app category
+- triangle - scan games and rebuild the cache.
+- cross - start the selected game/app
+- L-trigger - previous page
+- R-trigger - next page
 
 ## Build
 To build this app, you will need to build the dependency imgui-vita2d (https://github.com/cy33hc/imgui-vita2d).
