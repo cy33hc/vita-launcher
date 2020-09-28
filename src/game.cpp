@@ -312,7 +312,7 @@ namespace GAME {
     int ScanGamesThread(SceSize args, void *argp)
     {
         game_scan_complete = false;
-        sceKernelDelayThread(1000000);
+        sceKernelDelayThread(500000);
         for (int i=0; i < 4; i++)
         {
             game_categories[i].games.clear();
