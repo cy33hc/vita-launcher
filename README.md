@@ -5,7 +5,11 @@ This is a app/game launcher application.
 The main purpose of this app is for users who have hundreds of games on their vita.
 
 The psvita has limitation of 500 bubbles only. I couldn't find an app that served me well
-to manage my library of games so I decided to create my own. 
+to manage my library of games so I decided to create my own.
+
+Use in conjuction with the CopyIcons app to get icons not created by psvita. https://github.com/cy33hc/copyicons
+
+![Screenshot](screenshot.jpg)
 
 ## Features
 
