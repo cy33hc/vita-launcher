@@ -29,7 +29,8 @@ namespace GAME {
     void Init() {
     }
 
-    void Scan() {
+    void Scan()
+    {
         current_category = &game_categories[VITA_GAMES];
 
         if (!FS::FileExists(GAME_LIST_FILE))
@@ -54,7 +55,7 @@ namespace GAME {
                     sprintf(game.title, "%s", title.c_str());
                     sprintf(game.icon_path, "ur0:appmeta/%s/icon0.png", dirs[i].c_str());
 
-                    if (strncmp(dirs[i].c_str(), "PSPEMU", 6) == 0)
+                    if (strncmp(dirs[i].c_str(), "PSPEMU", 6) == 0 && strncmp(dirs[i].c_str(), "PSPEMUCFW", 9) != 0)
                     {
                         sprintf(game.category, "%s", psp.c_str());
                     }
@@ -140,7 +141,7 @@ namespace GAME {
             game_categories[i].page_num = 1;
             SetMaxPage(&game_categories[i]);
         }
-}
+    }
 
     void SetMaxPage(GameCategory *category)
     {
