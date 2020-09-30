@@ -13,7 +13,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "Launcher")
 set(VITA_TITLEID  "SMLA00001")
-set(VITA_VERSION  "01.01")
+set(VITA_VERSION  "01.02")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -33,6 +33,7 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
+  debugnet
   vita2d
   png
   imgui_vita2d

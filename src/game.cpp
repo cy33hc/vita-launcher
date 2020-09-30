@@ -13,6 +13,7 @@
 
 #define GAME_LIST_FILE "ux0:data/SMLA00001/games_list.txt"
 #define FAVORITES_FILE "ux0:data/SMLA00001/favorites.txt"
+#define NUM_CACHED_PAGES 5
 
 GameCategory game_categories[4];
 GameCategory *current_category;
@@ -209,27 +210,33 @@ namespace GAME {
     };
 
     void LoadGameImages(int prev_page, int page) {
-        int del_page = 0;
+        int high = 0;
+        int low = 0;
 
-        if ((page > prev_page) or (prev_page == current_category->max_page && page == 1))
+        if (current_category->max_page > NUM_CACHED_PAGES + 5)
         {
-            del_page = DecrementPage(page, 10);
-        } else if ((page < prev_page) or (prev_page == 1 && page == current_category->max_page))
-        {
-            del_page = IncrementPage(page, 10);
-        }
+            int del_page = 0;
 
-        int high = del_page * 18;
-        int low = high - 18;
-        if (del_page > 0)
-        {
-            for (int i=low; (i<high && i < current_category->games.size()); i++)
+            if ((page > prev_page) or (prev_page == current_category->max_page && page == 1))
             {
-                Game *game = &current_category->games[i];
-                if (game->tex.id != no_icon.id)
+                del_page = DecrementPage(page, NUM_CACHED_PAGES);
+            } else if ((page < prev_page) or (prev_page == 1 && page == current_category->max_page))
+            {
+                del_page = IncrementPage(page, NUM_CACHED_PAGES);
+            }
+
+            int high = del_page * 18;
+            int low = high - 18;
+            if (del_page > 0)
+            {
+                for (int i=low; (i<high && i < current_category->games.size()); i++)
                 {
-                    Textures::Free(&game->tex);
-                    game->tex = no_icon;
+                    Game *game = &current_category->games[i];
+                    if (game->tex.id != no_icon.id)
+                    {
+                        Textures::Free(&game->tex);
+                        game->tex = no_icon;
+                    }
                 }
             }
         }

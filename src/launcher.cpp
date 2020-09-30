@@ -4,10 +4,10 @@
 #include "textures.h"
 #include "fs.h"
 #include "game.h"
+#include "debugnet.h"
 
 Game *selected_game;
 static SceCtrlData pad_prev;
-static int button_highlight = -1;
 static bool paused = false;
 
 namespace Windows {
@@ -18,23 +18,50 @@ namespace Windows {
 
         if ((pad_prev.buttons & SCE_CTRL_SQUARE) && !(pad.buttons & SCE_CTRL_SQUARE) && !paused)
         {
-            if (selected_game != nullptr && current_category->id != FAVORITES)
+            if (selected_game != nullptr)
             {
-                if (!selected_game->favorite)
+                if (current_category->id != FAVORITES)
                 {
-                    Game game = *selected_game;
-                    game.tex = no_icon;
-                    game_categories[FAVORITES].games.push_back(game);
-                    GAME::SortGames(&game_categories[FAVORITES]);
-                    GAME::SetMaxPage(&game_categories[FAVORITES]);
-                    selected_game->favorite = true;
-                    GAME::SaveFavorites();
-                }
-                else {
-                    selected_game->favorite = false;
-                    int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game->id);
-                    if (index != -1)
+                    if (!selected_game->favorite)
+                    {
+                        Game game = *selected_game;
+                        game.tex = no_icon;
+                        game_categories[FAVORITES].games.push_back(game);
+                        GAME::SortGames(&game_categories[FAVORITES]);
+                        GAME::SetMaxPage(&game_categories[FAVORITES]);
+                        selected_game->favorite = true;
                         GAME::SaveFavorites();
+                    }
+                    else {
+                        selected_game->favorite = false;
+                        int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game->id);
+                        GAME::SetMaxPage(&game_categories[FAVORITES]);
+                        if (index != -1)
+                            GAME::SaveFavorites();
+                    }
+                }
+                else
+                {
+                    debugNetPrintf(DEBUG,"Serching for game %s\n", selected_game->id);
+                    Game* game = nullptr;
+                    for (int i=0; i<3; i++)
+                    {
+                        game = GAME::FindGame(&game_categories[i], selected_game->id);
+                        if (game != nullptr)
+                        {
+                            debugNetPrintf(DEBUG,"Found game %s\n", game->id);
+                            break;
+                        }
+                    }
+                    if (game != nullptr)
+                    {
+                        game->favorite = false;
+                        int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game->id);
+                        GAME::SetMaxPage(&game_categories[FAVORITES]);
+                        if (index != -1)
+                            GAME::SaveFavorites();
+                        selected_game = nullptr;
+                    }
                 }
             }
         }
@@ -43,7 +70,7 @@ namespace Windows {
         {
             GameCategory *previous_category = current_category;
             current_category = &game_categories[(current_category->id + 1) % 4 ];
-            button_highlight = -1;
+            selected_game = nullptr;
 
             GAME::DeleteGamesImages(previous_category);
             GAME::StartLoadImagesThread(current_category->page_num, current_category->page_num);
@@ -56,7 +83,6 @@ namespace Windows {
             int prev_page = current_category->page_num;
             current_category->page_num = GAME::DecrementPage(current_category->page_num, 1);
             GAME::StartLoadImagesThread(prev_page, current_category->page_num);
-            button_highlight = -1;
             selected_game = nullptr;
         } else if ((pad_prev.buttons & SCE_CTRL_RTRIGGER) &&
                    !(pad.buttons & SCE_CTRL_RTRIGGER) &&
@@ -65,7 +91,6 @@ namespace Windows {
             int prev_page = current_category->page_num;
             current_category->page_num = GAME::IncrementPage(current_category->page_num, 1);
             GAME::StartLoadImagesThread(prev_page, current_category->page_num);
-            button_highlight = -1;
             selected_game = nullptr;
         }
         pad_prev = pad;
@@ -76,12 +101,12 @@ namespace Windows {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 
-        if (ImGui::Begin(current_category->title, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
+        if (ImGui::Begin(current_category->title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
             int game_start_index = (current_category->page_num * 18) - 18;
 
-            if (button_highlight > -1)
+            if (selected_game != nullptr)
             {
-                ImGui::Text("%s - %s", current_category->games[game_start_index+button_highlight].id, current_category->games[game_start_index+button_highlight].title);
+                ImGui::Text("%s - %s", selected_game->id, selected_game->title);
             }
             else
             {
@@ -102,13 +127,8 @@ namespace Windows {
                         if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,128), ImVec2(0,0), ImVec2(1,1))) {
                             GAME::Launch(game->id);
                         }
-                        if (button_highlight == button_id)
-                        {
-                            ImGui::SetItemDefaultFocus();
-                        }
                         if (ImGui::IsItemFocused())
                         {
-                            button_highlight = button_id;
                             selected_game = game;
                         }
                         ImGui::PopID();

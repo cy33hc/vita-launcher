@@ -13,6 +13,7 @@
 #include "gui.h"
 #include "textures.h"
 #include "game.h"
+#include "debugnet.h"
 
 namespace Services {
 	int InitImGui(void) {
@@ -53,22 +54,22 @@ namespace Services {
 		game_categories[VITA_GAMES].id = VITA_GAMES;
 		sprintf(game_categories[VITA_GAMES].title, "%s", "Vita Games");
 		game_categories[VITA_GAMES].page_num = 1;
-		game_categories[VITA_GAMES].max_page = 0;
+		game_categories[VITA_GAMES].max_page = 1;
 
 		game_categories[PSP_GAMES].id = PSP_GAMES;
 		sprintf(game_categories[PSP_GAMES].title, "%s", "PSP Games");
 		game_categories[PSP_GAMES].page_num = 1;
-		game_categories[PSP_GAMES].max_page = 0;
+		game_categories[PSP_GAMES].max_page = 1;
 
 		game_categories[HOMEBREWS].id = HOMEBREWS;
 		sprintf(game_categories[HOMEBREWS].title, "%s", "Homebrews");
 		game_categories[HOMEBREWS].page_num = 1;
-		game_categories[HOMEBREWS].max_page = 0;
+		game_categories[HOMEBREWS].max_page = 1;
 
 		game_categories[FAVORITES].id = FAVORITES;
 		sprintf(game_categories[FAVORITES].title, "%s", "Favorites");
 		game_categories[FAVORITES].page_num = 1;
-		game_categories[FAVORITES].max_page = 0;
+		game_categories[FAVORITES].max_page = 1;
 
 		current_category = &game_categories[VITA_GAMES];
 		return 0;
@@ -84,6 +85,8 @@ namespace Services {
 
 int main(int, char**)
 {
+	debugNetInit(ip_server,port_server,DEBUG);
+	
 	Services::Init();
 	Services::InitImGui();
 
