@@ -13,7 +13,6 @@
 #include "gui.h"
 #include "textures.h"
 #include "game.h"
-#include "debugnet.h"
 
 namespace Services {
 	int InitImGui(void) {
@@ -85,8 +84,6 @@ namespace Services {
 
 int main(int, char**)
 {
-	debugNetInit(ip_server,port_server,DEBUG);
-	
 	Services::Init();
 	Services::InitImGui();
 

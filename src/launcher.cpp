@@ -4,7 +4,6 @@
 #include "textures.h"
 #include "fs.h"
 #include "game.h"
-#include "debugnet.h"
 
 Game *selected_game;
 static SceCtrlData pad_prev;
@@ -42,14 +41,12 @@ namespace Windows {
                 }
                 else
                 {
-                    debugNetPrintf(DEBUG,"Serching for game %s\n", selected_game->id);
                     Game* game = nullptr;
                     for (int i=0; i<3; i++)
                     {
                         game = GAME::FindGame(&game_categories[i], selected_game->id);
                         if (game != nullptr)
                         {
-                            debugNetPrintf(DEBUG,"Found game %s\n", game->id);
                             break;
                         }
                     }
