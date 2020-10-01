@@ -40,6 +40,7 @@ static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;
 
 typedef struct LoadImagesParams {
+  int category;
   int prev_page_num;
   int page_num;
 } LoadImagesParams;
@@ -50,13 +51,13 @@ namespace GAME {
     void Scan();
     void Launch(const char *id);
     void LoadCache();
-    void LoadGameImages(int prev_page, int page_num);
+    void LoadGameImages(int category, int prev_page, int page_num);
     void LoadGameImage(Game *game);
     void Exit();
     int LoadImagesThread(SceSize args, LoadImagesParams *argp);
     int IncrementPage(int page, int num_of_pages);
     int DecrementPage(int page, int num_of_pages);
-    void StartLoadImagesThread(int prev_page_num, int page);
+    void StartLoadImagesThread(int category, int prev_page_num, int page);
     int ScanGamesThread(SceSize args, void *argp);
     void StartScanGamesThread();
     void DeleteGamesImages(GameCategory *category);

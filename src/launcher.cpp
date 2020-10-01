@@ -67,10 +67,14 @@ namespace Windows {
         {
             GameCategory *previous_category = current_category;
             current_category = &game_categories[(current_category->id + 1) % 4 ];
+            while (current_category->games.size() == 0)
+            {
+                current_category = &game_categories[(current_category->id + 1) % 4 ];
+            }
             selected_game = nullptr;
 
             GAME::DeleteGamesImages(previous_category);
-            GAME::StartLoadImagesThread(current_category->page_num, current_category->page_num);
+            GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
         }
 
         if ((pad_prev.buttons & SCE_CTRL_LTRIGGER) &&
@@ -79,7 +83,7 @@ namespace Windows {
         {
             int prev_page = current_category->page_num;
             current_category->page_num = GAME::DecrementPage(current_category->page_num, 1);
-            GAME::StartLoadImagesThread(prev_page, current_category->page_num);
+            GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num);
             selected_game = nullptr;
         } else if ((pad_prev.buttons & SCE_CTRL_RTRIGGER) &&
                    !(pad.buttons & SCE_CTRL_RTRIGGER) &&
@@ -87,7 +91,7 @@ namespace Windows {
         {
             int prev_page = current_category->page_num;
             current_category->page_num = GAME::IncrementPage(current_category->page_num, 1);
-            GAME::StartLoadImagesThread(prev_page, current_category->page_num);
+            GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num);
             selected_game = nullptr;
         }
         pad_prev = pad;

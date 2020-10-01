@@ -209,18 +209,18 @@ namespace GAME {
         }
     };
 
-    void LoadGameImages(int prev_page, int page) {
+    void LoadGameImages(int category, int prev_page, int page) {
         int high = 0;
         int low = 0;
 
-        if (current_category->max_page > NUM_CACHED_PAGES + 5)
+        if (game_categories[category].max_page > NUM_CACHED_PAGES + 5)
         {
             int del_page = 0;
 
-            if ((page > prev_page) or (prev_page == current_category->max_page && page == 1))
+            if ((page > prev_page) or (prev_page == game_categories[category].max_page && page == 1))
             {
                 del_page = DecrementPage(page, NUM_CACHED_PAGES);
-            } else if ((page < prev_page) or (prev_page == 1 && page == current_category->max_page))
+            } else if ((page < prev_page) or (prev_page == 1 && page == game_categories[category].max_page))
             {
                 del_page = IncrementPage(page, NUM_CACHED_PAGES);
             }
@@ -229,9 +229,9 @@ namespace GAME {
             int low = high - 18;
             if (del_page > 0)
             {
-                for (int i=low; (i<high && i < current_category->games.size()); i++)
+                for (int i=low; (i<high && i < game_categories[category].games.size()); i++)
                 {
-                    Game *game = &current_category->games[i];
+                    Game *game = &game_categories[category].games[i];
                     if (game->tex.id != no_icon.id)
                     {
                         Textures::Free(&game->tex);
@@ -243,12 +243,21 @@ namespace GAME {
 
         high = page * 18;
         low = high - 18;
-        for(std::size_t i = low; (i < high && i < current_category->games.size()); i++) {
-            Game *game = &current_category->games[i];
-            if (game->tex.id == no_icon.id && page == current_category->page_num)
+        for(std::size_t i = low; (i < high && i < game_categories[category].games.size()); i++) {
+            Game *game = &game_categories[category].games[i];
+            if (page == current_category->page_num && category == current_category->id)
             {
-                LoadGameImage(game);
+                if (game->tex.id == no_icon.id)
+                {
+                    LoadGameImage(game);
+                }
             }
+            else
+            {
+                // No need to continue if page isn't in view
+                return;
+            }
+            
         }
     }
 
@@ -293,9 +302,10 @@ namespace GAME {
     void Exit() {
     }
 
-	void StartLoadImagesThread(int prev_page_num, int page)
+	void StartLoadImagesThread(int category, int prev_page_num, int page)
 	{
 		LoadImagesParams page_param;
+        page_param.category = category;
 		page_param.prev_page_num = prev_page_num;
 		page_param.page_num = page;
 		load_images_thid = sceKernelCreateThread("load_images_thread", (SceKernelThreadEntry)GAME::LoadImagesThread, 0x10000100, 0x4000, 0, 0, NULL);
@@ -305,7 +315,7 @@ namespace GAME {
 
     int LoadImagesThread(SceSize args, LoadImagesParams *params) {
         sceKernelDelayThread(300000);
-        GAME::LoadGameImages(params->prev_page_num, params->page_num);
+        GAME::LoadGameImages(params->category, params->prev_page_num, params->page_num);
         return sceKernelExitDeleteThread(0);
     }
 
@@ -333,7 +343,7 @@ namespace GAME {
             current_category = &game_categories[FAVORITES];
         }
         current_category->page_num = 1;
-        GAME::StartLoadImagesThread(1, 1);
+        GAME::StartLoadImagesThread(current_category->id, 1, 1);
         return sceKernelExitDeleteThread(0);
     }
 
