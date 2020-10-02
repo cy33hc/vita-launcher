@@ -90,7 +90,7 @@ namespace GAME {
 
         }
         else {
-            LoadCache();
+            LoadGamesCache();
         }
 
         LoadFavorites();
@@ -153,11 +153,18 @@ namespace GAME {
         }
     }
 
-    void Launch(const char *title_id) {
+    bool Launch(const char *title_id) {
+        char game_path[96];
+        sprintf(game_path, "ux0:app/%s", title_id);
+        if (!FS::FolderExists(game_path))
+        {
+            return false;
+        }
        	char uri[32];
         sprintf(uri, "psgm:play?titleid=%s", title_id);
         sceAppMgrLaunchAppByUri(0xFFFFF, uri);
         sceKernelExitProcess(0);
+        return true;
     };
 
     std::string nextToken(std::vector<char> &buffer, int &nextTokenPos)
@@ -193,7 +200,7 @@ namespace GAME {
         return token;
     }
 
-    void LoadCache() {
+    void LoadGamesCache() {
         std::vector<char> game_buffer = FS::Load(GAME_LIST_FILE);
         int position = 0;
         while (position < game_buffer.size())
@@ -208,6 +215,22 @@ namespace GAME {
             games_to_scan = current_category->games.size();
         }
     };
+
+    void SaveGamesCache()
+    {
+        void* fd = FS::Create(GAME_LIST_FILE);
+        for (int j=0; j < 3; j++)
+        {
+            for (int i=0; i < game_categories[j].games.size(); i++)
+            {
+                Game* game = &game_categories[j].games[i];
+                char line[512];
+                sprintf(line, "%s||%s||%s||%s\n", game->id, game->title, game->category, game->icon_path);
+                FS::Write(fd, line, strlen(line));
+            }
+        }
+        FS::Close(fd);
+    }
 
     void LoadGameImages(int category, int prev_page, int page) {
         int high = 0;
@@ -439,6 +462,16 @@ namespace GAME {
             }
         }
         return -1;
+    }
+
+    void RemoveGameFromCache(char* title_id)
+    {
+        for (int i=0; i<4; i++)
+        {
+            RemoveGameFromCategory(&game_categories[i], title_id);
+        }
+        SaveGamesCache();
+        SaveFavorites();
     }
 
     void SortGames(GameCategory *category)

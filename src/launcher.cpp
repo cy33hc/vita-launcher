@@ -12,6 +12,7 @@ extern "C" {
 Game *selected_game;
 static SceCtrlData pad_prev;
 bool paused = false;
+bool launch_success = true;
 int view_mode;
 
 namespace Windows {
@@ -119,6 +120,11 @@ namespace Windows {
             ShowListViewWindow();
         }
 
+        if (!launch_success)
+        {
+            HandleLaunchError();
+        }
+
         ShowSettingsDialog();
 
         ImGui::PopStyleVar();
@@ -155,7 +161,7 @@ namespace Windows {
                         ImGui::PushID(button_id);
                         Game *game = &current_category->games[game_start_index+button_id];
                         if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,128), ImVec2(0,0), ImVec2(1,1))) {
-                            GAME::Launch(game->id);
+                            launch_success = GAME::Launch(game->id);
                         }
                         if (ImGui::IsItemFocused())
                         {
@@ -238,21 +244,30 @@ namespace Windows {
         if (io.NavInputs[ImGuiNavInput_Input] == 1.0f)
         {
             paused = true;
-            ImGui::OpenPopup("Settings");
+            ImGui::OpenPopup("Settings and Actions");
         }
 
-        ImGui::SetNextWindowPos(ImVec2(360, 220));
-        if (ImGui::BeginPopupModal("Settings"))
+        ImGui::SetNextWindowPos(ImVec2(330, 220));
+        if (ImGui::BeginPopupModal("Settings and Actions"))
         {
             static bool refresh_games = false;
+            static bool remove_from_cache = false;
             ImGui::Text("%s View:", current_category->title);
             ImGui::Text("    ");
             ImGui::SameLine();
             ImGui::RadioButton("Grid", &view_mode, 0);
             ImGui::SameLine();
             ImGui::RadioButton("List", &view_mode, 1);
-            ImGui::Separator();
-            ImGui::Checkbox("Refresh Games and Cache", &refresh_games);
+            if (!refresh_games)
+            {
+                ImGui::Separator();
+                ImGui::Checkbox("Remove selected game from cache", &remove_from_cache);
+            }
+            if (!remove_from_cache)
+            {
+                ImGui::Separator();
+                ImGui::Checkbox("Rescan games and rebuild cache", &refresh_games);
+            }
             ImGui::Separator();
             if (ImGui::Button("OK"))
             {
@@ -268,10 +283,21 @@ namespace Windows {
                         GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
                     }
                 }
+
                 if (refresh_games)
                     GAME::RefreshGames();
+
+                if (remove_from_cache)
+                {
+                    if (selected_game != nullptr)
+                    {
+                        GAME::RemoveGameFromCache(selected_game->id);
+                        selected_game = nullptr;
+                    }
+                }
                 paused = false;
                 refresh_games = false;
+                remove_from_cache = false;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SameLine();
@@ -279,10 +305,41 @@ namespace Windows {
             {
                 paused = false;
                 refresh_games = false;
+                remove_from_cache = false;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
         }
+    }
+
+    void HandleLaunchError()
+    {
+        paused = true;
+        ImGui::OpenPopup("Warning!");
+        ImGui::SetNextWindowPos(ImVec2(320, 220));
+        if (ImGui::BeginPopupModal("Warning!"))
+        {
+            static bool remove_from_cache = false;
+            ImGui::Text("The selected game %s does not exists.", selected_game->id);
+            ImGui::Text("Would you like to remove it from the cache?");
+            ImGui::Separator();
+            if (ImGui::Button("OK"))
+            {
+                GAME::RemoveGameFromCache(selected_game->id);
+                selected_game = nullptr;
+                paused = false;
+                launch_success = true;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+            {
+                paused = false;
+                launch_success = true;
+                ImGui::CloseCurrentPopup();
+            }
+        }
+        ImGui::EndPopup();
     }
 
     void GameScanWindow()

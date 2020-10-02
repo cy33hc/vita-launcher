@@ -50,8 +50,9 @@ namespace GAME {
     int GameComparator(const void *v1, const void *v2);
     void Init();
     void Scan();
-    void Launch(const char *id);
-    void LoadCache();
+    bool Launch(const char *id);
+    void LoadGamesCache();
+    void SaveGamesCache();
     void LoadGameImages(int category, int prev_page, int page_num);
     void LoadGameImage(Game *game);
     void Exit();
@@ -68,6 +69,7 @@ namespace GAME {
     Game* FindGame(GameCategory *category, char* title_id);
     int FindGamePosition(GameCategory *category, char* title_id);
     int RemoveGameFromCategory(GameCategory *category, char* title_id);
+    void RemoveGameFromCache(char* title_id);
     void SortGames(GameCategory *category);
     void RefreshGames();
 }
