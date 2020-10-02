@@ -23,6 +23,7 @@ typedef struct {
     std::vector<Game> games;
     int max_page;
     int page_num;
+    int view_mode;
 } GameCategory;
 
 #define VITA_GAMES 0
@@ -65,6 +66,7 @@ namespace GAME {
     void SaveFavorites();
     void LoadFavorites();
     Game* FindGame(GameCategory *category, char* title_id);
+    int FindGamePosition(GameCategory *category, char* title_id);
     int RemoveGameFromCategory(GameCategory *category, char* title_id);
     void SortGames(GameCategory *category);
     void RefreshGames();

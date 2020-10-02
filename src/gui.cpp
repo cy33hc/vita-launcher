@@ -19,7 +19,8 @@ namespace GUI {
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		
 		bool done = false;
-
+		view_mode = current_category->view_mode;
+		
 		while (!done) {
 			vita2d_start_drawing();
 			vita2d_clear_screen();

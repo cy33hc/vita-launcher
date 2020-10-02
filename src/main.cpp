@@ -13,6 +13,11 @@
 #include "gui.h"
 #include "textures.h"
 #include "game.h"
+#include "config.h"
+
+extern "C" {
+	#include "inifile.h"
+}
 
 namespace Services {
 	int InitImGui(void) {
@@ -50,26 +55,53 @@ namespace Services {
 		vita2d_init();
 		vita2d_set_clear_color(RGBA8(0x00, 0x00, 0x00, 0xFF));
 
+		OpenIniFile (CONFIG_INI_FILE);
+
 		game_categories[VITA_GAMES].id = VITA_GAMES;
 		sprintf(game_categories[VITA_GAMES].title, "%s", "Vita Games");
 		game_categories[VITA_GAMES].page_num = 1;
 		game_categories[VITA_GAMES].max_page = 1;
+		game_categories[VITA_GAMES].view_mode = ReadInt(game_categories[VITA_GAMES].title, CONFIG_VIEW_MODE, -1);
+		if (game_categories[VITA_GAMES].view_mode == -1)
+		{
+			game_categories[VITA_GAMES].view_mode = VIEW_MODE_GRID;
+			WriteInt(game_categories[VITA_GAMES].title, CONFIG_VIEW_MODE, VIEW_MODE_GRID);
+		}
 
 		game_categories[PSP_GAMES].id = PSP_GAMES;
 		sprintf(game_categories[PSP_GAMES].title, "%s", "PSP Games");
 		game_categories[PSP_GAMES].page_num = 1;
 		game_categories[PSP_GAMES].max_page = 1;
+		game_categories[PSP_GAMES].view_mode = ReadInt(game_categories[PSP_GAMES].title, CONFIG_VIEW_MODE, -1);
+		if (game_categories[PSP_GAMES].view_mode == -1)
+		{
+			game_categories[PSP_GAMES].view_mode = VIEW_MODE_GRID;
+			WriteInt(game_categories[PSP_GAMES].title, CONFIG_VIEW_MODE, VIEW_MODE_GRID);
+		}
 
 		game_categories[HOMEBREWS].id = HOMEBREWS;
 		sprintf(game_categories[HOMEBREWS].title, "%s", "Homebrews");
 		game_categories[HOMEBREWS].page_num = 1;
 		game_categories[HOMEBREWS].max_page = 1;
+		game_categories[HOMEBREWS].view_mode = ReadInt(game_categories[HOMEBREWS].title, CONFIG_VIEW_MODE, -1);
+		if (game_categories[HOMEBREWS].view_mode == -1)
+		{
+			game_categories[HOMEBREWS].view_mode = VIEW_MODE_GRID;
+			WriteInt(game_categories[HOMEBREWS].title, CONFIG_VIEW_MODE, VIEW_MODE_GRID);
+		}
 
 		game_categories[FAVORITES].id = FAVORITES;
 		sprintf(game_categories[FAVORITES].title, "%s", "Favorites");
 		game_categories[FAVORITES].page_num = 1;
 		game_categories[FAVORITES].max_page = 1;
+		game_categories[FAVORITES].view_mode = ReadInt(game_categories[FAVORITES].title, CONFIG_VIEW_MODE, -1);
+		if (game_categories[FAVORITES].view_mode == -1)
+		{
+			game_categories[FAVORITES].view_mode = VIEW_MODE_GRID;
+			WriteInt(game_categories[FAVORITES].title, CONFIG_VIEW_MODE, VIEW_MODE_GRID);
+		}
 
+		WriteIniFile(CONFIG_INI_FILE);
 		current_category = &game_categories[VITA_GAMES];
 		return 0;
 	}

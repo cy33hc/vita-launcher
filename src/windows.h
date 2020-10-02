@@ -4,6 +4,7 @@
 #include <imgui_vita2d/imgui_vita.h>
 
 extern int selected_item;
+extern int view_mode;
 
 namespace Windows {
     inline void SetupWindow(void) {
@@ -14,6 +15,9 @@ namespace Windows {
 
     void HandleLauncherWindowInput();
     void LauncherWindow();
+    void ShowGridViewWindow();
+    void ShowListViewWindow();
+    void ShowSettingsDialog();
     void GameScanWindow();
 }
 

@@ -30,6 +30,7 @@ add_executable(${PROJECT_NAME}
   src/sfo.cpp
   src/game.cpp
   src/main.cpp
+  src/inifile.c
 )
 
 target_link_libraries(${PROJECT_NAME}

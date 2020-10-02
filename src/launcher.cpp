@@ -4,10 +4,15 @@
 #include "textures.h"
 #include "fs.h"
 #include "game.h"
+#include "config.h"
+extern "C" {
+	#include "inifile.h"
+}
 
 Game *selected_game;
 static SceCtrlData pad_prev;
-static bool paused = false;
+bool paused = false;
+int view_mode;
 
 namespace Windows {
     void HandleLauncherWindowInput()
@@ -71,6 +76,7 @@ namespace Windows {
             {
                 current_category = &game_categories[(current_category->id + 1) % 4 ];
             }
+            view_mode = current_category->view_mode;
             selected_game = nullptr;
 
             GAME::DeleteGamesImages(previous_category);
@@ -79,6 +85,7 @@ namespace Windows {
 
         if ((pad_prev.buttons & SCE_CTRL_LTRIGGER) &&
             !(pad.buttons & SCE_CTRL_LTRIGGER) &&
+            current_category->view_mode == VIEW_MODE_GRID &&
             current_category->max_page > 1 && !paused)
         {
             int prev_page = current_category->page_num;
@@ -87,6 +94,7 @@ namespace Windows {
             selected_game = nullptr;
         } else if ((pad_prev.buttons & SCE_CTRL_RTRIGGER) &&
                    !(pad.buttons & SCE_CTRL_RTRIGGER) &&
+                   current_category->view_mode == VIEW_MODE_GRID &&
                    current_category->max_page > 1 && !paused)
         {
             int prev_page = current_category->page_num;
@@ -102,7 +110,28 @@ namespace Windows {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 
-        if (ImGui::Begin(current_category->title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)) {
+        if (current_category->view_mode == VIEW_MODE_GRID)
+        {
+            ShowGridViewWindow();
+        }
+        else if (current_category->view_mode == VIEW_MODE_LIST)
+        {
+            ShowListViewWindow();
+        }
+
+        ShowSettingsDialog();
+
+        ImGui::PopStyleVar();
+    }
+
+    void ShowGridViewWindow()
+    {
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.KeyRepeatRate = 0.05f;
+        ImGui_ImplVita2D_SetAnalogRepeatDelay(50000);
+
+        if (ImGui::Begin(current_category->title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar))
+        {
             int game_start_index = (current_category->page_num * 18) - 18;
 
             if (selected_game != nullptr)
@@ -152,36 +181,108 @@ namespace Windows {
             }
             ImGui::SetCursorPos(ImVec2(pos.x, 524));
             ImGui::Text("Page#: %d/%d", current_category->page_num, current_category->max_page);
+        }
+        ImGui::End();
+    }
 
-            if (io.NavInputs[ImGuiNavInput_Input] == 1.0f)
-            {
-                paused = true;
-                ImGui::OpenPopup("Scan Games");
-            }
+    void ShowListViewWindow()
+    {
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.KeyRepeatRate = 0.005f;
+        ImGui_ImplVita2D_SetAnalogRepeatDelay(1000);
 
-            ImGui::SetNextWindowPos(ImVec2(400, 250));
-            if (ImGui::BeginPopupModal("Scan Games"))
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
+        static int position = -1;
+        if (io.NavInputs[ImGuiNavInput_DpadRight] == 1.0f)
+        {
+            if (selected_game != nullptr)
             {
-                ImGui::Text("Refresh games cache?");
-                ImGui::Separator();
-                if (ImGui::Button("OK"))
-                {
-                    GAME::RefreshGames();
-                    paused = false;
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Cancel"))
-                {
-                    paused = false;
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
+                position = GAME::FindGamePosition(current_category, selected_game->id);
+                position = (position + 20) % current_category->games.size();
             }
         }
-
-		ImGui::End();
+        if (ImGui::Begin(current_category->title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
+        {
+            ImGui::Separator();
+            ImGui::Columns(2, current_category->title, true);
+            for (int i = 0; i < current_category->games.size(); i++)
+            {
+                ImGui::SetColumnWidth(-1, 200);
+                Game *game = &current_category->games[i];
+                if (game->favorite)
+                {
+                    ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
+                    ImGui::SameLine();
+                }
+                if (ImGui::Selectable(game->id, false, ImGuiSelectableFlags_SpanAllColumns))
+                    GAME::Launch(game->id);
+                if (ImGui::IsItemHovered())
+                    selected_game = game;
+                ImGui::NextColumn();
+                ImGui::Text(game->title); ImGui::NextColumn();
+                if (position == 1)
+                {
+                    ImGui::SetItemDefaultFocus();
+                }
+                ImGui::Separator();
+            }
+            ImGui::Columns(1);
+        }
+        ImGui::End();
         ImGui::PopStyleVar();
+    }
+
+    void ShowSettingsDialog()
+    {
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        if (io.NavInputs[ImGuiNavInput_Input] == 1.0f)
+        {
+            paused = true;
+            ImGui::OpenPopup("Settings");
+        }
+
+        ImGui::SetNextWindowPos(ImVec2(360, 220));
+        if (ImGui::BeginPopupModal("Settings"))
+        {
+            static bool refresh_games = false;
+            ImGui::Text("%s View:", current_category->title);
+            ImGui::Text("    ");
+            ImGui::SameLine();
+            ImGui::RadioButton("Grid", &view_mode, 0);
+            ImGui::SameLine();
+            ImGui::RadioButton("List", &view_mode, 1);
+            ImGui::Separator();
+            ImGui::Checkbox("Refresh Games and Cache", &refresh_games);
+            ImGui::Separator();
+            if (ImGui::Button("OK"))
+            {
+                if (view_mode != current_category->view_mode)
+                {
+                    current_category->view_mode = view_mode;
+                    OpenIniFile (CONFIG_INI_FILE);
+                    WriteInt(current_category->title, CONFIG_VIEW_MODE, view_mode);
+                    WriteIniFile(CONFIG_INI_FILE);
+
+                    if (view_mode == VIEW_MODE_GRID)
+                    {
+                        GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
+                    }
+                }
+                if (refresh_games)
+                    GAME::RefreshGames();
+                paused = false;
+                refresh_games = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+            {
+                paused = false;
+                refresh_games = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
     }
 
     void GameScanWindow()

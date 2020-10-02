@@ -416,6 +416,18 @@ namespace GAME {
         return nullptr;
     }
 
+    int FindGamePosition(GameCategory *category, char* title_id)
+    {
+        for (int i=0; i < category->games.size(); i++)
+        {
+            if (strcmp(title_id, category->games[i].id) == 0)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     int RemoveGameFromCategory(GameCategory *category, char* title_id)
     {
         for (int i=0; i < category->games.size(); i++)
