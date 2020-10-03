@@ -366,6 +366,7 @@ namespace GAME {
             current_category = &game_categories[FAVORITES];
         }
         current_category->page_num = 1;
+        view_mode = current_category->view_mode;
         GAME::StartLoadImagesThread(current_category->id, 1, 1);
         return sceKernelExitDeleteThread(0);
     }

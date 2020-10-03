@@ -103,6 +103,7 @@ namespace Services {
 
 		WriteIniFile(CONFIG_INI_FILE);
 		current_category = &game_categories[VITA_GAMES];
+
 		return 0;
 	}
 	
