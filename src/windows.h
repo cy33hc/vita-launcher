@@ -2,6 +2,7 @@
 #define LAUNCHER_WINDOWS_H
 
 #include <imgui_vita2d/imgui_vita.h>
+#include <imgui_vita2d/imgui_internal.h>
 
 extern int selected_item;
 extern int view_mode;
@@ -13,6 +14,16 @@ namespace Windows {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     };
 
+    inline void SetNavFocusHere()
+    {
+        GImGui->NavId = GImGui->CurrentWindow->DC.LastItemId;
+    }
+
+    inline void ClearNavFocus()
+    {
+        GImGui->NavId = 0;
+    }
+
     void HandleLauncherWindowInput();
     void LauncherWindow();
     void ShowGridViewWindow();
@@ -20,6 +31,7 @@ namespace Windows {
     void ShowSettingsDialog();
     void HandleLaunchError();
     void GameScanWindow();
+
 }
 
 #endif

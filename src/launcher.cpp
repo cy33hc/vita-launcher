@@ -199,14 +199,33 @@ namespace Windows {
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
         static int position = -1;
+        static float scroll_direction = 0.0f;
         if (io.NavInputs[ImGuiNavInput_DpadRight] == 1.0f)
         {
             if (selected_game != nullptr)
             {
                 position = GAME::FindGamePosition(current_category, selected_game->id);
-                position = (position + 20) % current_category->games.size();
+                position += 5;
+                if (position > current_category->games.size()-1)
+                {
+                    position = current_category->games.size()-1;
+                }
+                scroll_direction = 1.0f;
+            }
+        } else if (io.NavInputs[ImGuiNavInput_DpadLeft] == 1.0f)
+        {
+            if (selected_game != nullptr)
+            {
+                position = GAME::FindGamePosition(current_category, selected_game->id);
+                position -= 5;
+                if (position < 0)
+                {
+                    position = 0;
+                }
+                scroll_direction = 0.0f;
             }
         }
+
         if (ImGui::Begin(current_category->title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
         {
             ImGui::Separator();
@@ -222,6 +241,12 @@ namespace Windows {
                 }
                 if (ImGui::Selectable(game->id, false, ImGuiSelectableFlags_SpanAllColumns))
                     GAME::Launch(game->id);
+                if (position == i)
+                {
+                    SetNavFocusHere();
+                    ImGui::SetScrollHereY(scroll_direction);
+                    position = -1;
+                }
                 if (ImGui::IsItemHovered())
                     selected_game = game;
                 ImGui::NextColumn();
@@ -235,6 +260,7 @@ namespace Windows {
             ImGui::Columns(1);
         }
         ImGui::End();
+
         ImGui::PopStyleVar();
     }
 
@@ -320,7 +346,7 @@ namespace Windows {
         if (ImGui::BeginPopupModal("Warning!"))
         {
             static bool remove_from_cache = false;
-            ImGui::Text("The selected game %s does not exists.", selected_game->id);
+            ImGui::Text("The selected game %s no longer exists.", selected_game->id);
             ImGui::Text("Would you like to remove it from the cache?");
             ImGui::Separator();
             if (ImGui::Button("OK"))
