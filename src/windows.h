@@ -30,6 +30,7 @@ namespace Windows {
     void ShowListViewWindow();
     void ShowSettingsDialog();
     void HandleLaunchError();
+    void HandleAddNewGame();
     void GameScanWindow();
 
 }

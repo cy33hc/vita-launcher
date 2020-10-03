@@ -36,6 +36,9 @@ extern GameCategory *current_category;
 extern bool game_scan_complete;
 extern int games_to_scan;
 extern Game game_scan_inprogress;
+extern std::string psp;
+extern std::string vita;
+extern std::string homebrew;
 
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;
@@ -50,6 +53,7 @@ namespace GAME {
     int GameComparator(const void *v1, const void *v2);
     void Init();
     void Scan();
+    bool GetGameDetails(const char *id, Game *game);
     bool Launch(const char *id);
     void LoadGamesCache();
     void SaveGamesCache();
@@ -72,6 +76,7 @@ namespace GAME {
     void RemoveGameFromCache(char* title_id);
     void SortGames(GameCategory *category);
     void RefreshGames();
+    const char* GetGameCategory(const char *id);
 }
 
 #endif

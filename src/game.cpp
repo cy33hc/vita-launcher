@@ -30,6 +30,26 @@ namespace GAME {
     void Init() {
     }
 
+    bool GetGameDetails(const char *game_id, Game *game)
+    {
+        char sfo_file[256];
+        sprintf(sfo_file, "ux0:app/%s/sce_sys/param.sfo", game_id);
+        if (FS::FileExists(sfo_file)) {
+            const auto sfo = FS::Load(sfo_file);
+
+            std::string title = std::string(SFO::GetString(sfo.data(), sfo.size(), "TITLE"));
+            std::replace( title.begin(), title.end(), '\n', ' ');
+
+            sprintf(game->id, "%s", game_id);
+            sprintf(game->title, "%s", title.c_str());
+            sprintf(game->icon_path, "ur0:appmeta/%s/icon0.png", game_id);
+            sprintf(game->category, "%s", GetGameCategory(game_id));
+            game->tex = no_icon;
+            return true;
+        }
+        return false;
+    }
+
     void Scan()
     {
         current_category = &game_categories[VITA_GAMES];
@@ -43,47 +63,14 @@ namespace GAME {
             games_to_scan = dirs.size();
 
             for(std::size_t i = 0; i < dirs.size(); ++i) {
-                char sfo_file[256];
-                sprintf(sfo_file, "ux0:app/%s/sce_sys/param.sfo", dirs[i].c_str());
-                if (FS::FileExists(sfo_file)) {
-                    const auto sfo = FS::Load(sfo_file);
-
-                    Game game;
-                    std::string title = std::string(SFO::GetString(sfo.data(), sfo.size(), "TITLE"));
-                    std::replace( title.begin(), title.end(), '\n', ' ');
-
-                    sprintf(game.id, "%s", dirs[i].c_str());
-                    sprintf(game.title, "%s", title.c_str());
-                    sprintf(game.icon_path, "ur0:appmeta/%s/icon0.png", dirs[i].c_str());
-
-                    if (strncmp(dirs[i].c_str(), "PSPEMU", 6) == 0 && strncmp(dirs[i].c_str(), "PSPEMUCFW", 9) != 0)
-                    {
-                        sprintf(game.category, "%s", psp.c_str());
-                    }
-                    else if (strncmp(dirs[i].c_str(), "PCSA", 4) == 0 ||
-                             strncmp(dirs[i].c_str(), "PCSB", 4) == 0 ||
-                             strncmp(dirs[i].c_str(), "PCSC", 4) == 0 ||
-                             strncmp(dirs[i].c_str(), "PCSD", 4) == 0 ||
-                             strncmp(dirs[i].c_str(), "PCSE", 4) == 0 ||
-                             strncmp(dirs[i].c_str(), "PCSF", 4) == 0 ||
-                             strncmp(dirs[i].c_str(), "PCSG", 4) == 0 ||
-                             strncmp(dirs[i].c_str(), "PCSH", 4) == 0)
-                    {
-                        sprintf(game.category, "%s", vita.c_str());
-                    }
-                    else
-                    {
-                        sprintf(game.category, "%s", homebrew.c_str());
-                    }
-
+                Game game;
+                if (GetGameDetails(dirs[i].c_str(), &game))
+                {
                     char line[512];
                     sprintf(line, "%s||%s||%s||%s\n", game.id, game.title, game.category, game.icon_path);
                     FS::Write(fd, line, strlen(line));
-
-                    game.tex = no_icon;
                     game_scan_inprogress = game;
                     current_category->games.push_back(game);
-
                 }
             }
             FS::Close(fd);
@@ -484,5 +471,28 @@ namespace GAME {
     {
         FS::Rm(GAME_LIST_FILE);
         StartScanGamesThread();
+    }
+
+    const char* GetGameCategory(const char *id)
+    {
+        if (strncmp(id, "PSPEMU", 6) == 0 && strncmp(id, "PSPEMUCFW", 9) != 0)
+        {
+            return psp.c_str();
+        }
+        else if (strncmp(id, "PCSA", 4) == 0 ||
+                 strncmp(id, "PCSB", 4) == 0 ||
+                 strncmp(id, "PCSC", 4) == 0 ||
+                 strncmp(id, "PCSD", 4) == 0 ||
+                 strncmp(id, "PCSE", 4) == 0 ||
+                 strncmp(id, "PCSF", 4) == 0 ||
+                 strncmp(id, "PCSG", 4) == 0 ||
+                 strncmp(id, "PCSH", 4) == 0)
+        {
+            return vita.c_str();
+        }
+        else
+        {
+            return homebrew.c_str();
+        }
     }
 }
