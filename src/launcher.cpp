@@ -232,14 +232,9 @@ namespace Windows {
             ImGui::Columns(2, current_category->title, true);
             for (int i = 0; i < current_category->games.size(); i++)
             {
-                ImGui::SetColumnWidth(-1, 200);
                 Game *game = &current_category->games[i];
-                if (game->favorite)
-                {
-                    ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
-                    ImGui::SameLine();
-                }
-                if (ImGui::Selectable(game->id, false, ImGuiSelectableFlags_SpanAllColumns))
+                ImGui::SetColumnWidth(-1, 760);
+                if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
                     GAME::Launch(game->id);
                 if (position == i)
                 {
@@ -250,7 +245,14 @@ namespace Windows {
                 if (ImGui::IsItemHovered())
                     selected_game = game;
                 ImGui::NextColumn();
-                ImGui::Text(game->title); ImGui::NextColumn();
+                ImGui::Text(game->id);
+                if (game->favorite)
+                {
+                    ImGui::SameLine();
+                    ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
+                }
+                ImGui::NextColumn();
+                
                 if (position == 1)
                 {
                     ImGui::SetItemDefaultFocus();
