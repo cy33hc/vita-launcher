@@ -247,7 +247,7 @@ namespace Windows {
                 if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
                     GAME::Launch(game->id);
                 ImGui::PopID();
-                if (position == i)
+                if (position == i && !paused)
                 {
                     SetNavFocusHere();
                     ImGui::SetScrollHereY(scroll_direction);
