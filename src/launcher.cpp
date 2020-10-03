@@ -243,8 +243,10 @@ namespace Windows {
             {
                 Game *game = &current_category->games[i];
                 ImGui::SetColumnWidth(-1, 760);
+                ImGui::PushID(i);
                 if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
                     GAME::Launch(game->id);
+                ImGui::PopID();
                 if (position == i)
                 {
                     SetNavFocusHere();
@@ -253,13 +255,13 @@ namespace Windows {
                 }
                 if (ImGui::IsItemHovered())
                     selected_game = game;
-                ImGui::NextColumn();
-                ImGui::Text(game->id);
                 if (game->favorite)
                 {
                     ImGui::SameLine();
                     ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
                 }
+                ImGui::NextColumn();
+                ImGui::Text(game->id);
                 ImGui::NextColumn();               
                 ImGui::Separator();
             }
