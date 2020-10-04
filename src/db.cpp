@@ -62,6 +62,7 @@ namespace DB {
             sprintf(game.category, "%s", GAME::GetGameCategory(game.id));
             game.tex = no_icon;
             category->games.push_back(game);
+            game_scan_inprogress = game;
             step = sqlite3_step(res); 
         }
         sqlite3_finalize(res);

@@ -264,15 +264,13 @@ namespace Windows {
         if (io.NavInputs[ImGuiNavInput_Input] == 1.0f)
         {
             paused = true;
-            ImGui::OpenPopup("Settings and Actions");
+            ImGui::OpenPopup("Settings");
         }
 
         ImGui::SetNextWindowPos(ImVec2(330, 220));
-        if (ImGui::BeginPopupModal("Settings and Actions"))
+        if (ImGui::BeginPopupModal("Settings"))
         {
             ImGui::Text("%s View:", current_category->title);
-            ImGui::Text("    ");
-            ImGui::SameLine();
             ImGui::RadioButton("Grid", &view_mode, 0);
             ImGui::SameLine();
             ImGui::RadioButton("List", &view_mode, 1);
@@ -318,11 +316,11 @@ namespace Windows {
                 progress = (float)current_category->games.size() / (float)games_to_scan;
             }
             ImGui::SetCursorPos(ImVec2(210, 230));
-            ImGui::Text("Scanning games and creating cache in folder ux0:data/SMLA00001");
+            ImGui::Text("Reading games from app database");
             ImGui::SetCursorPos(ImVec2(210, 260));
             ImGui::ProgressBar(progress, ImVec2(530, 0));
             ImGui::SetCursorPos(ImVec2(210, 290));
-            ImGui::Text("Adding %s to cache", game_scan_inprogress.id);
+            ImGui::Text("Adding %s", game_scan_inprogress.id);
         }
         ImGui::End();
         ImGui::PopStyleVar();
