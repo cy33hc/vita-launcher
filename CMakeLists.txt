@@ -18,8 +18,11 @@ set(VITA_VERSION  "01.02")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+add_definitions(-DSQLITE_OS_OTHER=1 -DSQLITE_TEMP_STORE=3 -DSQLITE_THREADSAFE=0)
+
 include_directories(
   src
+  sqlite-3.6.23.1
 )
 
 add_executable(${PROJECT_NAME}
@@ -31,6 +34,9 @@ add_executable(${PROJECT_NAME}
   src/game.cpp
   src/main.cpp
   src/inifile.c
+  src/vita_sqlite.c
+  src/db.cpp
+  sqlite-3.6.23.1/sqlite3.c
 )
 
 target_link_libraries(${PROJECT_NAME}

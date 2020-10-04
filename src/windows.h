@@ -29,8 +29,6 @@ namespace Windows {
     void ShowGridViewWindow();
     void ShowListViewWindow();
     void ShowSettingsDialog();
-    void HandleLaunchError();
-    void HandleAddNewGame();
     void GameScanWindow();
 
 }

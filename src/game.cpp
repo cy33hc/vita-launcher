@@ -10,6 +10,7 @@
 #include "fs.h"
 #include "windows.h"
 #include "textures.h"
+#include "db.h"
 
 #define GAME_LIST_FILE "ux0:data/SMLA00001/games_list.txt"
 #define FAVORITES_FILE "ux0:data/SMLA00001/favorites.txt"
@@ -24,6 +25,7 @@ Game game_scan_inprogress;
 std::string psp = "psp";
 std::string vita = "vita";
 std::string homebrew = "homebrew";
+bool use_game_db = true;
 
 namespace GAME {
 
@@ -54,7 +56,12 @@ namespace GAME {
     {
         current_category = &game_categories[VITA_GAMES];
 
-        if (!FS::FileExists(GAME_LIST_FILE))
+        if (use_game_db)
+        {
+            games_to_scan = DB::GetVitaDbGamesCount();
+            DB::GetVitaDbGames(current_category);
+        }
+        else if (!FS::FileExists(GAME_LIST_FILE))
         {
             FS::MkDirs("ux0:data/SMLA00001");
             void* fd = FS::Create(GAME_LIST_FILE);
@@ -450,16 +457,6 @@ namespace GAME {
             }
         }
         return -1;
-    }
-
-    void RemoveGameFromCache(char* title_id)
-    {
-        for (int i=0; i<4; i++)
-        {
-            RemoveGameFromCategory(&game_categories[i], title_id);
-        }
-        SaveGamesCache();
-        SaveFavorites();
     }
 
     void SortGames(GameCategory *category)

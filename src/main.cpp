@@ -14,7 +14,7 @@
 #include "textures.h"
 #include "game.h"
 #include "config.h"
-
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -117,6 +117,8 @@ namespace Services {
 
 int main(int, char**)
 {
+	//debugNetInit(ip_server,port_server,DEBUG);
+
 	Services::Init();
 	Services::InitImGui();
 

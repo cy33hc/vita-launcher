@@ -13,9 +13,6 @@ extern "C" {
 Game *selected_game;
 static SceCtrlData pad_prev;
 bool paused = false;
-bool launch_success = true;
-bool handle_add_game = false;
-bool game_added = false;
 int view_mode;
 static std::vector<std::string> games_on_filesystem;
 
@@ -124,16 +121,6 @@ namespace Windows {
             ShowListViewWindow();
         }
 
-        if (!launch_success)
-        {
-            HandleLaunchError();
-        }
-
-        if (handle_add_game)
-        {
-            HandleAddNewGame();
-        }
-
         ShowSettingsDialog();
 
         ImGui::PopStyleVar();
@@ -170,7 +157,7 @@ namespace Windows {
                         ImGui::PushID(button_id);
                         Game *game = &current_category->games[game_start_index+button_id];
                         if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,128), ImVec2(0,0), ImVec2(1,1))) {
-                            launch_success = GAME::Launch(game->id);
+                            GAME::Launch(game->id);
                         }
                         if (ImGui::IsItemFocused())
                         {
@@ -283,30 +270,12 @@ namespace Windows {
         ImGui::SetNextWindowPos(ImVec2(330, 220));
         if (ImGui::BeginPopupModal("Settings and Actions"))
         {
-            static bool refresh_games = false;
-            static bool remove_from_cache = false;
-            static bool add_new_game = false;
             ImGui::Text("%s View:", current_category->title);
             ImGui::Text("    ");
             ImGui::SameLine();
             ImGui::RadioButton("Grid", &view_mode, 0);
             ImGui::SameLine();
             ImGui::RadioButton("List", &view_mode, 1);
-            if (!refresh_games && !add_new_game)
-            {
-                ImGui::Separator();
-                ImGui::Checkbox("Remove selected game from cache", &remove_from_cache);
-            }
-            if (!refresh_games && !remove_from_cache)
-            {
-                ImGui::Separator();
-                ImGui::Checkbox("Add new game to cache", &add_new_game);
-            }
-            if (!remove_from_cache && !add_new_game)
-            {
-                ImGui::Separator();
-                ImGui::Checkbox("Rescan games and rebuild cache", &refresh_games);
-            }
             ImGui::Separator();
             if (ImGui::Button("OK"))
             {
@@ -323,175 +292,17 @@ namespace Windows {
                     }
                 }
 
-                if (refresh_games)
-                    GAME::RefreshGames();
-
-                if (remove_from_cache)
-                {
-                    if (selected_game != nullptr)
-                    {
-                        GAME::RemoveGameFromCache(selected_game->id);
-                        selected_game = nullptr;
-                    }
-                }
-
-                if (add_new_game)
-                    handle_add_game = true;
-
                 paused = false;
-                refresh_games = false;
-                remove_from_cache = false;
-                add_new_game = false;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel"))
             {
                 paused = false;
-                refresh_games = false;
-                remove_from_cache = false;
-                add_new_game = false;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
         }
-    }
-
-    void HandleLaunchError()
-    {
-        paused = true;
-        ImGui::OpenPopup("Warning!");
-        ImGui::SetNextWindowPos(ImVec2(320, 220));
-        if (ImGui::BeginPopupModal("Warning!"))
-        {
-            ImGui::Text("The selected game %s no longer exists.", selected_game->id);
-            ImGui::Text("Would you like to remove it from the cache?");
-            ImGui::Separator();
-            if (ImGui::Button("OK"))
-            {
-                GAME::RemoveGameFromCache(selected_game->id);
-                selected_game = nullptr;
-                paused = false;
-                launch_success = true;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel"))
-            {
-                paused = false;
-                launch_success = true;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
-    }
-
-    void HandleAddNewGame()
-    {
-        paused = true;
-        static Game game;
-        static GameCategory *category = nullptr;
-
-        if (!game_added)
-        {
-            ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE);
-            ImGui::OpenPopup("Select game");
-            ImGui::SetNextWindowPos(ImVec2(230, 100));
-            ImGui::SetNextWindowSize(ImVec2(490,320));
-            if (ImGui::BeginPopupModal("Select game", nullptr, ImGuiWindowFlags_NoScrollbar))
-            {
-                if (games_on_filesystem.size() == 0)
-                {
-                    games_on_filesystem = FS::ListDir("ux0:app");
-                    std::sort(games_on_filesystem.begin(), games_on_filesystem.end());
-                }
-                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(480,250));
-                ImGui::BeginChild("game list");
-                ImGui::Columns(4, "game list", true);
-                for (int i = 0; i < games_on_filesystem.size(); i++)
-                {
-                    ImGui::SetColumnWidth(-1, 120);
-                    if (ImGui::Selectable(games_on_filesystem[i].c_str()))
-                    {
-                        if (GAME::GetGameDetails(games_on_filesystem[i].c_str(), &game))
-                        {
-                            if (strcmp(game.category, vita.c_str()) == 0)
-                            {
-                                category = &game_categories[VITA_GAMES];
-                            } 
-                            else if (strcmp(game.category, psp.c_str()) == 0)
-                            {
-                                category = &game_categories[PSP_GAMES];
-                            }
-                            else
-                            {
-                                category = &game_categories[HOMEBREWS];
-                            }
-
-                            if (GAME::FindGamePosition(category, game.id) < 0)
-                            {
-                                category->games.push_back(game);
-                                GAME::SortGames(category);
-                                GAME::SetMaxPage(category);
-                                GAME::SaveGamesCache();
-                            }
-                            game_added = true;
-                            ImGui::CloseCurrentPopup();
-                        }
-                        else
-                        {
-                            paused = false;
-                            handle_add_game = false;
-                            game_added = false;
-                            ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CIRCLE);
-                            ImGui::CloseCurrentPopup();
-                        }
-                        
-                    }
-                    ImGui::NextColumn();
-                    if (i % 4 == 0)
-                    {
-                        ImGui::Separator();
-                    }
-                }
-                ImGui::Columns(1);
-                ImGui::EndChild();
-
-                ImGui::Separator();
-                if (ImGui::Button("Cancel"))
-                {
-                    paused = false;
-                    handle_add_game = false;
-                    game_added = false;
-                    ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CIRCLE);
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
-            }
-        }
-        else
-        {
-            ImGui::OpenPopup("Info");
-            ImGui::SetNextWindowPos(ImVec2(250, 220));
-            if (ImGui::BeginPopupModal("Info"))
-            {
-                ImGui::PushTextWrapPos(400);
-                ImGui::Text("The game \"%s\" has being added to the cache. Please browse to the \"%s\" category to find your game.", game.title, category->title);
-                ImGui::PopTextWrapPos();
-                ImGui::Separator();
-                if (ImGui::Button("OK"))
-                {
-                    category = nullptr;
-                    game_added = false;
-                    paused = false;
-                    handle_add_game = false;
-                    ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CIRCLE);
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
-            }
-        }
-        
     }
 
     void GameScanWindow()
