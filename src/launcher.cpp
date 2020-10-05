@@ -121,8 +121,6 @@ namespace Windows {
             ShowListViewWindow();
         }
 
-        ShowSettingsDialog();
-
         ImGui::PopStyleVar();
     }
 
@@ -136,6 +134,7 @@ namespace Windows {
         {
             int game_start_index = (current_category->page_num * 18) - 18;
 
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY()-7);
             if (selected_game != nullptr)
             {
                 ImGui::Text("%s - %s", selected_game->id, selected_game->title);
@@ -144,7 +143,8 @@ namespace Windows {
             {
                 ImGui::Text("No game selected");
             }
-
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
+            ImGui::Separator();
             ImVec2 pos = ImGui::GetCursorPos();
             for (int i = 0; i < 3; i++)
             {
@@ -156,7 +156,7 @@ namespace Windows {
                     {
                         ImGui::PushID(button_id);
                         Game *game = &current_category->games[game_start_index+button_id];
-                        if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,128), ImVec2(0,0), ImVec2(1,1))) {
+                        if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127), ImVec2(0,0), ImVec2(1,1))) {
                             GAME::Launch(game->id);
                         }
                         if (ImGui::IsItemFocused())
@@ -165,6 +165,7 @@ namespace Windows {
                         }
                         ImGui::PopID();
 
+                        ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
                         ImGui::SetCursorPosX(pos.x+(j*160));
                         if (game->favorite)
                         {
@@ -181,8 +182,21 @@ namespace Windows {
                     }
                 }
             }
-            ImGui::SetCursorPos(ImVec2(pos.x, 524));
-            ImGui::Text("Page#: %d/%d", current_category->page_num, current_category->max_page);
+            ImGui::SetCursorPos(ImVec2(pos.x, 521));
+            ImGui::Separator();
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
+            ImGui::Text("Page#: %d/%d", current_category->page_num, current_category->max_page); ImGui::SameLine();
+            ImGui::SetCursorPosX(300);
+            ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
+            ImGui::Text("Category"); ImGui::SameLine();
+            ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
+            ImGui::Text("Mark"); ImGui::SameLine();
+            ImGui::Image(reinterpret_cast<ImTextureID>(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
+            ImGui::Text("Settings"); ImGui::SameLine();
+            ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
+            ImGui::Text("Launch"); ImGui::SameLine();
+
+            ShowSettingsDialog();
         }
         ImGui::End();
     }
@@ -193,7 +207,6 @@ namespace Windows {
         io.KeyRepeatRate = 0.005f;
         ImGui_ImplVita2D_SetAnalogRepeatDelay(1000);
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
         static int position = -1;
         static float scroll_direction = 0.0f;
         if (io.NavInputs[ImGuiNavInput_DpadRight] == 1.0f)
@@ -222,8 +235,12 @@ namespace Windows {
             }
         }
 
-        if (ImGui::Begin(current_category->title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysUseWindowPadding))
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(5, 8));
+        if (ImGui::Begin(current_category->title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar))
         {
+            if (!paused)
+                ImGui::SetNextWindowFocus();
+            ImGui::BeginChildFrame(ImGui::GetID("game_list"), ImVec2(950,480));
             ImGui::Separator();
             ImGui::Columns(2, current_category->title, true);
             for (int i = 0; i < current_category->games.size(); i++)
@@ -253,6 +270,20 @@ namespace Windows {
                 ImGui::Separator();
             }
             ImGui::Columns(1);
+            ImGui::EndChildFrame();
+            ImGui::SetCursorPosY(520);
+            ImGui::Separator();
+            ImGui::SetCursorPosX(300);
+            ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
+            ImGui::Text("Category"); ImGui::SameLine();
+            ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
+            ImGui::Text("Mark"); ImGui::SameLine();
+            ImGui::Image(reinterpret_cast<ImTextureID>(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
+            ImGui::Text("Settings"); ImGui::SameLine();
+            ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
+            ImGui::Text("Launch"); ImGui::SameLine();
+            
+            ShowSettingsDialog();
         }
         ImGui::End();
         ImGui::PopStyleVar();
@@ -267,8 +298,8 @@ namespace Windows {
             ImGui::OpenPopup("Settings");
         }
 
-        ImGui::SetNextWindowPos(ImVec2(330, 220));
-        if (ImGui::BeginPopupModal("Settings"))
+        ImGui::SetNextWindowPos(ImVec2(360, 220));
+        if (ImGui::BeginPopupModal("Settings", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("%s View:", current_category->title);
             ImGui::RadioButton("Grid", &view_mode, 0);

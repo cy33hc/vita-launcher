@@ -72,5 +72,9 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE sce_sys/livearea/contents/template.xml sce_sys/livearea/contents/template.xml
   FILE noicon.png noicon.png
   FILE favorite.png favorite.png
+  FILE square.png square.png
+  FILE triangle.png triangle.png
+  FILE circle.png circle.png
+  FILE cross.png cross.png
   FILE Ubuntu-R.ttf Ubuntu-R.ttf
 )

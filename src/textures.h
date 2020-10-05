@@ -12,6 +12,10 @@ typedef struct {
 
 extern Tex no_icon;
 extern Tex favorite_icon;
+extern Tex square_icon;
+extern Tex triangle_icon;
+extern Tex circle_icon;
+extern Tex cross_icon;
 
 namespace Textures {
     void LoadFonts(Tex *font_texture);

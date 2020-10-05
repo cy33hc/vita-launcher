@@ -6,6 +6,10 @@
 
 Tex no_icon;
 Tex favorite_icon;
+Tex square_icon;
+Tex triangle_icon;
+Tex circle_icon;
+Tex cross_icon;
 
 namespace Textures {
 	
@@ -42,11 +46,19 @@ namespace Textures {
 	void Init(void) {
 		Textures::LoadImageFile("ux0:app/SMLA00001/noicon.png", &no_icon);
 		Textures::LoadImageFile("ux0:app/SMLA00001/favorite.png", &favorite_icon);
+		Textures::LoadImageFile("ux0:app/SMLA00001/square.png", &square_icon);
+		Textures::LoadImageFile("ux0:app/SMLA00001/triangle.png", &triangle_icon);
+		Textures::LoadImageFile("ux0:app/SMLA00001/circle.png", &circle_icon);
+		Textures::LoadImageFile("ux0:app/SMLA00001/cross.png", &cross_icon);
 	}
 
 	void Exit(void) {
 		vita2d_free_texture(no_icon.id);
 		vita2d_free_texture(favorite_icon.id);
+		vita2d_free_texture(square_icon.id);
+		vita2d_free_texture(triangle_icon.id);
+		vita2d_free_texture(circle_icon.id);
+		vita2d_free_texture(cross_icon.id);
 	}
 
 	void Free(Tex *texture) {
