@@ -46,6 +46,7 @@ namespace Textures {
 
 	void Exit(void) {
 		vita2d_free_texture(no_icon.id);
+		vita2d_free_texture(favorite_icon.id);
 	}
 
 	void Free(Tex *texture) {
