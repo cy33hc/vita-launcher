@@ -21,15 +21,31 @@ typedef struct {
     char id;
     char title[16];
     std::vector<Game> games;
+    std::vector<std::string> valid_title_ids;
     int max_page;
     int page_num;
     int view_mode;
+    bool opened;
 } GameCategory;
 
-#define VITA_GAMES 0
-#define PSP_GAMES 1
-#define HOMEBREWS 2
-#define FAVORITES 3
+#define FAVORITES 0
+#define VITA_GAMES 1
+#define PSP_GAMES 2
+#define PS1_GAMES 3
+#define PS_MIMI_GAMES 4
+#define PS_MOBILE_GAMES 5
+#define NES_GAMES 6
+#define SNES_GAMES 7
+#define GB_GAMES 8
+#define GBA_GAMES 9
+#define N64_GAMES 10
+#define PORT_GAMES 11
+#define ORIGINAL_GAMES 12
+#define UTILITIES 13
+#define EMULATORS 14
+#define HOMEBREWS 15
+
+#define TOTAL_CATEGORY 16
 
 extern GameCategory game_categories[];
 extern GameCategory *current_category;

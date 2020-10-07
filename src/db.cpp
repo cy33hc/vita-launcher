@@ -47,7 +47,7 @@ namespace DB {
         sqlite3_stmt *res;
 
         int rc = sqlite3_open("ur0:shell/db/app.db", &db);
-        std::string sql = "select titleId,val from tbl_appinfo where key=572932585 and titleID not like 'NP%'";
+        std::string sql = "select titleId,val from tbl_appinfo where key=572932585 and titleID not like 'NPXS%'";
         rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
     
         int step = sqlite3_step(res);
@@ -75,7 +75,7 @@ namespace DB {
         sqlite3_stmt *res;
 
         int rc = sqlite3_open("ur0:shell/db/app.db", &db);
-        std::string sql = "select count(distinct(titleId)) from tbl_appinfo where key=572932585 and titleID not like 'NP%'";
+        std::string sql = "select count(distinct(titleId)) from tbl_appinfo where key=572932585 and titleID not like 'NPXS%'";
         rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
     
         int step = sqlite3_step(res);

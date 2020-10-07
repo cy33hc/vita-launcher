@@ -16,15 +16,28 @@
 #define FAVORITES_FILE "ux0:data/SMLA00001/favorites.txt"
 #define NUM_CACHED_PAGES 5
 
-GameCategory game_categories[4];
+GameCategory game_categories[TOTAL_CATEGORY];
 GameCategory *current_category;
 
 bool game_scan_complete = false;
 int games_to_scan = 1;
 Game game_scan_inprogress;
-std::string psp = "psp";
 std::string vita = "vita";
+std::string psp = "psp";
+std::string ps1 = "ps1";
+std::string psmini = "psmini";
+std::string psmobile = "psmobile";
+std::string nes = "nes";
+std::string snes = "snes";
+std::string gb = "gb";
+std::string gba = "gba";
+std::string n64 = "n64";
+std::string ports = "ports";
+std::string original = "original";
+std::string utilities = "utilities";
+std::string emulator = "emulator";
 std::string homebrew = "homebrew";
+
 bool use_game_db = true;
 
 namespace GAME {
@@ -118,6 +131,78 @@ namespace GAME {
                 it = current_category->games.erase(it);
                 games_to_scan--;
             }
+            else if (strcmp(it->category, ps1.c_str()) == 0)
+            {
+                game_categories[PS1_GAMES].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else if (strcmp(it->category, psmini.c_str()) == 0)
+            {
+                game_categories[PS_MIMI_GAMES].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else if (strcmp(it->category, psmobile.c_str()) == 0)
+            {
+                game_categories[PS_MOBILE_GAMES].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else if (strcmp(it->category, nes.c_str()) == 0)
+            {
+                game_categories[NES_GAMES].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else if (strcmp(it->category, snes.c_str()) == 0)
+            {
+                game_categories[SNES_GAMES].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else if (strcmp(it->category, gb.c_str()) == 0)
+            {
+                game_categories[GB_GAMES].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else if (strcmp(it->category, gba.c_str()) == 0)
+            {
+                game_categories[GBA_GAMES].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else if (strcmp(it->category, n64.c_str()) == 0)
+            {
+                game_categories[N64_GAMES].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else if (strcmp(it->category, ports.c_str()) == 0)
+            {
+                game_categories[PORT_GAMES].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else if (strcmp(it->category, original.c_str()) == 0)
+            {
+                game_categories[ORIGINAL_GAMES].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else if (strcmp(it->category, utilities.c_str()) == 0)
+            {
+                game_categories[UTILITIES].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
+            else if (strcmp(it->category, emulator.c_str()) == 0)
+            {
+                game_categories[EMULATORS].games.push_back(*it);
+                it = current_category->games.erase(it);
+                games_to_scan--;
+            }
             else if (strcmp(it->category, homebrew.c_str()) == 0)
             {
                 game_categories[HOMEBREWS].games.push_back(*it);
@@ -130,7 +215,7 @@ namespace GAME {
             }
         }
         
-        for (int i=0; i < 4; i++)
+        for (int i=0; i < TOTAL_CATEGORY; i++)
         {
             SortGames(&game_categories[i]);
             game_categories[i].page_num = 1;
@@ -150,10 +235,6 @@ namespace GAME {
     bool Launch(const char *title_id) {
         char game_path[96];
         sprintf(game_path, "ux0:app/%s", title_id);
-        if (!FS::FolderExists(game_path))
-        {
-            return false;
-        }
        	char uri[32];
         sprintf(uri, "psgm:play?titleid=%s", title_id);
         sceAppMgrLaunchAppByUri(0xFFFFF, uri);
@@ -213,7 +294,7 @@ namespace GAME {
     void SaveGamesCache()
     {
         void* fd = FS::Create(GAME_LIST_FILE);
-        for (int j=0; j < 3; j++)
+        for (int j=1; j < TOTAL_CATEGORY; j++)
         {
             for (int i=0; i < game_categories[j].games.size(); i++)
             {
@@ -300,19 +381,33 @@ namespace GAME {
 
     void LoadGameImage(Game *game) {
         Tex tex;
-        if (FS::FileExists(game->icon_path)) {
+        tex = no_icon;
+
+        char custom_icon_path[64];
+        sprintf(custom_icon_path, "ur0:data/SMLA00001/icons/%s.png", game->id);
+        if (FS::FileExists(custom_icon_path))
+        {
+            if (Textures::LoadImageFile(custom_icon_path, &tex))
+            {
+                game->tex = tex;
+            }
+        }
+
+        if (tex.id == no_icon.id && FS::FileExists(game->icon_path))
+        {
             if (Textures::LoadImageFile(game->icon_path, &tex))
             {
                 game->tex = tex;
             }
-            else
+        }
+
+        sprintf(custom_icon_path, "ux0:data/SMLA00001/icons/%s.png", game->id);
+        if (tex.id == no_icon.id && FS::FileExists(custom_icon_path))
+        {
+            if (Textures::LoadImageFile(custom_icon_path, &tex))
             {
-                game->tex = no_icon;
+                game->tex = tex;
             }
-            
-            
-        } else {
-            game->tex = no_icon;
         }
     }
 
@@ -347,7 +442,7 @@ namespace GAME {
     {
         game_scan_complete = false;
         sceKernelDelayThread(500000);
-        for (int i=0; i < 4; i++)
+        for (int i=0; i < TOTAL_CATEGORY; i++)
         {
             game_categories[i].games.clear();
         }
@@ -470,22 +565,74 @@ namespace GAME {
         StartScanGamesThread();
     }
 
+    bool IsMatchPrefixes(const char* id, std::vector<std::string> &prefixes)
+    {
+        for (int i=0; i < prefixes.size(); i++)
+        {
+            if (strncmp(id, prefixes[i].c_str(), strlen(prefixes[i].c_str())) == 0)
+                return true;
+        }
+        return false;
+    }
+
     const char* GetGameCategory(const char *id)
     {
-        if (strncmp(id, "PSPEMU", 6) == 0 && strncmp(id, "PSPEMUCFW", 9) != 0)
+        if (IsMatchPrefixes(id, game_categories[VITA_GAMES].valid_title_ids))
+        {
+            return vita.c_str();
+        }
+        else if (IsMatchPrefixes(id, game_categories[PSP_GAMES].valid_title_ids) &&
+                 strncmp(id, "PSPEMUCFW", 9) != 0)
         {
             return psp.c_str();
         }
-        else if (strncmp(id, "PCSA", 4) == 0 ||
-                 strncmp(id, "PCSB", 4) == 0 ||
-                 strncmp(id, "PCSC", 4) == 0 ||
-                 strncmp(id, "PCSD", 4) == 0 ||
-                 strncmp(id, "PCSE", 4) == 0 ||
-                 strncmp(id, "PCSF", 4) == 0 ||
-                 strncmp(id, "PCSG", 4) == 0 ||
-                 strncmp(id, "PCSH", 4) == 0)
+        else if (IsMatchPrefixes(id, game_categories[PS1_GAMES].valid_title_ids))
         {
-            return vita.c_str();
+            return ps1.c_str();
+        }
+        else if (IsMatchPrefixes(id, game_categories[PS_MIMI_GAMES].valid_title_ids))
+        {
+            return psmini.c_str();
+        }
+        else if (IsMatchPrefixes(id, game_categories[PS_MOBILE_GAMES].valid_title_ids))
+        {
+            return psmobile.c_str();
+        }
+        else if (IsMatchPrefixes(id, game_categories[NES_GAMES].valid_title_ids))
+        {
+            return nes.c_str();
+        }
+        else if (IsMatchPrefixes(id, game_categories[SNES_GAMES].valid_title_ids))
+        {
+            return snes.c_str();
+        }
+        else if (IsMatchPrefixes(id, game_categories[GB_GAMES].valid_title_ids))
+        {
+            return gb.c_str();
+        }
+        else if (IsMatchPrefixes(id, game_categories[GBA_GAMES].valid_title_ids))
+        {
+            return gba.c_str();
+        }
+        else if (IsMatchPrefixes(id, game_categories[N64_GAMES].valid_title_ids))
+        {
+            return n64.c_str();
+        }
+        else if (IsMatchPrefixes(id, game_categories[PORT_GAMES].valid_title_ids))
+        {
+            return ports.c_str();
+        }
+        else if (IsMatchPrefixes(id, game_categories[ORIGINAL_GAMES].valid_title_ids))
+        {
+            return original.c_str();
+        }
+        else if (IsMatchPrefixes(id, game_categories[UTILITIES].valid_title_ids))
+        {
+            return utilities.c_str();
+        }
+        else if (IsMatchPrefixes(id, game_categories[EMULATORS].valid_title_ids))
+        {
+            return emulator.c_str();
         }
         else
         {

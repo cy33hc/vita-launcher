@@ -30,7 +30,7 @@ namespace Windows {
     void ShowListViewWindow();
     void ShowSettingsDialog();
     void GameScanWindow();
-
+    void ShowTabBar();
 }
 
 #endif
