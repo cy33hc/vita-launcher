@@ -193,14 +193,14 @@ namespace Windows {
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
         ImGui::Text("Page: %d/%d", current_category->page_num, current_category->max_page); ImGui::SameLine();
         ImGui::SetCursorPosX(350);
-        //ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        //ImGui::Text("Category"); ImGui::SameLine();
+        ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
+        ImGui::Text("Un-Select"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Mark"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Settings"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Launch"); ImGui::SameLine();
+        ImGui::Text("Select"); ImGui::SameLine();
 
         ShowSettingsDialog();
     }
@@ -277,15 +277,15 @@ namespace Windows {
         ImGui::EndChild();
         ImGui::SetCursorPosY(520);
         ImGui::Separator();
-        ImGui::SetCursorPosX(350);
-        //ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        //ImGui::Text("Category"); ImGui::SameLine();
+        ImGui::SetCursorPosX(300);
+        ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
+        ImGui::Text("Un-Select"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Mark"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Settings"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Launch"); ImGui::SameLine();
+        ImGui::Text("Select"); ImGui::SameLine();
         
         ShowSettingsDialog();
     }
