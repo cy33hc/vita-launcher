@@ -23,6 +23,7 @@ namespace DB {
     Game* FindByRomPath(sqlite3 *database, const char* rom_path);
     int GetCachedGamesCount(sqlite3 *database);
     void GetCachedGames(sqlite3 *database, GameCategory *category);
+    void DeleteGame(sqlite3 *database, Game *game);
 }
 
 #endif

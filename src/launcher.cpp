@@ -15,7 +15,7 @@ static SceCtrlData pad_prev;
 bool paused = false;
 int view_mode;
 static std::vector<std::string> games_on_filesystem;
-static int position = -1;
+//static int position = -1;
 static float scroll_direction = 0.0f;
 
 namespace Windows {
@@ -42,7 +42,7 @@ namespace Windows {
                     }
                     else {
                         selected_game->favorite = false;
-                        int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game->id);
+                        int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
                         if (index != -1)
                             GAME::SaveFavorites();
@@ -53,7 +53,7 @@ namespace Windows {
                     Game* game = nullptr;
                     for (int i=1; i<TOTAL_CATEGORY; i++)
                     {
-                        game = GAME::FindGame(&game_categories[i], selected_game->id);
+                        game = GAME::FindGame(&game_categories[i], selected_game);
                         if (game != nullptr)
                         {
                             break;
@@ -62,7 +62,7 @@ namespace Windows {
                     if (game != nullptr)
                     {
                         game->favorite = false;
-                        int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game->id);
+                        int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
                         if (index != -1)
                             GAME::SaveFavorites();
@@ -225,11 +225,11 @@ namespace Windows {
             {
                 if (selected_game != nullptr)
                 {
-                    position = GAME::FindGamePosition(current_category, selected_game->id);
-                    position += 5;
-                    if (position > current_category->games.size()-1)
+                    current_category->list_view_position = GAME::FindGamePosition(current_category, selected_game);
+                    current_category->list_view_position += 5;
+                    if (current_category->list_view_position > current_category->games.size()-1)
                     {
-                        position = current_category->games.size()-1;
+                        current_category->list_view_position = current_category->games.size()-1;
                     }
                     scroll_direction = 1.0f;
                 }
@@ -237,11 +237,11 @@ namespace Windows {
             {
                 if (selected_game != nullptr)
                 {
-                    position = GAME::FindGamePosition(current_category, selected_game->id);
-                    position -= 5;
-                    if (position < 0)
+                    current_category->list_view_position = GAME::FindGamePosition(current_category, selected_game);
+                    current_category->list_view_position -= 5;
+                    if (current_category->list_view_position < 0)
                     {
-                        position = 0;
+                        current_category->list_view_position = 0;
                     }
                     scroll_direction = 0.0f;
                 }
@@ -262,11 +262,11 @@ namespace Windows {
             ImGui::PopID();
             if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
             {
-                if (position == i && !paused)
+                if (current_category->list_view_position == i && !paused)
                 {
                     SetNavFocusHere();
                     ImGui::SetScrollHereY(scroll_direction);
-                    position = -1;
+                    current_category->list_view_position = -1;
                 }
             }
             if (ImGui::IsItemHovered())
@@ -363,7 +363,6 @@ namespace Windows {
                         current_category->opened = true;
                         view_mode = current_category->view_mode;
                         selected_game = nullptr;
-                        position = -1;
 
                         GAME::DeleteGamesImages(previous_category);
                         GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);

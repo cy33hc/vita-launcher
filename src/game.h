@@ -30,6 +30,7 @@ typedef struct {
     int max_page;
     int page_num;
     int view_mode;
+    int list_view_position;
     bool opened;
 } GameCategory;
 
@@ -80,7 +81,6 @@ namespace GAME {
     bool GetGameDetails(const char *id, Game *game);
     bool Launch(Game *game);
     void LoadGamesCache();
-    void SaveGamesCache();
     void LoadGameImages(int category, int prev_page, int page_num);
     void LoadGameImage(Game *game);
     void Exit();
@@ -94,9 +94,9 @@ namespace GAME {
     void SetMaxPage(GameCategory *category);
     void SaveFavorites();
     void LoadFavorites();
-    Game* FindGame(GameCategory *category, char* title_id);
-    int FindGamePosition(GameCategory *category, char* title_id);
-    int RemoveGameFromCategory(GameCategory *category, char* title_id);
+    Game* FindGame(GameCategory *category, Game *game);
+    int FindGamePosition(GameCategory *category, Game *game);
+    int RemoveGameFromCategory(GameCategory *category, Game *game);
     void SortGames(GameCategory *category);
     void RefreshGames();
     const char* GetGameCategory(const char *id);

@@ -93,7 +93,7 @@ namespace GAME {
         for (std::vector<Game>::iterator it=game_categories[FAVORITES].games.begin(); 
              it!=game_categories[FAVORITES].games.end(); )
         {
-            Game* game = FindGame(current_category, it->id);
+            Game* game = FindGame(current_category, &*it);
             if (game != nullptr)
             {
                 game->favorite = true;
@@ -224,27 +224,11 @@ namespace GAME {
         sqlite3 *db;
         sqlite3_open(CACHE_DB_FILE, &db);
         games_to_scan = DB::GetCachedGamesCount(db);
+        games_scanned = 0;
+        sprintf(scan_message, "%s", "Loading game info from cache");
         DB::GetCachedGames(db, current_category);
         sqlite3_close(db);
     };
-
-    void SaveGamesCache()
-    {
-        /*
-        void* fd = FS::Create(GAME_LIST_FILE);
-        for (int j=1; j < TOTAL_CATEGORY; j++)
-        {
-            for (int i=0; i < game_categories[j].games.size(); i++)
-            {
-                Game* game = &game_categories[j].games[i];
-                char line[512];
-                sprintf(line, "%s||%s||%s||%s\n", game->id, game->title, game->category, game->rom_path);
-                FS::Write(fd, line, strlen(line));
-            }
-        }
-        FS::Close(fd);
-        */
-    }
 
     void LoadGameImages(int category, int prev_page, int page) {
         int high = 0;
@@ -425,7 +409,7 @@ namespace GAME {
         {
             Game* game = &game_categories[FAVORITES].games[i];
             char line[512];
-            sprintf(line, "%s||%s||%s||%s\n", game->id, game->title, game->category, game->rom_path);
+            sprintf(line, "%s||%s||%s||%d||%s\n", game->id, game->title, game->category, game->type, game->rom_path);
             FS::Write(fd, line, strlen(line));
         }
         FS::Close(fd);
@@ -443,6 +427,7 @@ namespace GAME {
                 sprintf(game.id, "%s", nextToken(game_buffer, position).c_str());
                 sprintf(game.title, "%s", nextToken(game_buffer, position).c_str());
                 sprintf(game.category, "%s", nextToken(game_buffer, position).c_str());
+                game.type = atoi(nextToken(game_buffer, position).c_str());
                 sprintf(game.rom_path, "%s",  nextToken(game_buffer, position).c_str());
                 game.tex = no_icon;
                 game_categories[FAVORITES].games.push_back(game);
@@ -450,11 +435,12 @@ namespace GAME {
         }
     }
 
-    Game* FindGame(GameCategory *category, char* title_id)
+    Game* FindGame(GameCategory *category, Game *game)
     {
         for (int i=0; i < category->games.size(); i++)
         {
-            if (strcmp(title_id, category->games[i].id) == 0)
+            if ((game->type == TYPE_BUBBLE && strcmp(game->id, category->games[i].id) == 0) ||
+                (game->type == TYPE_ROM && strcmp(game->rom_path, category->games[i].rom_path) == 0))
             {
                 return &category->games[i];
             }
@@ -462,11 +448,12 @@ namespace GAME {
         return nullptr;
     }
 
-    int FindGamePosition(GameCategory *category, char* title_id)
+    int FindGamePosition(GameCategory *category, Game *game)
     {
         for (int i=0; i < category->games.size(); i++)
         {
-            if (strcmp(title_id, category->games[i].id) == 0)
+            if ((game->type == TYPE_BUBBLE && strcmp(game->id, category->games[i].id) == 0) ||
+                (game->type == TYPE_ROM && strcmp(game->rom_path, category->games[i].rom_path) == 0))
             {
                 return i;
             }
@@ -474,11 +461,12 @@ namespace GAME {
         return -1;
     }
 
-    int RemoveGameFromCategory(GameCategory *category, char* title_id)
+    int RemoveGameFromCategory(GameCategory *category, Game *game)
     {
         for (int i=0; i < category->games.size(); i++)
         {
-            if (strcmp(title_id, category->games[i].id) == 0)
+            if ((game->type == TYPE_BUBBLE && strcmp(game->id, category->games[i].id) == 0) ||
+                (game->type == TYPE_ROM && strcmp(game->rom_path, category->games[i].rom_path) == 0))
             {
                 category->games.erase(category->games.begin()+i);
                 return i;
@@ -494,10 +482,10 @@ namespace GAME {
 
     void RefreshGames()
     {
-        /*
-        FS::Rm(GAME_LIST_FILE);
+        
+        FS::Rm(CACHE_DB_FILE);
         StartScanGamesThread();
-        */
+        
     }
 
     bool IsMatchPrefixes(const char* id, std::vector<std::string> &prefixes)

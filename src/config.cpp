@@ -25,6 +25,7 @@ namespace CONFIG {
 		sprintf(category->title, "%s", title);
 		category->page_num = 1;
 		category->max_page = 1;
+        category->list_view_position = -1;
 		category->view_mode = ReadInt(category->title, CONFIG_VIEW_MODE, -1);
         category->opened = false;
 
