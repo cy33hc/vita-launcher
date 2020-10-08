@@ -23,6 +23,10 @@ typedef struct {
     char title[16];
     std::vector<Game> games;
     std::vector<std::string> valid_title_ids;
+    char category[10];
+    char roms_path[64];
+    char core[64];
+    char rom_launcher_title_id[12];
     int max_page;
     int page_num;
     int view_mode;
@@ -55,10 +59,10 @@ extern GameCategory game_categories[];
 extern GameCategory *current_category;
 extern bool game_scan_complete;
 extern int games_to_scan;
+extern int games_scanned;
 extern Game game_scan_inprogress;
-extern std::string psp;
-extern std::string vita;
-extern std::string homebrew;
+extern char scan_message[];
+extern int ROM_CATEGORIES[];
 
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;
@@ -96,6 +100,7 @@ namespace GAME {
     void SortGames(GameCategory *category);
     void RefreshGames();
     const char* GetGameCategory(const char *id);
+    GameCategory* GetRomCategoryByName(const char* category_name);
 }
 
 #endif

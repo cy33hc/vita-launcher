@@ -11,7 +11,10 @@
 #define VITADB_URL "https://rinnegatamante.it/vitadb/list_hbs_json.php"
 
 #define CONFIG_VIEW_MODE "view_mode"
-#define VALID_TITLE_ID_PREFIXES "title_id_prefixes"
+#define CONFIG_ROMS_PATH "roms_path"
+#define CONFIG_RETRO_CORE "retro_core"
+#define CONFIG_ROM_LAUNCHER_TITLE_ID "rom_launcher_title_id"
+#define CONFIG_TITLE_ID_PREFIXES "title_id_prefixes"
 
 #define VIEW_MODE_GRID 0
 #define VIEW_MODE_LIST 1
@@ -30,6 +33,7 @@
 namespace CONFIG {
     void LoadConfig();
     void ParseTitlePrefixes(const char* prefix_list, std::vector<std::string> &prefixes);
-    void SetupCategory(GameCategory *category, int category_id, const char* category_name, const char* default_prefixes);
+    void SetupCategory(GameCategory *category, int category_id, const char* category_name,
+                       const char* core, const char* title_id, const char* code, const char* default_prefixes);
 }
 #endif

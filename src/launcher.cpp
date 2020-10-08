@@ -142,7 +142,15 @@ namespace Windows {
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-3);
         if (selected_game != nullptr)
         {
-            ImGui::Text("%s - %s", selected_game->id, selected_game->title);
+            if (selected_game->type == TYPE_BUBBLE)
+            {
+                ImGui::Text("%s - %s", selected_game->id, selected_game->title);
+            }
+            else
+            {
+                ImGui::Text("%s", selected_game->title);
+            }
+            
         }
         else
         {
@@ -377,16 +385,16 @@ namespace Windows {
 
         if (ImGui::Begin("Game Launcher", nullptr, ImGuiWindowFlags_NoDecoration)) {
             static float progress = 0.0f;
-            if (current_category->games.size() > 0)
+            if (current_category->games.size() > 0 && games_to_scan > 0)
             {
-                progress = (float)current_category->games.size() / (float)games_to_scan;
+                progress = (float)games_scanned / (float)games_to_scan;
             }
             ImGui::SetCursorPos(ImVec2(210, 230));
-            ImGui::Text("Reading games from app database");
+            ImGui::Text("%s", scan_message);
             ImGui::SetCursorPos(ImVec2(210, 260));
             ImGui::ProgressBar(progress, ImVec2(530, 0));
             ImGui::SetCursorPos(ImVec2(210, 290));
-            ImGui::Text("Adding %s", game_scan_inprogress.id);
+            ImGui::Text("Adding %s", game_scan_inprogress.title);
         }
         ImGui::End();
         ImGui::PopStyleVar();
