@@ -58,9 +58,9 @@ namespace DB {
             std::string title = std::string((const char*)sqlite3_column_text(res, 1));
             std::replace( title.begin(), title.end(), '\n', ' ');
             sprintf(game.title, "%s", title.c_str());
-            sprintf(game.icon_path, "ur0:appmeta/%s/icon0.png", game.id);
             sprintf(game.category, "%s", GAME::GetGameCategory(game.id));
             game.tex = no_icon;
+            game.type = TYPE_BUBBLE;
             category->games.push_back(game);
             game_scan_inprogress = game;
             step = sqlite3_step(res); 

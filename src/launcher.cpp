@@ -163,7 +163,7 @@ namespace Windows {
                     ImGui::PushID(button_id);
                     Game *game = &current_category->games[game_start_index+button_id];
                     if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127), ImVec2(0,0), ImVec2(1,1))) {
-                        GAME::Launch(game->id);
+                        GAME::Launch(game);
                     }
                     if (ImGui::IsItemFocused())
                     {
@@ -250,7 +250,7 @@ namespace Windows {
             ImGui::SetColumnWidth(-1, 760);
             ImGui::PushID(i);
             if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
-                GAME::Launch(game->id);
+                GAME::Launch(game);
             ImGui::PopID();
             if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
             {

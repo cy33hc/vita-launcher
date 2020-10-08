@@ -10,10 +10,11 @@
 
 typedef struct {
     char id[10];
-    char title[256];
+    char title[128];
     char category[10];
-    char icon_path[96];
+    char rom_path[192];
     bool favorite = false;
+    char type;
     Tex tex;
 } Game;
 
@@ -47,6 +48,9 @@ typedef struct {
 
 #define TOTAL_CATEGORY 16
 
+#define TYPE_BUBBLE 0
+#define TYPE_ROM 1
+
 extern GameCategory game_categories[];
 extern GameCategory *current_category;
 extern bool game_scan_complete;
@@ -70,7 +74,7 @@ namespace GAME {
     void Init();
     void Scan();
     bool GetGameDetails(const char *id, Game *game);
-    bool Launch(const char *id);
+    bool Launch(Game *game);
     void LoadGamesCache();
     void SaveGamesCache();
     void LoadGameImages(int category, int prev_page, int page_num);

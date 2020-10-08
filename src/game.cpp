@@ -57,7 +57,6 @@ namespace GAME {
 
             sprintf(game->id, "%s", game_id);
             sprintf(game->title, "%s", title.c_str());
-            sprintf(game->icon_path, "ur0:appmeta/%s/icon0.png", game_id);
             sprintf(game->category, "%s", GetGameCategory(game_id));
             game->tex = no_icon;
             return true;
@@ -87,7 +86,7 @@ namespace GAME {
                 if (GetGameDetails(dirs[i].c_str(), &game))
                 {
                     char line[512];
-                    sprintf(line, "%s||%s||%s||%s\n", game.id, game.title, game.category, game.icon_path);
+                    sprintf(line, "%s||%s||%s||%s\n", game.id, game.title, game.category, game.rom_path);
                     FS::Write(fd, line, strlen(line));
                     game_scan_inprogress = game;
                     current_category->games.push_back(game);
@@ -232,11 +231,9 @@ namespace GAME {
         }
     }
 
-    bool Launch(const char *title_id) {
-        char game_path[96];
-        sprintf(game_path, "ux0:app/%s", title_id);
+    bool Launch(Game *game) {
        	char uri[32];
-        sprintf(uri, "psgm:play?titleid=%s", title_id);
+        sprintf(uri, "psgm:play?titleid=%s", game->id);
         sceAppMgrLaunchAppByUri(0xFFFFF, uri);
         sceKernelExitProcess(0);
         return true;
@@ -284,7 +281,7 @@ namespace GAME {
             sprintf(game.id, "%s", nextToken(game_buffer, position).c_str());
             sprintf(game.title, "%s", nextToken(game_buffer, position).c_str());
             sprintf(game.category, "%s", nextToken(game_buffer, position).c_str());
-            sprintf(game.icon_path, "%s",  nextToken(game_buffer, position).c_str());
+            sprintf(game.rom_path, "%s",  nextToken(game_buffer, position).c_str());
             game.tex = no_icon;
             current_category->games.push_back(game);
             games_to_scan = current_category->games.size();
@@ -300,7 +297,7 @@ namespace GAME {
             {
                 Game* game = &game_categories[j].games[i];
                 char line[512];
-                sprintf(line, "%s||%s||%s||%s\n", game->id, game->title, game->category, game->icon_path);
+                sprintf(line, "%s||%s||%s||%s\n", game->id, game->title, game->category, game->rom_path);
                 FS::Write(fd, line, strlen(line));
             }
         }
@@ -383,28 +380,21 @@ namespace GAME {
         Tex tex;
         tex = no_icon;
 
-        char custom_icon_path[64];
-        sprintf(custom_icon_path, "ur0:data/SMLA00001/icons/%s.png", game->id);
-        if (FS::FileExists(custom_icon_path))
+        char icon_path[256];
+        if (game->type == TYPE_BUBBLE)
         {
-            if (Textures::LoadImageFile(custom_icon_path, &tex))
-            {
-                game->tex = tex;
-            }
+            sprintf(icon_path, "ur0:appmeta/%s/icon0.png", game->id);
         }
-
-        if (tex.id == no_icon.id && FS::FileExists(game->icon_path))
+        else
         {
-            if (Textures::LoadImageFile(game->icon_path, &tex))
-            {
-                game->tex = tex;
-            }
+            std::string rom_path = std::string(game->rom_path);
+            int index = rom_path.find_last_of(".");
+            sprintf(icon_path, "%s.png", rom_path.substr(0, index).c_str());
         }
-
-        sprintf(custom_icon_path, "ux0:data/SMLA00001/icons/%s.png", game->id);
-        if (tex.id == no_icon.id && FS::FileExists(custom_icon_path))
+        
+        if (FS::FileExists(icon_path))
         {
-            if (Textures::LoadImageFile(custom_icon_path, &tex))
+            if (Textures::LoadImageFile(icon_path, &tex))
             {
                 game->tex = tex;
             }
@@ -492,7 +482,7 @@ namespace GAME {
         {
             Game* game = &game_categories[FAVORITES].games[i];
             char line[512];
-            sprintf(line, "%s||%s||%s||%s\n", game->id, game->title, game->category, game->icon_path);
+            sprintf(line, "%s||%s||%s||%s\n", game->id, game->title, game->category, game->rom_path);
             FS::Write(fd, line, strlen(line));
         }
         FS::Close(fd);
@@ -510,7 +500,7 @@ namespace GAME {
                 sprintf(game.id, "%s", nextToken(game_buffer, position).c_str());
                 sprintf(game.title, "%s", nextToken(game_buffer, position).c_str());
                 sprintf(game.category, "%s", nextToken(game_buffer, position).c_str());
-                sprintf(game.icon_path, "%s",  nextToken(game_buffer, position).c_str());
+                sprintf(game.rom_path, "%s",  nextToken(game_buffer, position).c_str());
                 game.tex = no_icon;
                 game_categories[FAVORITES].games.push_back(game);
             }
