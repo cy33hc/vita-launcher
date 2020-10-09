@@ -43,15 +43,22 @@ typedef struct {
 #define NES_GAMES 6
 #define SNES_GAMES 7
 #define GB_GAMES 8
-#define GBA_GAMES 9
-#define N64_GAMES 10
-#define PORT_GAMES 11
-#define ORIGINAL_GAMES 12
-#define UTILITIES 13
-#define EMULATORS 14
-#define HOMEBREWS 15
+#define GBC_GAMES 9
+#define GBA_GAMES 10
+#define N64_GAMES 11
+#define NEOGEO_GAMES 12
+#define GAME_GEAR_GAMES 13
+#define MASTER_SYSTEM_GAMES 14
+#define MEGA_DRIVE_GAMES 15
+#define NEC_GAMES 16
+#define PORT_GAMES 17
+#define ORIGINAL_GAMES 18
+#define UTILITIES 19
+#define EMULATORS 20
+#define HOMEBREWS 21
 
-#define TOTAL_CATEGORY 16
+#define TOTAL_CATEGORY 22
+#define TOTAL_ROM_CATEGORY 13
 
 #define TYPE_BUBBLE 0
 #define TYPE_ROM 1

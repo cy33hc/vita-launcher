@@ -24,7 +24,8 @@ int games_to_scan = 1;
 int games_scanned = 0;
 Game game_scan_inprogress;
 char scan_message[256];
-int ROM_CATEGORIES[6] = {PS1_GAMES, NES_GAMES, SNES_GAMES, GB_GAMES, GBA_GAMES, N64_GAMES};
+int ROM_CATEGORIES[TOTAL_ROM_CATEGORY] = {PS1_GAMES, NES_GAMES, SNES_GAMES, GB_GAMES, GBA_GAMES, N64_GAMES, GBC_GAMES, NEC_GAMES,
+                         GBC_GAMES, NEOGEO_GAMES, GAME_GEAR_GAMES, MASTER_SYSTEM_GAMES, MEGA_DRIVE_GAMES};
 
 bool use_game_db = true;
 
@@ -48,7 +49,7 @@ namespace GAME {
             sqlite3_open(CACHE_DB_FILE, &db);
             DB::SetupDatabase(db);
 
-            for (int i=0; i<6; i++)
+            for (int i=0; i<TOTAL_ROM_CATEGORY; i++)
             {
                 int category_id = ROM_CATEGORIES[i];
 
@@ -478,7 +479,7 @@ namespace GAME {
 
     GameCategory* GetRomCategoryByName(const char* category_name)
     {
-        for (int i=0; i<6; i++)
+        for (int i=0; i<TOTAL_ROM_CATEGORY; i++)
         {
             int cat = ROM_CATEGORIES[i];
             if (strcmp(category_name, game_categories[cat].category) == 0)
@@ -490,7 +491,7 @@ namespace GAME {
 
     bool IsRomCategory(int categoryId)
     {
-        for (int i=0; i<6; i++)
+        for (int i=0; i<TOTAL_ROM_CATEGORY; i++)
         {
             if (categoryId == ROM_CATEGORIES[i])
             {

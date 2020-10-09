@@ -365,11 +365,11 @@ namespace Windows {
                     ImGui::Separator();
                     ImGui::Checkbox("Add new game to cache", &add_new_game);
                 }
-                if (!remove_from_cache && !add_new_game)
-                {
-                    ImGui::Separator();
-                    ImGui::Checkbox("Rescan games and rebuild cache", &refresh_games);
-                }
+            }
+            if (!remove_from_cache && !add_new_game)
+            {
+                ImGui::Separator();
+                ImGui::Checkbox("Rescan games and rebuild cache", &refresh_games);
             }
             ImGui::Separator();
             if (ImGui::Button("OK"))
