@@ -396,6 +396,7 @@ namespace Windows {
                     if (selected_game != nullptr)
                     {
                         GAME::RemoveGameFromCategory(current_category, selected_game);
+                        GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
                         DB::DeleteGame(nullptr, selected_game);
                         DB::DeleteFavorite(nullptr, selected_game);
                         selected_game = nullptr;
