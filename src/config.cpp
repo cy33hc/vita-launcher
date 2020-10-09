@@ -83,7 +83,7 @@ namespace CONFIG {
         SetupCategory(&game_categories[ORIGINAL_GAMES], ORIGINAL_GAMES, "original", "Originals", nullptr, nullptr, nullptr);
         SetupCategory(&game_categories[UTILITIES], UTILITIES, "utilities", "Utilities", nullptr, nullptr, nullptr);
         SetupCategory(&game_categories[EMULATORS], EMULATORS, "emulator", "Emulators", nullptr, nullptr, nullptr);
-        SetupCategory(&game_categories[HOMEBREWS], HOMEBREWS, "homebrew", "Homebrews", nullptr, nullptr, nullptr);
+        SetupCategory(&game_categories[HOMEBREWS], HOMEBREWS, "homebrew", "Others", nullptr, nullptr, nullptr);
         SetupCategory(&game_categories[FAVORITES], FAVORITES, "favorites", "Favorites", nullptr, nullptr, nullptr);
 
 		WriteIniFile(CONFIG_INI_FILE);

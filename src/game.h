@@ -92,8 +92,6 @@ namespace GAME {
     void StartScanGamesThread();
     void DeleteGamesImages(GameCategory *category);
     void SetMaxPage(GameCategory *category);
-    void SaveFavorites();
-    void LoadFavorites();
     Game* FindGame(GameCategory *category, Game *game);
     int FindGamePosition(GameCategory *category, Game *game);
     int RemoveGameFromCategory(GameCategory *category, Game *game);
@@ -101,6 +99,7 @@ namespace GAME {
     void RefreshGames();
     const char* GetGameCategory(const char *id);
     GameCategory* GetRomCategoryByName(const char* category_name);
+    bool IsRomCategory(int categoryId);
 }
 
 #endif

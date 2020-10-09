@@ -5,7 +5,9 @@
 #include "textures.h"
 #include "fs.h"
 #include "game.h"
+#include "db.h"
 #include "config.h"
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -15,8 +17,11 @@ static SceCtrlData pad_prev;
 bool paused = false;
 int view_mode;
 static std::vector<std::string> games_on_filesystem;
-//static int position = -1;
 static float scroll_direction = 0.0f;
+
+bool handle_add_game = false;
+bool game_added = false;
+char game_added_message[256];
 
 namespace Windows {
     void HandleLauncherWindowInput()
@@ -38,14 +43,14 @@ namespace Windows {
                         GAME::SortGames(&game_categories[FAVORITES]);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
                         selected_game->favorite = true;
-                        GAME::SaveFavorites();
+                        DB::InsertFavorite(nullptr, selected_game);
                     }
                     else {
                         selected_game->favorite = false;
                         int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
                         if (index != -1)
-                            GAME::SaveFavorites();
+                            DB::InsertFavorite(nullptr, selected_game);
                     }
                 }
                 else
@@ -65,28 +70,13 @@ namespace Windows {
                         int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
                         if (index != -1)
-                            GAME::SaveFavorites();
+                            DB::InsertFavorite(nullptr, selected_game);
                         selected_game = nullptr;
                     }
                 }
             }
         }
-/*
-        if ((pad_prev.buttons & SCE_CTRL_CIRCLE) && !(pad.buttons & SCE_CTRL_CIRCLE) && !paused)
-        {
-            GameCategory *previous_category = current_category;
-            current_category = &game_categories[(current_category->id + 1) % TOTAL_CATEGORY ];
-            while (current_category->games.size() == 0)
-            {
-                current_category = &game_categories[(current_category->id + 1) % TOTAL_CATEGORY ];
-            }
-            view_mode = current_category->view_mode;
-            selected_game = nullptr;
 
-            GAME::DeleteGamesImages(previous_category);
-            GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
-        }
-*/
         if ((pad_prev.buttons & SCE_CTRL_LTRIGGER) &&
             !(pad.buttons & SCE_CTRL_LTRIGGER) &&
             current_category->view_mode == VIEW_MODE_GRID &&
@@ -210,6 +200,11 @@ namespace Windows {
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Select"); ImGui::SameLine();
 
+        if (handle_add_game)
+        {
+            HandleAddNewGame();
+        }
+
         ShowSettingsDialog();
     }
 
@@ -250,6 +245,10 @@ namespace Windows {
 
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()+5);
         ImGui::BeginChild(ImGui::GetID(current_category->title), ImVec2(950,480));
+        if (ImGui::IsWindowAppearing())
+        {
+            ImGui::SetWindowFocus();
+        }
         ImGui::Separator();
         ImGui::Columns(2, current_category->title, true);
         for (int i = 0; i < current_category->games.size(); i++)
@@ -295,58 +294,17 @@ namespace Windows {
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Select"); ImGui::SameLine();
         
+        if (handle_add_game)
+        {
+            HandleAddNewGame();
+        }
+
         ShowSettingsDialog();
-    }
-
-    void ShowSettingsDialog()
-    {
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-        if (io.NavInputs[ImGuiNavInput_Input] == 1.0f)
-        {
-            paused = true;
-            ImGui::OpenPopup("Settings");
-        }
-
-        ImGui::SetNextWindowPos(ImVec2(360, 220));
-        if (ImGui::BeginPopupModal("Settings", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-        {
-            ImGui::Text("%s View:", current_category->title);
-            ImGui::RadioButton("Grid", &view_mode, 0);
-            ImGui::SameLine();
-            ImGui::RadioButton("List", &view_mode, 1);
-            ImGui::Separator();
-            if (ImGui::Button("OK"))
-            {
-                if (view_mode != current_category->view_mode)
-                {
-                    current_category->view_mode = view_mode;
-                    OpenIniFile (CONFIG_INI_FILE);
-                    WriteInt(current_category->title, CONFIG_VIEW_MODE, view_mode);
-                    WriteIniFile(CONFIG_INI_FILE);
-                    CloseIniFile();
-
-                    if (view_mode == VIEW_MODE_GRID)
-                    {
-                        GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
-                    }
-                }
-
-                paused = false;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel"))
-            {
-                paused = false;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
     }
 
     void ShowTabBar()
     {
-        ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+        ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_FittingPolicyScroll;
         if (ImGui::BeginTabBar("Categories", tab_bar_flags))
         {
             for (int i=0; i<TOTAL_CATEGORY; i++)
@@ -374,6 +332,197 @@ namespace Windows {
             }
             ImGui::EndTabBar();
         }
+    }
+
+    void ShowSettingsDialog()
+    {
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        if (io.NavInputs[ImGuiNavInput_Input] == 1.0f)
+        {
+            paused = true;
+            ImGui::OpenPopup("Settings and Actions");
+        }
+
+        ImGui::SetNextWindowPos(ImVec2(360, 220));
+        if (ImGui::BeginPopupModal("Settings and Actions", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            static bool refresh_games = false;
+            static bool remove_from_cache = false;
+            static bool add_new_game = false;
+            ImGui::Text("%s View:", current_category->title);
+            ImGui::RadioButton("Grid", &view_mode, 0);
+            ImGui::SameLine();
+            ImGui::RadioButton("List", &view_mode, 1);
+            if (GAME::IsRomCategory(current_category->id))
+            {
+                if (!refresh_games && !add_new_game)
+                {
+                    ImGui::Separator();
+                    ImGui::Checkbox("Remove selected game from cache", &remove_from_cache);
+                }
+                if (!refresh_games && !remove_from_cache)
+                {
+                    ImGui::Separator();
+                    ImGui::Checkbox("Add new game to cache", &add_new_game);
+                }
+                if (!remove_from_cache && !add_new_game)
+                {
+                    ImGui::Separator();
+                    ImGui::Checkbox("Rescan games and rebuild cache", &refresh_games);
+                }
+            }
+            ImGui::Separator();
+            if (ImGui::Button("OK"))
+            {
+                if (view_mode != current_category->view_mode)
+                {
+                    current_category->view_mode = view_mode;
+                    OpenIniFile (CONFIG_INI_FILE);
+                    WriteInt(current_category->title, CONFIG_VIEW_MODE, view_mode);
+                    WriteIniFile(CONFIG_INI_FILE);
+                    CloseIniFile();
+
+                    if (view_mode == VIEW_MODE_GRID)
+                    {
+                        GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
+                    }
+                }
+
+                if (refresh_games)
+                    GAME::RefreshGames();
+
+                if (remove_from_cache)
+                {
+                    if (selected_game != nullptr)
+                    {
+                        GAME::RemoveGameFromCategory(current_category, selected_game);
+                        DB::DeleteGame(nullptr, selected_game);
+                        DB::DeleteFavorite(nullptr, selected_game);
+                        selected_game = nullptr;
+                    }
+                }
+
+                if (add_new_game)
+                    handle_add_game = true;
+
+                paused = false;
+                refresh_games = false;
+                remove_from_cache = false;
+                add_new_game = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+            {
+                paused = false;
+                refresh_games = false;
+                remove_from_cache = false;
+                add_new_game = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+    }
+
+    void HandleAddNewGame()
+    {
+        paused = true;
+        static Game game;
+
+        if (!game_added)
+        {
+            ImGui::OpenPopup("Select game");
+            ImGui::SetNextWindowPos(ImVec2(230, 100));
+            ImGui::SetNextWindowSize(ImVec2(490,330));
+            if (ImGui::BeginPopupModal("Select game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+            {
+                if (games_on_filesystem.size() == 0)
+                {
+                    games_on_filesystem = FS::ListDir(current_category->roms_path);
+                    for (std::vector<std::string>::iterator it=games_on_filesystem.begin(); 
+                        it!=games_on_filesystem.end(); )
+                    {
+                        int index = it->find_last_of(".");
+                        if (it->substr(index) == ".png")
+                        {
+                            it = games_on_filesystem.erase(it);
+                        }
+                        else
+                        {
+                            ++it;
+                        }
+                    }
+                    std::sort(games_on_filesystem.begin(), games_on_filesystem.end());
+                }
+                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(480,260));
+                ImGui::BeginChild("game list");
+                if (ImGui::IsWindowAppearing())
+                {
+                    ImGui::SetWindowFocus();
+                }
+
+                for (int i = 0; i < games_on_filesystem.size(); i++)
+                {
+                    if (ImGui::Selectable(games_on_filesystem[i].c_str()))
+                    {
+                        sprintf(game.id, "%s", " ");
+                        game.type = TYPE_ROM;
+                        sprintf(game.category, "%s", current_category->category);
+                        sprintf(game.rom_path, "%s/%s", current_category->roms_path, games_on_filesystem[i].c_str());
+                        int index = games_on_filesystem[i].find_last_of(".");
+                        sprintf(game.title, "%s", games_on_filesystem[i].substr(0, index).c_str());
+                        game.tex = no_icon;
+
+                        sprintf(game_added_message, "The game already exists in the cache.");
+                        if (!DB::GameExists(nullptr, game.rom_path))
+                        {
+                            current_category->games.push_back(game);
+                            DB::InsertGame(nullptr, &game);
+                            GAME::SortGames(current_category);
+                            GAME::SetMaxPage(current_category);
+                            sprintf(game_added_message, "The game has being added to the cache.");
+                        }
+                        game_added = true;
+                        games_on_filesystem.clear();
+                    }
+                    ImGui::Separator();
+                }
+                ImGui::EndChild();
+                ImGui::SetItemDefaultFocus();
+
+                ImGui::Separator();
+                if (ImGui::Button("Cancel"))
+                {
+                    games_on_filesystem.clear();
+                    paused = false;
+                    handle_add_game = false;
+                    game_added = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
+        else
+        {
+            ImGui::OpenPopup("Info");
+            ImGui::SetNextWindowPos(ImVec2(250, 220));
+            if (ImGui::BeginPopupModal("Info", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::PushTextWrapPos(400);
+                ImGui::Text("%s", game_added_message);
+                ImGui::PopTextWrapPos();
+                ImGui::Separator();
+                if (ImGui::Button("OK"))
+                {
+                    game_added = false;
+                    paused = false;
+                    handle_add_game = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
+        
     }
 
     void GameScanWindow()

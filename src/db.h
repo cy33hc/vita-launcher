@@ -8,7 +8,9 @@
 #define VITA_APP_DB_FILE "ur0:shell/db/app.db"
 
 #define GAMES_TABLE "games"
+#define FAVORITES_TABLE "favorites"
 
+#define COL_TITLE_ID "title_id"
 #define COL_TYPE "type"
 #define COL_TITLE "title"
 #define COL_CATEGORY "category"
@@ -19,11 +21,14 @@ namespace DB {
     void GetVitaDbGames(GameCategory *category);
     int GetVitaDbGamesCount();
     void SetupDatabase(sqlite3 *database);
-    void Insert(sqlite3 *database, Game *game);
-    Game* FindByRomPath(sqlite3 *database, const char* rom_path);
+    void InsertGame(sqlite3 *database, Game *game);
+    bool GameExists(sqlite3 *database, const char* rom_path);
     int GetCachedGamesCount(sqlite3 *database);
     void GetCachedGames(sqlite3 *database, GameCategory *category);
     void DeleteGame(sqlite3 *database, Game *game);
+    void DeleteFavorite(sqlite3 *database, Game *game);
+    void InsertFavorite(sqlite3 *database, Game *game);
+    void GetFavorites(sqlite3 *database, GameCategory *category);
 }
 
 #endif

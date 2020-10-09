@@ -31,6 +31,8 @@ namespace Windows {
     void ShowSettingsDialog();
     void GameScanWindow();
     void ShowTabBar();
+    void HandleAddNewGame();
+
 }
 
 #endif

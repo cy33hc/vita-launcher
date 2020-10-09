@@ -56,7 +56,7 @@ namespace GAME {
                 std::vector<std::string> files = FS::ListDir(category->roms_path);
                 games_to_scan = files.size();
                 games_scanned = 0;
-                sprintf(scan_message, "Scanning for %s games from the %s folder", category->category, category->roms_path);
+                sprintf(scan_message, "Scanning for %s games in the %s folder", category->title, category->roms_path);
 
                 for(std::size_t j = 0; j < files.size(); ++j) {
                     int index = files[j].find_last_of(".");
@@ -70,7 +70,7 @@ namespace GAME {
                         sprintf(game.title, "%s", files[j].substr(0, index).c_str());
                         game.tex = no_icon;
                         current_category->games.push_back(game);
-                        DB::Insert(db, &game);
+                        DB::InsertGame(db, &game);
                         game_scan_inprogress = game;
                         games_scanned++;
                     }
@@ -87,9 +87,8 @@ namespace GAME {
             LoadGamesCache();
         }
 
-        LoadFavorites();
+        DB::GetFavorites(nullptr, &game_categories[FAVORITES]);
 
-        bool favorites_updated = false;
         for (std::vector<Game>::iterator it=game_categories[FAVORITES].games.begin(); 
              it!=game_categories[FAVORITES].games.end(); )
         {
@@ -102,11 +101,9 @@ namespace GAME {
             else
             {
                 it = game_categories[FAVORITES].games.erase(it);
-                favorites_updated = true;
+                DB::DeleteFavorite(nullptr, &*it);
             }
         }
-        if (favorites_updated)
-            SaveFavorites();
         
         
         for (std::vector<Game>::iterator it=current_category->games.begin();
@@ -402,39 +399,6 @@ namespace GAME {
         }
     }
 
-    void SaveFavorites()
-    {
-        void* fd = FS::Create(FAVORITES_FILE);
-        for (int i=0; i < game_categories[FAVORITES].games.size(); i++)
-        {
-            Game* game = &game_categories[FAVORITES].games[i];
-            char line[512];
-            sprintf(line, "%s||%s||%s||%d||%s\n", game->id, game->title, game->category, game->type, game->rom_path);
-            FS::Write(fd, line, strlen(line));
-        }
-        FS::Close(fd);
-    }
-
-    void LoadFavorites()
-    {
-        if (FS::FileExists(FAVORITES_FILE))
-        {
-            std::vector<char> game_buffer = FS::Load(FAVORITES_FILE);
-            int position = 0;
-            while (position < game_buffer.size())
-            {
-                Game game;
-                sprintf(game.id, "%s", nextToken(game_buffer, position).c_str());
-                sprintf(game.title, "%s", nextToken(game_buffer, position).c_str());
-                sprintf(game.category, "%s", nextToken(game_buffer, position).c_str());
-                game.type = atoi(nextToken(game_buffer, position).c_str());
-                sprintf(game.rom_path, "%s",  nextToken(game_buffer, position).c_str());
-                game.tex = no_icon;
-                game_categories[FAVORITES].games.push_back(game);
-            }
-        }
-    }
-
     Game* FindGame(GameCategory *category, Game *game)
     {
         for (int i=0; i < category->games.size(); i++)
@@ -514,7 +478,7 @@ namespace GAME {
 
     GameCategory* GetRomCategoryByName(const char* category_name)
     {
-        for (int i=0; i<sizeof(ROM_CATEGORIES); i++)
+        for (int i=0; i<6; i++)
         {
             int cat = ROM_CATEGORIES[i];
             if (strcmp(category_name, game_categories[cat].category) == 0)
@@ -522,5 +486,17 @@ namespace GAME {
                 return &game_categories[cat];
             }
         }
+    }
+
+    bool IsRomCategory(int categoryId)
+    {
+        for (int i=0; i<6; i++)
+        {
+            if (categoryId == ROM_CATEGORIES[i])
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
