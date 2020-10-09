@@ -30,10 +30,14 @@
 #define GBA_TITLE_ID_PREFIXES "GBA"
 #define N64_TITLE_ID_PREFIXES "N64"
 
+static SceUID download_vitadb_thid = -1;
+
 namespace CONFIG {
     void LoadConfig();
     void ParseTitlePrefixes(const char* prefix_list, std::vector<std::string> &prefixes);
     void SetupCategory(GameCategory *category, int category_id, const char* category_name,
                        const char* core, const char* title_id, const char* code, const char* default_prefixes);
+    void StartDownloadVitaDbThread();
+    int DownloadVitaDB(SceSize args, void *argp);
 }
 #endif

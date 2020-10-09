@@ -50,7 +50,7 @@ namespace Windows {
                         int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
                         if (index != -1)
-                            DB::InsertFavorite(nullptr, selected_game);
+                            DB::DeleteFavorite(nullptr, selected_game);
                     }
                 }
                 else
@@ -70,7 +70,7 @@ namespace Windows {
                         int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
                         if (index != -1)
-                            DB::InsertFavorite(nullptr, selected_game);
+                            DB::DeleteFavorite(nullptr, selected_game);
                         selected_game = nullptr;
                     }
                 }
@@ -466,7 +466,7 @@ namespace Windows {
                 {
                     if (ImGui::Selectable(games_on_filesystem[i].c_str()))
                     {
-                        sprintf(game.id, "%s", " ");
+                        sprintf(game.id, "%s", current_category->title);
                         game.type = TYPE_ROM;
                         sprintf(game.category, "%s", current_category->category);
                         sprintf(game.rom_path, "%s/%s", current_category->roms_path, games_on_filesystem[i].c_str());

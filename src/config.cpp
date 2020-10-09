@@ -1,3 +1,4 @@
+#include <vitasdk.h>
 #include <string>
 #include <cstring>
 
@@ -6,6 +7,7 @@
 #include "json.h"
 #include "fs.h"
 #include "net.h"
+#include "debugnet.h"
 
 extern "C" {
 	#include "inifile.h"
@@ -121,6 +123,20 @@ namespace CONFIG {
                 }
             }
         }
+
+        // Download vitadb only once per day
+        if (FS::FileExists(VITADB_JSON_FILE))
+        {
+            SceIoStat stat;
+            SceDateTime date;
+            time_t time;
+            sceIoGetstat(VITADB_JSON_FILE, &stat);
+            sceRtcGetCurrentClockLocalTime(&date);
+            if (stat.st_mtime.day != date.day)
+            {
+                StartDownloadVitaDbThread();
+            }
+        }
     }
 
     void ParseTitlePrefixes(const char* prefix_list, std::vector<std::string> &prefixes)
@@ -141,5 +157,19 @@ namespace CONFIG {
                 prefix = "";
             }
         }
+    }
+
+    void StartDownloadVitaDbThread()
+    {
+        download_vitadb_thid = sceKernelCreateThread("download_vitadb_thread", (SceKernelThreadEntry)CONFIG::DownloadVitaDB, 0x10000100, 0x4000, 0, 0, NULL);
+		if (download_vitadb_thid >= 0)
+			sceKernelStartThread(download_vitadb_thid, 0, NULL);
+    }
+
+    int DownloadVitaDB(SceSize args, void *argp)
+    {
+        debugNetPrintf(DEBUG,"Started download vitadb");
+        NET::Download(VITADB_URL, VITADB_JSON_FILE);
+        return sceKernelExitDeleteThread(0);
     }
 }

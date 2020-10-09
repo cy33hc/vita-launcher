@@ -9,7 +9,7 @@
 #include "textures.h"
 
 typedef struct {
-    char id[10];
+    char id[16];
     char title[128];
     char category[10];
     char rom_path[192];

@@ -64,9 +64,9 @@ namespace GAME {
                     {
                         Game game;
                         game.type = TYPE_ROM;
+                        sprintf(game.id, "%s", category->title);
                         sprintf(game.category, "%s", category->category);
                         sprintf(game.rom_path, "%s/%s", category->roms_path, files[j].c_str());
-                        debugNetPrintf(DEBUG,"rom_path %s\n", game.rom_path);
                         sprintf(game.title, "%s", files[j].substr(0, index).c_str());
                         game.tex = no_icon;
                         current_category->games.push_back(game);
