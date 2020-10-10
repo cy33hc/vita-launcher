@@ -461,10 +461,14 @@ namespace GAME {
 
     const char* GetGameCategory(const char *title_id)
     {
+        if (strncmp(title_id, "PSPEMUCFW", 9) == 0)
+        {
+            return game_categories[UTILITIES].category;
+        }
+
         for (int i=1; i<TOTAL_CATEGORY; i++)
         {
-            if (IsMatchPrefixes(title_id, game_categories[i].valid_title_ids) &&
-                strncmp(title_id, "PSPEMUCFW", 9) != 0)
+            if (IsMatchPrefixes(title_id, game_categories[i].valid_title_ids))
             {
                 return game_categories[i].category;
             }
