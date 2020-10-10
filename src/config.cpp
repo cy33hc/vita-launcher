@@ -14,6 +14,7 @@ extern "C" {
 }
 
 bool show_all_categories;
+bool parental_control;
 
 using json = nlohmann::json;
 
@@ -79,8 +80,12 @@ namespace CONFIG {
 		OpenIniFile (CONFIG_INI_FILE);
 
         // Load global config
-        show_all_categories = ReadInt(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, 1);
-        WriteInt(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
+        show_all_categories = ReadBool(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, true);
+        WriteBool(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
+
+        // Load parental control config
+        parental_control = ReadBool(CONFIG_GLOBAL, CONFIG_PARENT_CONTROL, false);
+        WriteBool(CONFIG_GLOBAL, CONFIG_PARENT_CONTROL, parental_control);
 
         SetupCategory(&game_categories[VITA_GAMES], VITA_GAMES, "vita", "Vita", nullptr, nullptr, VITA_TITLE_ID_PREFIXES);
         SetupCategory(&game_categories[PSP_GAMES], PSP_GAMES, "psp", "PSP", nullptr, nullptr, PSP_TITLE_ID_PREFIXES);

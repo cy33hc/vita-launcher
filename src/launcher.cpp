@@ -193,7 +193,7 @@ namespace Windows {
         ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Un-Select"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Mark"); ImGui::SameLine();
+        ImGui::Text("Favorite"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Settings"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
@@ -287,7 +287,7 @@ namespace Windows {
         ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Un-Select"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Mark"); ImGui::SameLine();
+        ImGui::Text("Favorite"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Settings"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
@@ -343,6 +343,7 @@ namespace Windows {
         }
 
         ImGui::SetNextWindowPos(ImVec2(300, 180));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(400,150), ImVec2(400,400), NULL, NULL);
         if (ImGui::BeginPopupModal("Settings and Actions", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             static bool refresh_games = false;
@@ -356,23 +357,27 @@ namespace Windows {
             ImGui::RadioButton("Grid", &view_mode, 0);
             ImGui::SameLine();
             ImGui::RadioButton("List", &view_mode, 1);
-            if (GAME::IsRomCategory(current_category->id))
+
+            if (!parental_control)
             {
-                if (!refresh_games && !add_new_game)
+                if (GAME::IsRomCategory(current_category->id))
+                {
+                    if (!refresh_games && !add_new_game)
+                    {
+                        ImGui::Separator();
+                        ImGui::Checkbox("Remove selected game from cache", &remove_from_cache);
+                    }
+                    if (!refresh_games && !remove_from_cache)
+                    {
+                        ImGui::Separator();
+                        ImGui::Checkbox("Add new game to cache", &add_new_game);
+                    }
+                }
+                if (!remove_from_cache && !add_new_game)
                 {
                     ImGui::Separator();
-                    ImGui::Checkbox("Remove selected game from cache", &remove_from_cache);
+                    ImGui::Checkbox("Rescan games and rebuild cache", &refresh_games);
                 }
-                if (!refresh_games && !remove_from_cache)
-                {
-                    ImGui::Separator();
-                    ImGui::Checkbox("Add new game to cache", &add_new_game);
-                }
-            }
-            if (!remove_from_cache && !add_new_game)
-            {
-                ImGui::Separator();
-                ImGui::Checkbox("Rescan games and rebuild cache", &refresh_games);
             }
             ImGui::Separator();
             if (ImGui::Button("OK"))

@@ -22,6 +22,7 @@
 
 #define CONFIG_GLOBAL "Global"
 #define CONFIG_SHOW_ALL_CATEGORIES "show_all_categories"
+#define CONFIG_PARENT_CONTROL "parental_control"
 
 #define VITA_TITLE_ID_PREFIXES "PCSA,PCSB,PCSC,PCSD,PCSE,PCSF,PCSG,PCSH,PCSI"
 #define PSP_TITLE_ID_PREFIXES "NPEG,NPEH,NPHG,NPHH,NPJG,NPJH,NPJJ,NPUF,NPUG,NPUH,NPUI,NPUJ,UCAS,UCES,UCUS,ULES,ULUS,PSPEM"
@@ -42,6 +43,7 @@
 
 static SceUID download_vitadb_thid = -1;
 extern bool show_all_categories;
+extern bool parental_control;
 
 namespace CONFIG {
     void LoadConfig();
