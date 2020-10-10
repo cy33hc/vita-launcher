@@ -15,9 +15,13 @@
 #define CONFIG_RETRO_CORE "retro_core"
 #define CONFIG_ROM_LAUNCHER_TITLE_ID "rom_launcher_title_id"
 #define CONFIG_TITLE_ID_PREFIXES "title_id_prefixes"
+#define CONFIG_ICON_PATH "icon_path"
 
 #define VIEW_MODE_GRID 0
 #define VIEW_MODE_LIST 1
+
+#define CONFIG_GLOBAL "Global"
+#define CONFIG_SHOW_ALL_CATEGORIES "show_all_categories"
 
 #define VITA_TITLE_ID_PREFIXES "PCSA,PCSB,PCSC,PCSD,PCSE,PCSF,PCSG,PCSH,PCSI"
 #define PSP_TITLE_ID_PREFIXES "NPEG,NPEH,NPHG,NPHH,NPJG,NPJH,NPJJ,NPUF,NPUG,NPUH,NPUI,NPUJ,UCAS,UCES,UCUS,ULES,ULUS,PSPEM"
@@ -37,6 +41,7 @@
 #define NEC_TITLE_ID_PREFIXES "NEC"
 
 static SceUID download_vitadb_thid = -1;
+extern bool show_all_categories;
 
 namespace CONFIG {
     void LoadConfig();

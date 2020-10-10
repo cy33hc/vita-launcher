@@ -7,7 +7,6 @@
 #include "game.h"
 #include "db.h"
 #include "config.h"
-#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -308,7 +307,7 @@ namespace Windows {
         if (ImGui::BeginTabBar("Categories", tab_bar_flags))
         {
             for (int i=0; i<TOTAL_CATEGORY; i++)
-            if (game_categories[i].games.size() > 0)
+            if (game_categories[i].games.size() > 0 || show_all_categories)
             {
                 ImGui::PushStyleColor(ImGuiCol_TabActive, ImVec4(0.31f, 0.31f, 0.31f, 1.00f));
                 if (ImGui::BeginTabItem(game_categories[i].title))
@@ -343,12 +342,16 @@ namespace Windows {
             ImGui::OpenPopup("Settings and Actions");
         }
 
-        ImGui::SetNextWindowPos(ImVec2(360, 220));
+        ImGui::SetNextWindowPos(ImVec2(300, 180));
         if (ImGui::BeginPopupModal("Settings and Actions", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             static bool refresh_games = false;
             static bool remove_from_cache = false;
             static bool add_new_game = false;
+
+            ImGui::Text("Global Settings");
+            ImGui::Checkbox("Show All Categories", &show_all_categories);
+            ImGui::Separator();
             ImGui::Text("%s View:", current_category->title);
             ImGui::RadioButton("Grid", &view_mode, 0);
             ImGui::SameLine();
@@ -374,19 +377,20 @@ namespace Windows {
             ImGui::Separator();
             if (ImGui::Button("OK"))
             {
+                OpenIniFile (CONFIG_INI_FILE);
+                WriteInt(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
                 if (view_mode != current_category->view_mode)
                 {
                     current_category->view_mode = view_mode;
-                    OpenIniFile (CONFIG_INI_FILE);
                     WriteInt(current_category->title, CONFIG_VIEW_MODE, view_mode);
-                    WriteIniFile(CONFIG_INI_FILE);
-                    CloseIniFile();
 
                     if (view_mode == VIEW_MODE_GRID)
                     {
                         GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
                     }
                 }
+                WriteIniFile(CONFIG_INI_FILE);
+                CloseIniFile();
 
                 if (refresh_games)
                     GAME::RefreshGames();
@@ -406,15 +410,6 @@ namespace Windows {
                 if (add_new_game)
                     handle_add_game = true;
 
-                paused = false;
-                refresh_games = false;
-                remove_from_cache = false;
-                add_new_game = false;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel"))
-            {
                 paused = false;
                 refresh_games = false;
                 remove_from_cache = false;

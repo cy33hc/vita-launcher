@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <map>
 #include "textures.h"
 
 typedef struct {
@@ -25,6 +26,7 @@ typedef struct {
     std::vector<std::string> valid_title_ids;
     char category[10];
     char roms_path[64];
+    char icon_path[64];
     char core[64];
     char rom_launcher_title_id[12];
     int max_page;
@@ -64,6 +66,7 @@ typedef struct {
 #define TYPE_ROM 1
 
 extern GameCategory game_categories[];
+extern std::map<std::string, GameCategory*> categoryMap;
 extern GameCategory *current_category;
 extern bool game_scan_complete;
 extern int games_to_scan;

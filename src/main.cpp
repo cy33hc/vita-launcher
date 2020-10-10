@@ -15,7 +15,7 @@
 #include "game.h"
 #include "config.h"
 #include "net.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 
 namespace Services {
 	int InitImGui(void) {
@@ -70,7 +70,7 @@ namespace Services {
 
 int main(int, char**)
 {
-	debugNetInit(ip_server,port_server,DEBUG);
+	//debugNetInit(ip_server,port_server,DEBUG);
 	NET::InitNet();
 	NET::InitHttp();
 

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <vector>
+#include <map>
 #include <vitasdk.h>
 
 #include "game.h"
@@ -11,12 +12,13 @@
 #include "windows.h"
 #include "textures.h"
 #include "db.h"
-#include "debugnet.h"
 
 #define FAVORITES_FILE "ux0:data/SMLA00001/favorites.txt"
 #define NUM_CACHED_PAGES 5
 
 GameCategory game_categories[TOTAL_CATEGORY];
+std::map<std::string, GameCategory*> categoryMap;
+
 GameCategory *current_category;
 
 bool game_scan_complete = false;
@@ -158,16 +160,12 @@ namespace GAME {
         else
         {
             GameCategory* category = GetRomCategoryByName(game->category);
-            debugNetPrintf(DEBUG,"core %s\n", category->core);
-            debugNetPrintf(DEBUG,"title_id %s\n", category->rom_launcher_title_id);
-            debugNetPrintf(DEBUG,"rom_path %s\n", game->rom_path);
             if (category != nullptr)
             {
                 if (strcmp(category->rom_launcher_title_id, "RETROVITA") == 0)
                 {
                     char uri[512];
                     sprintf(uri, "psgm:play?titleid=%s&param=%s&param2=%s", category->rom_launcher_title_id, category->core, game->rom_path);
-                    debugNetPrintf(DEBUG,"uri %s\n", uri);
                     sceAppMgrLaunchAppByUri(0xFFFFF, uri);
                     sceKernelDelayThread(1000);
                     sceKernelExitProcess(0);
@@ -311,10 +309,8 @@ namespace GAME {
         }
         else
         {
-            std::string rom_path = std::string(game->rom_path);
-            int index = rom_path.find_last_of(".");
-            sprintf(icon_path, "%s\.png", rom_path.substr(0, index).c_str());
-            debugNetPrintf(DEBUG,"icon_path %s\n", icon_path);
+            GameCategory* category = categoryMap[game->category];
+            sprintf(icon_path, "%s/%s\.png", category->icon_path, game->title);
         }
         
         if (FS::FileExists(icon_path))

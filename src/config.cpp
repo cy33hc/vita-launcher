@@ -1,17 +1,19 @@
 #include <vitasdk.h>
 #include <string>
 #include <cstring>
+#include <map>
 
 #include "config.h"
 #include "game.h"
 #include "json.h"
 #include "fs.h"
 #include "net.h"
-#include "debugnet.h"
 
 extern "C" {
 	#include "inifile.h"
 }
+
+bool show_all_categories;
 
 using json = nlohmann::json;
 
@@ -50,6 +52,10 @@ namespace CONFIG {
                 sprintf(category->roms_path, "ux0:roms/%s", category->title);
                 sprintf(category->roms_path, "%s", ReadString(category->title, CONFIG_ROMS_PATH, category->roms_path));
                 WriteString(category->title, CONFIG_ROMS_PATH, category->roms_path);
+
+                sprintf(category->icon_path, "ux0:roms/%s", category->title);
+                sprintf(category->icon_path, "%s", ReadString(category->title, CONFIG_ICON_PATH, category->icon_path));
+                WriteString(category->title, CONFIG_ICON_PATH, category->icon_path);
             }
         }
 
@@ -65,11 +71,16 @@ namespace CONFIG {
 			WriteInt(category->title, CONFIG_VIEW_MODE, VIEW_MODE_GRID);
 		}
 
+        categoryMap.insert(std::make_pair(category->category, category));
     }
 
     void LoadConfig()
     {
 		OpenIniFile (CONFIG_INI_FILE);
+
+        // Load global config
+        show_all_categories = ReadInt(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, 1);
+        WriteInt(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
 
         SetupCategory(&game_categories[VITA_GAMES], VITA_GAMES, "vita", "Vita", nullptr, nullptr, VITA_TITLE_ID_PREFIXES);
         SetupCategory(&game_categories[PSP_GAMES], PSP_GAMES, "psp", "PSP", nullptr, nullptr, PSP_TITLE_ID_PREFIXES);
@@ -174,7 +185,6 @@ namespace CONFIG {
 
     int DownloadVitaDB(SceSize args, void *argp)
     {
-        debugNetPrintf(DEBUG,"Started download vitadb");
         NET::Download(VITADB_URL, VITADB_JSON_FILE);
         return sceKernelExitDeleteThread(0);
     }
