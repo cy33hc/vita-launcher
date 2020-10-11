@@ -48,7 +48,8 @@
 #define ATARI_7800_TITLE_ID_PREFIXES "AT7800"
 #define ATARI_LYNX_TITLE_ID_PREFIXES "ATLYNX"
 #define BANDAI_TITLE_ID_PREFIXES "BANDAI"
-#define C64_TITLE_ID_PREFIXES "BANDAI"
+#define C64_TITLE_ID_PREFIXES "C64"
+#define MSX2_TITLE_ID_PREFIXES "MSX2"
 
 static SceUID download_vitadb_thid = -1;
 extern bool show_all_categories;
