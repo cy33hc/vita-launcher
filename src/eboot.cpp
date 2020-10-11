@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "fs.h"
+#include "game.h"
 
 typedef struct {
    char   signature[4];

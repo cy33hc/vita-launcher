@@ -76,18 +76,24 @@ typedef struct {
 #define MASTER_SYSTEM_GAMES 14
 #define MEGA_DRIVE_GAMES 15
 #define NEC_GAMES 16
-#define PORT_GAMES 17
-#define ORIGINAL_GAMES 18
-#define UTILITIES 19
-#define EMULATORS 20
-#define HOMEBREWS 21
+#define ATARI_2600_GAMES 17
+#define ATARI_7800_GAMES 18
+#define ATARI_LYNX_GAMES 19
+#define BANDAI_GAMES 20
+#define C64_GAMES 21
+#define MSX2_GAMES 22
+#define PORT_GAMES 23
+#define ORIGINAL_GAMES 24
+#define UTILITIES 25
+#define EMULATORS 26
+#define HOMEBREWS 27
 
-#define TOTAL_CATEGORY 22
-#define TOTAL_ROM_CATEGORY 13
+#define TOTAL_CATEGORY 28
+#define TOTAL_ROM_CATEGORY 19
 
 #define TYPE_BUBBLE 0
 #define TYPE_ROM 1
-#define TYPE_ISO 2
+#define TYPE_PSP_ISO 2
 #define TYPE_EBOOT 3
 
 extern GameCategory game_categories[];

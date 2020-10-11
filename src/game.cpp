@@ -29,7 +29,8 @@ int games_scanned = 0;
 Game game_scan_inprogress;
 char scan_message[256];
 int ROM_CATEGORIES[TOTAL_ROM_CATEGORY] = {PS1_GAMES, NES_GAMES, SNES_GAMES, GB_GAMES, GBA_GAMES, N64_GAMES, GBC_GAMES, NEC_GAMES,
-                         GBC_GAMES, NEOGEO_GAMES, GAME_GEAR_GAMES, MASTER_SYSTEM_GAMES, MEGA_DRIVE_GAMES};
+                         GBC_GAMES, NEOGEO_GAMES, GAME_GEAR_GAMES, MASTER_SYSTEM_GAMES, MEGA_DRIVE_GAMES, ATARI_2600_GAMES,
+                         ATARI_7800_GAMES, ATARI_LYNX_GAMES, BANDAI_GAMES, C64_GAMES, MSX2_GAMES};
 char adernaline_launcher_boot_bin_path[32];
 char adernaline_launcher_title_id[12];
 BootSettings defaul_boot_settings;
@@ -127,7 +128,7 @@ namespace GAME {
         for(std::size_t j = 0; j < files.size(); ++j)
         {
             Game game;
-            game.type = TYPE_ISO;
+            game.type = TYPE_PSP_ISO;
             sprintf(game.id, "%s%04d", "SMLAP", j);
             sprintf(game.category, "%s", category->category);
             sprintf(game.rom_path, "%s/%s", PSP_ISO_PATH, files[j].c_str());
@@ -262,7 +263,7 @@ namespace GAME {
                     sceKernelExitProcess(0);
                 }
             }
-        } else if (game->type >= TYPE_ISO)
+        } else if (game->type >= TYPE_PSP_ISO)
         {
             char boot_data[320];
             memset(boot_data, 0, sizeof(boot_data));
@@ -548,7 +549,7 @@ namespace GAME {
     {
         for (int i=0; i < category->games.size(); i++)
         {
-            if (((game->type == TYPE_BUBBLE || game->type >= TYPE_ISO) && strcmp(game->id, category->games[i].id) == 0) ||
+            if (((game->type == TYPE_BUBBLE || game->type >= TYPE_PSP_ISO) && strcmp(game->id, category->games[i].id) == 0) ||
                 (game->type == TYPE_ROM && strcmp(game->rom_path, category->games[i].rom_path) == 0))
             {
                 return i;

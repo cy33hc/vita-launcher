@@ -161,7 +161,7 @@ namespace Windows {
                     ImGui::PushID(button_id);
                     Game *game = &current_category->games[game_start_index+button_id];
                     if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127), ImVec2(0,0), ImVec2(1,1))) {
-                        if (game->type < TYPE_ISO)
+                        if (game->type < TYPE_PSP_ISO)
                         {
                             GAME::Launch(game, nullptr);
                         }
@@ -269,7 +269,7 @@ namespace Windows {
             ImGui::SetColumnWidth(-1, 760);
             ImGui::PushID(i);
             if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
-                if (game->type < TYPE_ISO)
+                if (game->type < TYPE_PSP_ISO)
                 {
                     GAME::Launch(game, nullptr);
                 }

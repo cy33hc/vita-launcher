@@ -119,6 +119,11 @@ namespace CONFIG {
         SetupCategory(&game_categories[MASTER_SYSTEM_GAMES], MASTER_SYSTEM_GAMES, "msystem", "M-System", "RETROVITA", "app0:genesis_plus_gx_libretro.self", MASTER_SYSTEM_TITLE_ID_PREFIXES);
         SetupCategory(&game_categories[MEGA_DRIVE_GAMES], MEGA_DRIVE_GAMES, "mdrive", "M-Drive", "RETROVITA", "app0:picodrive_libretro.self", MEGA_DRIVE_TITLE_ID_PREFIXES);
         SetupCategory(&game_categories[NEC_GAMES], NEC_GAMES, "nec", "NEC", "RETROVITA", "app0:mednafen_pce_fast_libretro.self", NEC_TITLE_ID_PREFIXES);
+        SetupCategory(&game_categories[ATARI_2600_GAMES], ATARI_2600_GAMES, "a2600", "A-2600", "RETROVITA", "app0:stella2014_libretro.self", ATARI_2600_TITLE_ID_PREFIXES);
+        SetupCategory(&game_categories[ATARI_7800_GAMES], ATARI_7800_GAMES, "a7800", "A-7800", "RETROVITA", "app0:prosystem_libretro.self", ATARI_7800_TITLE_ID_PREFIXES);
+        SetupCategory(&game_categories[ATARI_LYNX_GAMES], ATARI_LYNX_GAMES, "aLynx", "A-Lynx", "RETROVITA", "app0:handy_libretro.self", ATARI_LYNX_TITLE_ID_PREFIXES);
+        SetupCategory(&game_categories[BANDAI_GAMES], BANDAI_GAMES, "bandai", "Bandai", "RETROVITA", "app0:mednafen_wswan_libretro.self", BANDAI_TITLE_ID_PREFIXES);
+        SetupCategory(&game_categories[C64_GAMES], C64_GAMES, "c64", "C64", "RETROVITA", "app0:vice_x64_libretro.self", C64_TITLE_ID_PREFIXES);
         SetupCategory(&game_categories[PORT_GAMES], PORT_GAMES, "ports", "Ports", nullptr, nullptr, nullptr);
         SetupCategory(&game_categories[ORIGINAL_GAMES], ORIGINAL_GAMES, "original", "Originals", nullptr, nullptr, nullptr);
         SetupCategory(&game_categories[UTILITIES], UTILITIES, "utilities", "Utilities", nullptr, nullptr, nullptr);
