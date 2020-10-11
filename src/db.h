@@ -22,7 +22,7 @@ namespace DB {
     int GetVitaDbGamesCount();
     void SetupDatabase(sqlite3 *database);
     void InsertGame(sqlite3 *database, Game *game);
-    bool GameExists(sqlite3 *database, const char* rom_path);
+    bool GameExists(sqlite3 *database, Game *game);
     int GetCachedGamesCount(sqlite3 *database);
     void GetCachedGames(sqlite3 *database, GameCategory *category);
     void DeleteGame(sqlite3 *database, Game *game);

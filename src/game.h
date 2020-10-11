@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include "textures.h"
+#include "sqlite3.h"
 
 typedef struct {
     char id[16];
@@ -25,8 +26,8 @@ typedef struct {
     std::vector<Game> games;
     std::vector<std::string> valid_title_ids;
     char category[10];
-    char roms_path[64];
-    char icon_path[64];
+    char roms_path[96];
+    char icon_path[96];
     char core[64];
     char rom_launcher_title_id[12];
     int max_page;
@@ -35,6 +36,28 @@ typedef struct {
     int list_view_position;
     bool opened;
 } GameCategory;
+
+enum drivers {INFERNO=0, MARCH33=1, NP9660=2};
+enum execute {EBOOT_BIN=0, BOOT_BIN=1, EBOOT_OLD=2};
+enum psbutton_mode {MENU=0, LIVEAREA=1, STANDARD=2};
+enum suspend_threads {SUSPEND_YES=0, SUSPEND_NO=1};
+enum plugins {PLUGINS_DEFAULT=0, PLUGINS_ENABLE=1, PLUGINS_DISABLE=2};
+enum nonpdrm {NONPDRM_DEFAULT=0, NONPDRM_ENABLE=1, NONPDRM_DISABLE=2};
+enum high_memory {HIGH_MEM_DEFAULT=0, HIGH_MEM_ENABLE=1, HIGH_MEM_DISABLE=2};
+enum cpu_speed {CPU_DEFAULT=0, CPU_20_10=1, CPU_50_25=2, CPU_75_37=3, CPU_100_50=4, CPU_111_55, CPU_122_61, CPU_133_66,
+                CPU_166_83, CPU_200_100, CPU_222_111, CPU_288_144, CPU_300_150, CPU_333_166};
+
+typedef struct {
+    drivers driver;
+    execute execute;
+    bool customized;
+    psbutton_mode ps_button_mode;
+    suspend_threads suspend_threads;
+    plugins plugins;
+    nonpdrm nonpdrm;
+    high_memory high_memory;
+    cpu_speed cpu_speed;
+} BootSettings;
 
 #define FAVORITES 0
 #define VITA_GAMES 1
@@ -64,6 +87,8 @@ typedef struct {
 
 #define TYPE_BUBBLE 0
 #define TYPE_ROM 1
+#define TYPE_ISO 2
+#define TYPE_EBOOT 3
 
 extern GameCategory game_categories[];
 extern std::map<std::string, GameCategory*> categoryMap;
@@ -74,6 +99,9 @@ extern int games_scanned;
 extern Game game_scan_inprogress;
 extern char scan_message[];
 extern int ROM_CATEGORIES[];
+extern char adernaline_launcher_boot_bin_path[];
+extern char adernaline_launcher_title_id[];
+extern BootSettings defaul_boot_settings;
 
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;
@@ -88,8 +116,11 @@ namespace GAME {
     int GameComparator(const void *v1, const void *v2);
     void Init();
     void Scan();
+    void ScanForRetroGames(sqlite3 *db);
+    void ScanAdernalineIsoGames(sqlite3 *db);
+    void ScanAdernalineEbootGames(sqlite3 *db);
     bool GetGameDetails(const char *id, Game *game);
-    bool Launch(Game *game);
+    bool Launch(Game *game, BootSettings *settings);
     void LoadGamesCache();
     void LoadGameImages(int category, int prev_page, int page_num);
     void LoadGameImage(Game *game);

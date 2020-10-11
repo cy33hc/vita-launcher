@@ -11,9 +11,11 @@
 #include "fs.h"
 #include "windows.h"
 #include "textures.h"
+#include "config.h"
 #include "db.h"
+#include "eboot.h"
+#include "debugnet.h"
 
-#define FAVORITES_FILE "ux0:data/SMLA00001/favorites.txt"
 #define NUM_CACHED_PAGES 5
 
 GameCategory game_categories[TOTAL_CATEGORY];
@@ -28,6 +30,9 @@ Game game_scan_inprogress;
 char scan_message[256];
 int ROM_CATEGORIES[TOTAL_ROM_CATEGORY] = {PS1_GAMES, NES_GAMES, SNES_GAMES, GB_GAMES, GBA_GAMES, N64_GAMES, GBC_GAMES, NEC_GAMES,
                          GBC_GAMES, NEOGEO_GAMES, GAME_GEAR_GAMES, MASTER_SYSTEM_GAMES, MEGA_DRIVE_GAMES};
+char adernaline_launcher_boot_bin_path[32];
+char adernaline_launcher_title_id[12];
+BootSettings defaul_boot_settings;
 
 bool use_game_db = true;
 
@@ -51,39 +56,10 @@ namespace GAME {
             sqlite3_open(CACHE_DB_FILE, &db);
             DB::SetupDatabase(db);
 
-            for (int i=0; i<TOTAL_ROM_CATEGORY; i++)
-            {
-                int category_id = ROM_CATEGORIES[i];
+            ScanForRetroGames(db);
+            ScanAdernalineIsoGames(db);
+            ScanAdernalineEbootGames(db);
 
-                GameCategory *category = &game_categories[category_id];
-                std::vector<std::string> files = FS::ListDir(category->roms_path);
-                games_to_scan = files.size();
-                games_scanned = 0;
-                sprintf(scan_message, "Scanning for %s games in the %s folder", category->title, category->roms_path);
-
-                for(std::size_t j = 0; j < files.size(); ++j) {
-                    int index = files[j].find_last_of(".");
-                    if (files[j].substr(index) != ".png")
-                    {
-                        Game game;
-                        game.type = TYPE_ROM;
-                        sprintf(game.id, "%s", category->title);
-                        sprintf(game.category, "%s", category->category);
-                        sprintf(game.rom_path, "%s/%s", category->roms_path, files[j].c_str());
-                        sprintf(game.title, "%s", files[j].substr(0, index).c_str());
-                        game.tex = no_icon;
-                        current_category->games.push_back(game);
-                        DB::InsertGame(db, &game);
-                        game_scan_inprogress = game;
-                        games_scanned++;
-                    }
-                    else
-                    {
-                        games_to_scan--;
-                    }
-                    
-                }
-            }
             sqlite3_close(db);
         }
         else {
@@ -107,7 +83,6 @@ namespace GAME {
                 DB::DeleteFavorite(nullptr, &*it);
             }
         }
-        
         
         for (std::vector<Game>::iterator it=current_category->games.begin();
             it!=current_category->games.end(); )
@@ -140,6 +115,114 @@ namespace GAME {
         }
     }
 
+    void ScanAdernalineIsoGames(sqlite3 *db)
+    {
+        GameCategory *category = &game_categories[PSP_GAMES];
+        std::vector<std::string> files = FS::ListDir(PSP_ISO_PATH);
+
+        games_to_scan = files.size();
+        games_scanned = 0;
+        sprintf(scan_message, "Scanning for %s games in the %s folder", "ISO", PSP_ISO_PATH);
+
+        for(std::size_t j = 0; j < files.size(); ++j)
+        {
+            Game game;
+            game.type = TYPE_ISO;
+            sprintf(game.id, "%s%04d", "SMLAP", j);
+            sprintf(game.category, "%s", category->category);
+            sprintf(game.rom_path, "%s/%s", PSP_ISO_PATH, files[j].c_str());
+            int index = files[j].find_last_of(".");
+            sprintf(game.title, "%s", files[j].substr(0, index).c_str());
+            game.tex = no_icon;
+            category->games.push_back(game);
+            DB::InsertGame(db, &game);
+            game_scan_inprogress = game;
+            games_scanned++;
+        }
+    }
+
+    void ScanAdernalineEbootGames(sqlite3 *db)
+    {
+        GameCategory *category = &game_categories[VITA_GAMES];
+        std::vector<std::string> files = FS::ListDir(PSP_EBOOT_PATH);
+
+        games_to_scan = files.size();
+        games_scanned = 0;
+        sprintf(scan_message, "Scanning for %s games in the %s folder", "EBOOT", PSP_EBOOT_PATH);
+
+        for(std::size_t j = 0; j < files.size(); ++j)
+        {
+            Game game;
+            sprintf(game.rom_path, "%s/%s/EBOOT.PBP", PSP_EBOOT_PATH, files[j].c_str());
+            char param_sfo[64];
+            sprintf(param_sfo, "ux0:data/SMLA00001/data/%s/param.sfo", files[j].c_str());
+            if (!FS::FileExists(param_sfo))
+            {
+                EBOOT::Extract(game.rom_path, files[j].c_str());
+            }
+            const auto sfo = FS::Load(param_sfo);
+            std::string title = std::string(SFO::GetString(sfo.data(), sfo.size(), "TITLE"));
+            std::replace( title.begin(), title.end(), '\n', ' ');
+            char* cat = SFO::GetString(sfo.data(), sfo.size(), "CATEGORY");
+
+            if (strcmp(cat, "ME") ==0)
+            {
+                sprintf(game.category, "%s", game_categories[PS1_GAMES].category);
+            }
+            else
+            {
+                sprintf(game.category, "%s", game_categories[PS_MIMI_GAMES].category);
+            }
+            game.type = TYPE_EBOOT;
+            sprintf(game.id, "%s", files[j].c_str());
+            sprintf(game.title, "%s", title.c_str());
+            game.tex = no_icon;
+            category->games.push_back(game);
+            DB::InsertGame(db, &game);
+            game_scan_inprogress = game;
+            games_scanned++;
+        }
+    }
+
+    void ScanForRetroGames(sqlite3 *db)
+    {
+
+        for (int i=0; i<TOTAL_ROM_CATEGORY; i++)
+        {
+            int category_id = ROM_CATEGORIES[i];
+
+            GameCategory *category = &game_categories[category_id];
+            std::vector<std::string> files = FS::ListDir(category->roms_path);
+            games_to_scan = files.size();
+            games_scanned = 0;
+            sprintf(scan_message, "Scanning for %s games in the %s folder", category->title, category->roms_path);
+
+            for(std::size_t j = 0; j < files.size(); ++j)
+            {
+                int index = files[j].find_last_of(".");
+                if (files[j].substr(index) != ".png")
+                {
+                    Game game;
+                    game.type = TYPE_ROM;
+                    sprintf(game.id, "%s", category->title);
+                    sprintf(game.category, "%s", category->category);
+                    sprintf(game.rom_path, "%s/%s", category->roms_path, files[j].c_str());
+                    sprintf(game.title, "%s", files[j].substr(0, index).c_str());
+                    game.tex = no_icon;
+                    current_category->games.push_back(game);
+                    DB::InsertGame(db, &game);
+                    game_scan_inprogress = game;
+                    games_scanned++;
+                }
+                else
+                {
+                    games_to_scan--;
+                }
+                
+            }
+        }
+    }
+
     void SetMaxPage(GameCategory *category)
     {
         category->max_page = (category->games.size() + 18 - 1) / 18;
@@ -149,7 +232,7 @@ namespace GAME {
         }
     }
 
-    bool Launch(Game *game) {
+    bool Launch(Game *game, BootSettings *settings) {
         if (game->type == TYPE_BUBBLE)
         {
             char uri[32];
@@ -157,7 +240,7 @@ namespace GAME {
             sceAppMgrLaunchAppByUri(0xFFFFF, uri);
             sceKernelExitProcess(0);
         }
-        else
+        else if (game->type == TYPE_ROM)
         {
             GameCategory* category = GetRomCategoryByName(game->category);
             if (category != nullptr)
@@ -179,8 +262,56 @@ namespace GAME {
                     sceKernelExitProcess(0);
                 }
             }
+        } else if (game->type >= TYPE_ISO)
+        {
+            char boot_data[320];
+            memset(boot_data, 0, sizeof(boot_data));
+            boot_data[0] = 0x41;
+            boot_data[1] = 0x42;
+            boot_data[2] = 0x42;
+
+            boot_data[4] = settings->driver;
+            boot_data[8] = settings->execute;
+            boot_data[12] = 1;
+            boot_data[20] = settings->ps_button_mode;
+            boot_data[24] = settings->suspend_threads;
+            boot_data[32] = settings->plugins;
+            boot_data[36] = settings->nonpdrm;
+            boot_data[40] = settings->high_memory;
+
+            if (settings->driver != defaul_boot_settings.driver ||
+                settings->execute != defaul_boot_settings.execute ||
+                settings->ps_button_mode != defaul_boot_settings.ps_button_mode ||
+                settings->suspend_threads != defaul_boot_settings.suspend_threads ||
+                settings->plugins != defaul_boot_settings.plugins ||
+                settings->nonpdrm != defaul_boot_settings.nonpdrm ||
+                settings->high_memory != defaul_boot_settings.high_memory ||
+                settings->cpu_speed != defaul_boot_settings.cpu_speed)
+            {
+                boot_data[12] = 0;
+            }
+            for (int i=0; i<strlen(game->rom_path); i++)
+            {
+                boot_data[64+i] = game->rom_path[i];
+            }
+            void* fd;
+            if (FS::FileExists(adernaline_launcher_boot_bin_path))
+            {
+                fd = FS::OpenRW(adernaline_launcher_boot_bin_path);
+            }
+            else
+            {
+                fd = FS::Create(adernaline_launcher_boot_bin_path);
+            }
+            FS::Write(fd, boot_data, 320);
+            FS::Close(fd);
+
+            char uri[32];
+            sprintf(uri, "psgm:play?titleid=%s", adernaline_launcher_title_id);
+            sceAppMgrLaunchAppByUri(0xFFFFF, uri);
+            sceKernelExitProcess(0);
+
         }
-        
     };
 
     std::string nextToken(std::vector<char> &buffer, int &nextTokenPos)
@@ -307,6 +438,10 @@ namespace GAME {
         {
             sprintf(icon_path, "ur0:appmeta/%s/icon0.png", game->id);
         }
+        else if (game->type == TYPE_EBOOT)
+        {
+            sprintf(icon_path, "ux0:data/SMLA00001/data/%s/icon0.png", game->id);
+        }
         else
         {
             GameCategory* category = categoryMap[game->category];
@@ -413,7 +548,7 @@ namespace GAME {
     {
         for (int i=0; i < category->games.size(); i++)
         {
-            if ((game->type == TYPE_BUBBLE && strcmp(game->id, category->games[i].id) == 0) ||
+            if (((game->type == TYPE_BUBBLE || game->type >= TYPE_ISO) && strcmp(game->id, category->games[i].id) == 0) ||
                 (game->type == TYPE_ROM && strcmp(game->rom_path, category->games[i].rom_path) == 0))
             {
                 return i;

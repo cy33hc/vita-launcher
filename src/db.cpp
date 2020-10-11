@@ -100,10 +100,15 @@ namespace DB {
         if (!TableExists(db, GAMES_TABLE))
         {
             std::string sql = std::string("CREATE TABLE ") + GAMES_TABLE + "(" +
+                COL_TITLE_ID + " TEXT," +
                 COL_TITLE + " TEXT," +
                 COL_TYPE + " INTEGER," +
                 COL_CATEGORY + " TEXT," +
-                COL_ROM_PATH + " TEXT NOT NULL PRIMARY KEY)";
+                COL_ROM_PATH + " TEXT)";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX games_index ON ") + GAMES_TABLE + "(" + 
+                COL_TITLE + "," + COL_TYPE + "," + COL_CATEGORY + ")";
             sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
         }
 
@@ -115,6 +120,10 @@ namespace DB {
                 COL_TYPE + " INTEGER," +
                 COL_CATEGORY + " TEXT," +
                 COL_ROM_PATH + " TEXT)";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX favorites_index ON ") + FAVORITES_TABLE + "(" + 
+                COL_TITLE + "," + COL_TYPE + "," + COL_CATEGORY + ")";
             sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
         }
 
@@ -227,15 +236,16 @@ namespace DB {
         }
 
         sqlite3_stmt *res;
-        std::string sql = std::string("INSERT INTO ") + GAMES_TABLE + "(" + COL_TITLE +
-            "," + COL_TYPE + "," + COL_CATEGORY + "," + COL_ROM_PATH + ") VALUES (?, ?, ?, ?)";
+        std::string sql = std::string("INSERT INTO ") + GAMES_TABLE + "(" + COL_TITLE_ID + "," + 
+            COL_TITLE + "," + COL_TYPE + "," + COL_CATEGORY + "," + COL_ROM_PATH + ") VALUES (?, ?, ?, ?, ?)";
         int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
     
         if (rc == SQLITE_OK) {
-            sqlite3_bind_text(res, 1, game->title, strlen(game->title), NULL);
-            sqlite3_bind_int(res, 2, game->type);
-            sqlite3_bind_text(res, 3, game->category, strlen(game->category), NULL);
-            sqlite3_bind_text(res, 4, game->rom_path, strlen(game->rom_path), NULL);
+            sqlite3_bind_text(res, 1, game->id, strlen(game->id), NULL);
+            sqlite3_bind_text(res, 2, game->title, strlen(game->title), NULL);
+            sqlite3_bind_int(res, 3, game->type);
+            sqlite3_bind_text(res, 4, game->category, strlen(game->category), NULL);
+            sqlite3_bind_text(res, 5, game->rom_path, strlen(game->rom_path), NULL);
             int step = sqlite3_step(res);
             sqlite3_finalize(res);
         }
@@ -246,7 +256,7 @@ namespace DB {
         }
    }
 
-   bool GameExists(sqlite3 *database, const char* rom_path)
+   bool GameExists(sqlite3 *database, Game *game)
    {
         sqlite3 *db = database;
 
@@ -256,14 +266,15 @@ namespace DB {
         }
 
         sqlite3_stmt *res;
-        std::string sql = std::string("SELECT ") + COL_TITLE + "," +
-            COL_TYPE + "," + COL_CATEGORY + "," + COL_ROM_PATH +
-            " FROM " + GAMES_TABLE + " WHERE " + COL_ROM_PATH + "=?";
+        std::string sql = std::string("SELECT * FROM ") + GAMES_TABLE + " WHERE " + 
+            COL_TITLE + "=? AND " + COL_TYPE + "=? AND " + COL_CATEGORY + "=?";
         int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
 
         bool found = false;
         if (rc == SQLITE_OK) {
-            sqlite3_bind_text(res, 1, rom_path, strlen(rom_path), NULL);
+            sqlite3_bind_text(res, 1, game->title, strlen(game->title), NULL);
+            sqlite3_bind_int(res, 2, game->type);
+            sqlite3_bind_text(res, 3, game->category, strlen(game->category), NULL);
             int step = sqlite3_step(res);
             if (step == SQLITE_ROW)
             {
@@ -319,7 +330,7 @@ namespace DB {
         }
 
         sqlite3_stmt *res;
-        std::string sql = std::string("SELECT ") + COL_TITLE + "," +
+        std::string sql = std::string("SELECT ") + COL_TITLE_ID + "," + COL_TITLE + "," +
             COL_TYPE + "," + COL_CATEGORY + "," + COL_ROM_PATH + " FROM " + GAMES_TABLE;
         int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
     
@@ -327,11 +338,11 @@ namespace DB {
         while (step == SQLITE_ROW)
         {
             Game game;
-            sprintf(game.id, "%s", " ");
-            sprintf(game.title, "%s", sqlite3_column_text(res, 0));
-            game.type = sqlite3_column_int(res, 1);
-            sprintf(game.category, "%s", sqlite3_column_text(res, 2));
-            sprintf(game.rom_path, "%s", sqlite3_column_text(res, 3));
+            sprintf(game.id, "%s", sqlite3_column_text(res, 0));
+            sprintf(game.title, "%s", sqlite3_column_text(res, 1));
+            game.type = sqlite3_column_int(res, 2);
+            sprintf(game.category, "%s", sqlite3_column_text(res, 3));
+            sprintf(game.rom_path, "%s", sqlite3_column_text(res, 4));
             game.tex = no_icon;
             games_scanned++;
             game_scan_inprogress = game;

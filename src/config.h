@@ -9,6 +9,8 @@
 
 #define VITADB_JSON_FILE "ux0:data/SMLA00001/vitadb.json"
 #define VITADB_URL "https://rinnegatamante.it/vitadb/list_hbs_json.php"
+#define PSP_ISO_PATH "ux0:pspemu/ISO"
+#define PSP_EBOOT_PATH "ux0:pspemu/PSP/GAME"
 
 #define CONFIG_VIEW_MODE "view_mode"
 #define CONFIG_ROMS_PATH "roms_path"
@@ -16,6 +18,8 @@
 #define CONFIG_ROM_LAUNCHER_TITLE_ID "rom_launcher_title_id"
 #define CONFIG_TITLE_ID_PREFIXES "title_id_prefixes"
 #define CONFIG_ICON_PATH "icon_path"
+#define CONFIG_ADERNALINE_LAUNCHER_TITLE_ID "adernaline_launcher_title_id"
+#define DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID "ADRLANCHR"
 
 #define VIEW_MODE_GRID 0
 #define VIEW_MODE_LIST 1

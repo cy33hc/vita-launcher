@@ -41,12 +41,14 @@ add_executable(${PROJECT_NAME}
   src/db.cpp
   src/net.cpp
   src/config.cpp
+  src/eboot.cpp
   sqlite-3.6.23.1/sqlite3.c
 )
 
 target_link_libraries(${PROJECT_NAME}
   ${CURL_LIBRARIES}
   ${OPENSSL_LIBRARIES}
+  debugnet
   vita2d
   png
   imgui_vita2d

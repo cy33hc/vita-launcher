@@ -82,6 +82,12 @@ namespace FS {
         return (void*)(intptr_t)fd;
     }
 
+    void* OpenRead(const std::string& path)
+    {
+        SceUID fd = sceIoOpen(path.c_str(), SCE_O_RDONLY, 0777);
+        return (void*)(intptr_t)fd;
+    }
+
     void* Append(const std::string& path)
     {
         SceUID fd =

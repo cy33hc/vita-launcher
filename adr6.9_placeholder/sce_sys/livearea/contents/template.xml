@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<livearea style="psmobile" format-ver="01.00" content-rev="1"> 
+	<livearea-background>
+		<image>bg0.png</image>
+	</livearea-background>
+	<gate>
+		<startup-image>startup.png</startup-image>
+	</gate>
+	<frame id="frame2">
+		<liveitem>
+			<text valign="bottom" align="left" text-align="left" text-valign="bottom" line-space="3" ellipsis="on">
+				<str color="#ffffff" size="40" bold="on" shadow="on">Adrenaline</str>
+			</text>
+		</liveitem>
+	</frame>
+	<frame id="frame3">
+		<liveitem>
+			<text valign="bottom" align="left" text-align="left" text-valign="bottom" line-space="3" ellipsis="on">
+				<str color="#ffffff" size="40" bold="on" shadow="on">Launcher</str>
+			</text>
+		</liveitem>
+	</frame>
+</livearea>
+

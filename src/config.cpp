@@ -79,6 +79,17 @@ namespace CONFIG {
     {
 		OpenIniFile (CONFIG_INI_FILE);
 
+        // Adernaline Default Boot Settings
+        defaul_boot_settings.driver = INFERNO;
+        defaul_boot_settings.execute = EBOOT_BIN;
+        defaul_boot_settings.customized = true;
+        defaul_boot_settings.ps_button_mode = MENU;
+        defaul_boot_settings.suspend_threads = SUSPEND_YES;
+        defaul_boot_settings.plugins = PLUGINS_DISABLE;
+        defaul_boot_settings.nonpdrm = NONPDRM_DISABLE;
+        defaul_boot_settings.high_memory = HIGH_MEM_DISABLE;
+        defaul_boot_settings.cpu_speed = CPU_DEFAULT;
+
         // Load global config
         show_all_categories = ReadBool(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, true);
         WriteBool(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
@@ -86,6 +97,11 @@ namespace CONFIG {
         // Load parental control config
         parental_control = ReadBool(CONFIG_GLOBAL, CONFIG_PARENT_CONTROL, false);
         WriteBool(CONFIG_GLOBAL, CONFIG_PARENT_CONTROL, parental_control);
+
+        // Load adernaline config
+        sprintf(adernaline_launcher_title_id, "%s", ReadString(CONFIG_GLOBAL, CONFIG_ADERNALINE_LAUNCHER_TITLE_ID, DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID));
+        WriteString(CONFIG_GLOBAL, CONFIG_ADERNALINE_LAUNCHER_TITLE_ID, adernaline_launcher_title_id);
+        sprintf(adernaline_launcher_boot_bin_path, "ux0:app/%s/data/boot.bin", adernaline_launcher_title_id);
 
         SetupCategory(&game_categories[VITA_GAMES], VITA_GAMES, "vita", "Vita", nullptr, nullptr, VITA_TITLE_ID_PREFIXES);
         SetupCategory(&game_categories[PSP_GAMES], PSP_GAMES, "psp", "PSP", nullptr, nullptr, PSP_TITLE_ID_PREFIXES);

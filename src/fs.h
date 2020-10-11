@@ -21,8 +21,13 @@ namespace FS {
 
     // creates file (if it exists, truncates size to 0)
     void* Create(const std::string& path);
+
     // open existing file in read/write, fails if file does not exist
     void* OpenRW(const std::string& path);
+ 
+    // open existing file in read/write, fails if file does not exist
+    void* OpenRead(const std::string& path);
+
     // open file for writing, next write will append data to end of it
     void* Append(const std::string& path);
 

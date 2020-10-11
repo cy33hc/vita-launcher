@@ -20,6 +20,7 @@ static float scroll_direction = 0.0f;
 
 bool handle_add_game = false;
 bool game_added = false;
+bool handle_boot_game = false;
 char game_added_message[256];
 
 namespace Windows {
@@ -160,7 +161,14 @@ namespace Windows {
                     ImGui::PushID(button_id);
                     Game *game = &current_category->games[game_start_index+button_id];
                     if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127), ImVec2(0,0), ImVec2(1,1))) {
-                        GAME::Launch(game);
+                        if (game->type < TYPE_ISO)
+                        {
+                            GAME::Launch(game, nullptr);
+                        }
+                        else
+                        {
+                            handle_boot_game = true;
+                        }
                     }
                     if (ImGui::IsItemFocused())
                     {
@@ -202,6 +210,11 @@ namespace Windows {
         if (handle_add_game)
         {
             HandleAddNewGame();
+        }
+
+        if (handle_boot_game)
+        {
+            HandleAdernalineGame();
         }
 
         ShowSettingsDialog();
@@ -256,7 +269,14 @@ namespace Windows {
             ImGui::SetColumnWidth(-1, 760);
             ImGui::PushID(i);
             if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
-                GAME::Launch(game);
+                if (game->type < TYPE_ISO)
+                {
+                    GAME::Launch(game, nullptr);
+                }
+                else
+                {
+                    handle_boot_game = true;
+                }
             ImGui::PopID();
             if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
             {
@@ -296,6 +316,11 @@ namespace Windows {
         if (handle_add_game)
         {
             HandleAddNewGame();
+        }
+
+        if (handle_boot_game)
+        {
+            HandleAdernalineGame();
         }
 
         ShowSettingsDialog();
@@ -425,6 +450,90 @@ namespace Windows {
         }
     }
 
+    void HandleAdernalineGame()
+    {
+        paused = true;
+
+        ImGui::OpenPopup("Boot Adernaline Game");
+        ImGui::SetNextWindowPos(ImVec2(230, 100));
+        ImGui::SetNextWindowSize(ImVec2(490,350));
+        if (ImGui::BeginPopupModal("Boot Adernaline Game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+        {
+            static BootSettings settings = defaul_boot_settings;
+
+
+            ImGui::Text("Boot Settings");
+            ImGui::Separator();
+            ImGui::Text("Driver:"); ImGui::SameLine();
+            if (ImGui::RadioButton("Inferno", settings.driver == INFERNO)) { settings.driver = INFERNO; } ImGui::SameLine();
+            if (ImGui::RadioButton("March33", settings.driver == MARCH33)) { settings.driver = MARCH33; } ImGui::SameLine();
+            if (ImGui::RadioButton("NP9660", settings.driver == NP9660)) { settings.driver = NP9660; }
+
+            ImGui::Text("Execute:"); ImGui::SameLine();
+            if (ImGui::RadioButton("eboot.bin", settings.execute == EBOOT_BIN)) { settings.execute = EBOOT_BIN; } ImGui::SameLine();
+            if (ImGui::RadioButton("boot.bin", settings.execute == BOOT_BIN)) { settings.execute = BOOT_BIN; } ImGui::SameLine();
+            if (ImGui::RadioButton("eboot.old", settings.execute == EBOOT_OLD)) { settings.execute = EBOOT_OLD; }
+
+            ImGui::Text("PS Button Mode:"); ImGui::SameLine();
+            if (ImGui::RadioButton("Menu", settings.ps_button_mode == MENU)) { settings.ps_button_mode = MENU; } ImGui::SameLine();
+            if (ImGui::RadioButton("LiveArea", settings.ps_button_mode == LIVEAREA)) { settings.ps_button_mode = LIVEAREA; } ImGui::SameLine();
+            if (ImGui::RadioButton("Standard", settings.ps_button_mode == STANDARD)) { settings.ps_button_mode = STANDARD; }
+
+            ImGui::Text("Suspend Threads:"); ImGui::SameLine();
+            if (ImGui::RadioButton("Yes", settings.suspend_threads == SUSPEND_YES)) { settings.suspend_threads = SUSPEND_YES; } ImGui::SameLine();
+            if (ImGui::RadioButton("No", settings.suspend_threads == SUSPEND_NO)) { settings.suspend_threads = SUSPEND_NO; }
+
+            ImGui::Text("Plugins:"); ImGui::SameLine();
+            if (ImGui::RadioButton("Default##plugins", settings.plugins == PLUGINS_DEFAULT)) { settings.plugins = PLUGINS_DEFAULT; } ImGui::SameLine();
+            if (ImGui::RadioButton("Enable##plugins", settings.plugins == PLUGINS_ENABLE)) { settings.plugins = PLUGINS_ENABLE; } ImGui::SameLine();
+            if (ImGui::RadioButton("Disable##plugins", settings.plugins == PLUGINS_DISABLE)) { settings.plugins = PLUGINS_DISABLE; }
+
+            ImGui::Text("NoNpDrm:"); ImGui::SameLine();
+            if (ImGui::RadioButton("Default##nonpdrm", settings.nonpdrm == NONPDRM_DEFAULT)) { settings.nonpdrm = NONPDRM_DEFAULT; } ImGui::SameLine();
+            if (ImGui::RadioButton("Enable##nonpdrm", settings.nonpdrm == NONPDRM_ENABLE)) { settings.nonpdrm = NONPDRM_ENABLE; } ImGui::SameLine();
+            if (ImGui::RadioButton("Disable##nonpdrm", settings.nonpdrm == NONPDRM_DISABLE)) { settings.nonpdrm = NONPDRM_DISABLE; }
+
+            ImGui::Text("High Memory:"); ImGui::SameLine();
+            if (ImGui::RadioButton("Default##highmem", settings.high_memory == HIGH_MEM_DEFAULT)) { settings.high_memory = HIGH_MEM_DEFAULT; } ImGui::SameLine();
+            if (ImGui::RadioButton("Enable##highmem", settings.high_memory == HIGH_MEM_ENABLE)) { settings.high_memory = HIGH_MEM_ENABLE; } ImGui::SameLine();
+            if (ImGui::RadioButton("Disable##highmem", settings.high_memory == HIGH_MEM_DISABLE)) { settings.high_memory = HIGH_MEM_DISABLE; }
+
+            ImGui::Text("Cpu Speed:"); ImGui::SameLine();
+            if (ImGui::RadioButton("Default##cpuspeed", settings.cpu_speed == CPU_DEFAULT)) { settings.cpu_speed = CPU_DEFAULT; } ImGui::SameLine();
+            if (ImGui::RadioButton("50/25", settings.cpu_speed == CPU_50_25)) { settings.cpu_speed = CPU_50_25; } ImGui::SameLine();
+            if (ImGui::RadioButton("100/50", settings.cpu_speed == CPU_100_50)) { settings.cpu_speed = CPU_100_50; } ImGui::SameLine();
+            if (ImGui::RadioButton("133/66", settings.cpu_speed == CPU_133_66)) { settings.cpu_speed = CPU_133_66; }
+            ImGui::Text("               "); ImGui::SameLine();
+            if (ImGui::RadioButton("166/83", settings.cpu_speed == CPU_166_83)) { settings.cpu_speed = CPU_166_83; } ImGui::SameLine();
+            if (ImGui::RadioButton("200/100", settings.cpu_speed == CPU_200_100)) { settings.cpu_speed = CPU_200_100; } ImGui::SameLine();
+            if (ImGui::RadioButton("200/100", settings.cpu_speed == CPU_222_111)) { settings.cpu_speed = CPU_222_111; }
+            ImGui::Text("               "); ImGui::SameLine();
+            if (ImGui::RadioButton("288/144", settings.cpu_speed == CPU_288_144)) { settings.cpu_speed = CPU_288_144; } ImGui::SameLine();
+            if (ImGui::RadioButton("300/100", settings.cpu_speed == CPU_300_150)) { settings.cpu_speed = CPU_300_150; } ImGui::SameLine();
+            if (ImGui::RadioButton("333/166", settings.cpu_speed == CPU_333_166)) { settings.cpu_speed = CPU_333_166; }
+
+            ImGui::Separator();
+            if (ImGui::Button("OK"))
+            {
+                paused = false;
+                handle_boot_game = false;
+                GAME::Launch(selected_game, &settings);
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+            {
+                paused = false;
+                settings = defaul_boot_settings;
+                handle_boot_game = false;
+                ImGui::CloseCurrentPopup();
+            }
+            
+            ImGui::EndPopup();
+        }
+    }
+
     void HandleAddNewGame()
     {
         paused = true;
@@ -475,7 +584,7 @@ namespace Windows {
                         game.tex = no_icon;
 
                         sprintf(game_added_message, "The game already exists in the cache.");
-                        if (!DB::GameExists(nullptr, game.rom_path))
+                        if (!DB::GameExists(nullptr, &game))
                         {
                             current_category->games.push_back(game);
                             DB::InsertGame(nullptr, &game);

@@ -32,7 +32,7 @@ namespace Windows {
     void GameScanWindow();
     void ShowTabBar();
     void HandleAddNewGame();
-
+    void HandleAdernalineGame();
 }
 
 #endif
