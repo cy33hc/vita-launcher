@@ -185,6 +185,21 @@ namespace GAME {
         }
     }
 
+    std::string str_tolower(std::string s) {
+        std::transform(s.begin(), s.end(), s.begin(), 
+                [](unsigned char c){ return std::tolower(c); });
+        return s;
+    }
+
+    bool IsRomExtension(std::string str, std::vector<std::string> &file_filters)
+    {
+        if (std::find(file_filters.begin(), file_filters.end(), str_tolower(str)) != file_filters.end()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     void ScanForRetroGames(sqlite3 *db)
     {
 
@@ -201,7 +216,7 @@ namespace GAME {
             for(std::size_t j = 0; j < files.size(); ++j)
             {
                 int index = files[j].find_last_of(".");
-                if (files[j].substr(index) != ".png")
+                if (IsRomExtension(files[j].substr(index), category->file_filters))
                 {
                     Game game;
                     game.type = TYPE_ROM;

@@ -25,6 +25,7 @@ typedef struct {
     char title[16];
     std::vector<Game> games;
     std::vector<std::string> valid_title_ids;
+    std::vector<std::string> file_filters;
     char category[10];
     char roms_path[96];
     char icon_path[96];

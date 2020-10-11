@@ -19,6 +19,8 @@
 #define CONFIG_TITLE_ID_PREFIXES "title_id_prefixes"
 #define CONFIG_ICON_PATH "icon_path"
 #define CONFIG_ADERNALINE_LAUNCHER_TITLE_ID "adernaline_launcher_title_id"
+#define CONFIG_ROM_EXTENSIONS "rom_file_extensions"
+
 #define DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID "ADRLANCHR"
 
 #define VIEW_MODE_GRID 0
@@ -28,6 +30,27 @@
 #define CONFIG_SHOW_ALL_CATEGORIES "show_all_categories"
 #define CONFIG_PARENT_CONTROL "parental_control"
 
+// Filters for ROM prefixes during scan
+#define PS1_FILTERS ".iso,.bin"
+#define NES_FILTERS ".zip,.nes"
+#define SNES_FILTERS ".zip,.smc,.sfc"
+#define GB_FILTERS ".zip,.gb"
+#define GBA_FILTERS ".zip,.gba"
+#define N64_FILTERS ".zip,.n64"
+#define GBC_FILTERS ".zip,.gbc"
+#define NEOGEO_FILTERS ".zip,.bin"
+#define GAME_GEAR_FILTERS ".zip,.gg"
+#define MASTER_SYSTEM_FILTERS ".zip"
+#define MEGA_DRIVE_FILTERS ".zip"
+#define NEC_FILTERS ".zip"
+#define ATARI_2600_FILTERS ".zip,.a26"
+#define ATARI_7800_FILTERS ".zip,.a78"
+#define ATARI_LYNX_FILTERS ".zip,.lnx"
+#define BANDAI_FILTERS ".zip,.wsc"
+#define C64_FILTERS ".zip,.d64"
+#define MSX2_FILTERS ".zip,.bin"
+
+// Filters for title prefixes
 #define VITA_TITLE_ID_PREFIXES "PCSA,PCSB,PCSC,PCSD,PCSE,PCSF,PCSG,PCSH,PCSI"
 #define PSP_TITLE_ID_PREFIXES "NPEG,NPEH,NPHG,NPHH,NPJG,NPJH,NPJJ,NPUF,NPUG,NPUH,NPUI,NPUJ,UCAS,UCES,UCUS,ULES,ULUS,PSPEM"
 #define PS1_TITLE_ID_PREFIXES "NPEE,NPEF,NPHI,NPHJ,NPJI,NPJJ,NPUF,NPUI,NPUJ,PSOEM"
@@ -57,9 +80,9 @@ extern bool parental_control;
 
 namespace CONFIG {
     void LoadConfig();
-    void ParseTitlePrefixes(const char* prefix_list, std::vector<std::string> &prefixes);
-    void SetupCategory(GameCategory *category, int category_id, const char* category_name,
-                       const char* core, const char* title_id, const char* code, const char* default_prefixes);
+    void ParseTitlePrefixes(const char* prefix_list, std::vector<std::string> &prefixes, bool toLower);
+    void SetupCategory(GameCategory *category, int category_id, const char* category_name, const char* core,
+                       const char* title_id, const char* code, const char* default_prefixes, const char* default_file_filters);
     void StartDownloadVitaDbThread();
     int DownloadVitaDB(SceSize args, void *argp);
 }
