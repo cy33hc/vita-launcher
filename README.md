@@ -38,6 +38,7 @@ Use in conjuction with the CopyIcons app to get icons not created by psvita. htt
 3. How to import roms into the launcher. https://youtu.be/hsADyvClBC4
 4. How to change the retro core used to start a retro game. https://youtu.be/G49xqrjOcNY
 5. How to customize icons for the rom that display in the app. https://youtu.be/TRvWKSKki3Q
+6. How to setup application to Boot Adrenaline PSP ISO and EBOOT directly without bubbles. https://youtu.be/wkubbIsd8DY
    
 ## Build
 To build this app, you will need to build the dependency imgui-vita2d (https://github.com/cy33hc/imgui-vita2d).
