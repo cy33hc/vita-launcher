@@ -251,7 +251,7 @@ namespace GAME {
     bool Launch(Game *game, BootSettings *settings) {
         if (game->type == TYPE_BUBBLE)
         {
-            char uri[32];
+            char uri[35];
             sprintf(uri, "psgm:play?titleid=%s", game->id);
             sceAppMgrLaunchAppByUri(0xFFFFF, uri);
             sceKernelExitProcess(0);
