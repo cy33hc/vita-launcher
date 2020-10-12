@@ -214,7 +214,7 @@ namespace Windows {
 
         if (handle_boot_game)
         {
-            HandleAdernalineGame();
+            HandleAdrenalineGame();
         }
 
         ShowSettingsDialog();
@@ -320,7 +320,7 @@ namespace Windows {
 
         if (handle_boot_game)
         {
-            HandleAdernalineGame();
+            HandleAdrenalineGame();
         }
 
         ShowSettingsDialog();
@@ -450,14 +450,14 @@ namespace Windows {
         }
     }
 
-    void HandleAdernalineGame()
+    void HandleAdrenalineGame()
     {
         paused = true;
 
-        ImGui::OpenPopup("Boot Adernaline Game");
+        ImGui::OpenPopup("Boot Adrenaline Game");
         ImGui::SetNextWindowPos(ImVec2(230, 100));
-        ImGui::SetNextWindowSize(ImVec2(490,350));
-        if (ImGui::BeginPopupModal("Boot Adernaline Game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+        ImGui::SetNextWindowSize(ImVec2(495,350));
+        if (ImGui::BeginPopupModal("Boot Adrenaline Game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
         {
             static BootSettings settings = defaul_boot_settings;
 
