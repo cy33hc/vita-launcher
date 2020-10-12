@@ -1,0 +1,3 @@
+/home/cyee/projects/vita-launcher/adr_launcher/CMakeFiles/rebuild_cache.dir
+/home/cyee/projects/vita-launcher/adr_launcher/CMakeFiles/edit_cache.dir
+/home/cyee/projects/vita-launcher/adr_launcher/CMakeFiles/AdrenalineLauncher.vpk.dir

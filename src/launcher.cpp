@@ -461,56 +461,83 @@ namespace Windows {
         {
             static BootSettings settings = defaul_boot_settings;
 
-
+            float posX = ImGui::GetCursorPosX();
             ImGui::Text("Boot Settings");
             ImGui::Separator();
             ImGui::Text("Driver:"); ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 110);
             if (ImGui::RadioButton("Inferno", settings.driver == INFERNO)) { settings.driver = INFERNO; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 220);
             if (ImGui::RadioButton("March33", settings.driver == MARCH33)) { settings.driver = MARCH33; } ImGui::SameLine();
             if (ImGui::RadioButton("NP9660", settings.driver == NP9660)) { settings.driver = NP9660; }
 
             ImGui::Text("Execute:"); ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 110);
             if (ImGui::RadioButton("eboot.bin", settings.execute == EBOOT_BIN)) { settings.execute = EBOOT_BIN; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 220);
             if (ImGui::RadioButton("boot.bin", settings.execute == BOOT_BIN)) { settings.execute = BOOT_BIN; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 320);
             if (ImGui::RadioButton("eboot.old", settings.execute == EBOOT_OLD)) { settings.execute = EBOOT_OLD; }
 
             ImGui::Text("PS Button Mode:"); ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 150);
             if (ImGui::RadioButton("Menu", settings.ps_button_mode == MENU)) { settings.ps_button_mode = MENU; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 220);
             if (ImGui::RadioButton("LiveArea", settings.ps_button_mode == LIVEAREA)) { settings.ps_button_mode = LIVEAREA; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 320);
             if (ImGui::RadioButton("Standard", settings.ps_button_mode == STANDARD)) { settings.ps_button_mode = STANDARD; }
 
             ImGui::Text("Suspend Threads:"); ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 150);
             if (ImGui::RadioButton("Yes", settings.suspend_threads == SUSPEND_YES)) { settings.suspend_threads = SUSPEND_YES; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 220);
             if (ImGui::RadioButton("No", settings.suspend_threads == SUSPEND_NO)) { settings.suspend_threads = SUSPEND_NO; }
 
             ImGui::Text("Plugins:"); ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 110);
             if (ImGui::RadioButton("Default##plugins", settings.plugins == PLUGINS_DEFAULT)) { settings.plugins = PLUGINS_DEFAULT; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 220);
             if (ImGui::RadioButton("Enable##plugins", settings.plugins == PLUGINS_ENABLE)) { settings.plugins = PLUGINS_ENABLE; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 320);
             if (ImGui::RadioButton("Disable##plugins", settings.plugins == PLUGINS_DISABLE)) { settings.plugins = PLUGINS_DISABLE; }
 
             ImGui::Text("NoNpDrm:"); ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 110);
             if (ImGui::RadioButton("Default##nonpdrm", settings.nonpdrm == NONPDRM_DEFAULT)) { settings.nonpdrm = NONPDRM_DEFAULT; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 220);
             if (ImGui::RadioButton("Enable##nonpdrm", settings.nonpdrm == NONPDRM_ENABLE)) { settings.nonpdrm = NONPDRM_ENABLE; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 320);
             if (ImGui::RadioButton("Disable##nonpdrm", settings.nonpdrm == NONPDRM_DISABLE)) { settings.nonpdrm = NONPDRM_DISABLE; }
 
             ImGui::Text("High Memory:"); ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 110);
             if (ImGui::RadioButton("Default##highmem", settings.high_memory == HIGH_MEM_DEFAULT)) { settings.high_memory = HIGH_MEM_DEFAULT; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 220);
             if (ImGui::RadioButton("Enable##highmem", settings.high_memory == HIGH_MEM_ENABLE)) { settings.high_memory = HIGH_MEM_ENABLE; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 320);
             if (ImGui::RadioButton("Disable##highmem", settings.high_memory == HIGH_MEM_DISABLE)) { settings.high_memory = HIGH_MEM_DISABLE; }
 
             ImGui::Text("Cpu Speed:"); ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 110);
             if (ImGui::RadioButton("Default##cpuspeed", settings.cpu_speed == CPU_DEFAULT)) { settings.cpu_speed = CPU_DEFAULT; } ImGui::SameLine();
-            if (ImGui::RadioButton("50/25", settings.cpu_speed == CPU_50_25)) { settings.cpu_speed = CPU_50_25; } ImGui::SameLine();
-            if (ImGui::RadioButton("100/50", settings.cpu_speed == CPU_100_50)) { settings.cpu_speed = CPU_100_50; } ImGui::SameLine();
-            if (ImGui::RadioButton("133/66", settings.cpu_speed == CPU_133_66)) { settings.cpu_speed = CPU_133_66; }
-            ImGui::Text("               "); ImGui::SameLine();
-            if (ImGui::RadioButton("166/83", settings.cpu_speed == CPU_166_83)) { settings.cpu_speed = CPU_166_83; } ImGui::SameLine();
-            if (ImGui::RadioButton("200/100", settings.cpu_speed == CPU_200_100)) { settings.cpu_speed = CPU_200_100; } ImGui::SameLine();
-            if (ImGui::RadioButton("200/100", settings.cpu_speed == CPU_222_111)) { settings.cpu_speed = CPU_222_111; }
-            ImGui::Text("               "); ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 220);
+            if (ImGui::RadioButton("333/166", settings.cpu_speed == CPU_333_166)) { settings.cpu_speed = CPU_333_166; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 320);
+            if (ImGui::RadioButton("300/150", settings.cpu_speed == CPU_300_150)) { settings.cpu_speed = CPU_300_150; }
+            ImGui::SetCursorPosX(posX + 110);
             if (ImGui::RadioButton("288/144", settings.cpu_speed == CPU_288_144)) { settings.cpu_speed = CPU_288_144; } ImGui::SameLine();
-            if (ImGui::RadioButton("300/100", settings.cpu_speed == CPU_300_150)) { settings.cpu_speed = CPU_300_150; } ImGui::SameLine();
-            if (ImGui::RadioButton("333/166", settings.cpu_speed == CPU_333_166)) { settings.cpu_speed = CPU_333_166; }
+            ImGui::SetCursorPosX(posX + 220);
+            if (ImGui::RadioButton("222/111", settings.cpu_speed == CPU_222_111)) { settings.cpu_speed = CPU_222_111; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 320);
+            if (ImGui::RadioButton("200/100", settings.cpu_speed == CPU_200_100)) { settings.cpu_speed = CPU_200_100; }
+            ImGui::SetCursorPosX(posX + 110);
+            if (ImGui::RadioButton("166/83", settings.cpu_speed == CPU_166_83)) { settings.cpu_speed = CPU_166_83; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 220);
+            if (ImGui::RadioButton("100/50", settings.cpu_speed == CPU_100_50)) { settings.cpu_speed = CPU_100_50; } ImGui::SameLine();
+            ImGui::SetCursorPosX(posX + 320);
+            if (ImGui::RadioButton("133/66", settings.cpu_speed == CPU_133_66)) { settings.cpu_speed = CPU_133_66; } ImGui::SameLine();
+            if (ImGui::RadioButton("50/25", settings.cpu_speed == CPU_50_25)) { settings.cpu_speed = CPU_50_25; }
+
 
             ImGui::Separator();
             if (ImGui::Button("OK"))
