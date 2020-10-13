@@ -109,6 +109,7 @@ extern int ROM_CATEGORIES[];
 extern char adernaline_launcher_boot_bin_path[];
 extern char adernaline_launcher_title_id[];
 extern BootSettings defaul_boot_settings;
+extern std::vector<std::string> psp_iso_extensions;
 
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;

@@ -10,18 +10,11 @@ const uint32_t ISO::SECTOR_SIZE = 0x800;
 
 ISO::ISO( std::string isoPath )
 {
-	mPngData = NULL;
-	mSfo = NULL;	
 	this->open( isoPath );
 }
 
 ISO::~ISO()
 {
-	if (mPngData != NULL)
-		free(mPngData);
-
-	if (mSfo != NULL)
-		free(mSfo);
 }
 
 bool ISO::isISO ( std::string filePath )
@@ -107,6 +100,32 @@ void* ISO::read( uint32_t sector, uint32_t len )
 	return data;
 }
 
+void ISO::write( uint32_t sector, uint32_t len, std::string file_path)
+{
+	uint32_t bufSize = ((len / ISO::SECTOR_SIZE) + 1)*ISO::SECTOR_SIZE;
+	void* data = malloc(bufSize);
+	uint32_t sizeRead = 0;
+	uint32_t curSector = sector;
+	
+	while ( sizeRead < len )
+	{
+		int ret = this->readSector((char*)((uint32_t)data+sizeRead), curSector );
+		
+		if ( ret < 0 )	break;
+		else
+		{
+			sizeRead+= ret;
+			++curSector;
+		}
+	}
+	
+	SceUID fd = sceIoOpen(file_path.c_str(), SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0777);
+	int write = sceIoWrite(fd, data, bufSize);
+	sceIoClose(fd);
+
+	free(data);
+}
+
 void ISO::processPathTable( PathTableRecord* pathTable, uint32_t pathTableSize )
 {
 	PathTableRecord* curRecord = pathTable;
@@ -152,14 +171,12 @@ std::vector<DirectoryRecord*>* ISO::getDir( DirectoryRecord* dir )
 	DirectoryRecord* curRecord = dir;
 	std::vector<DirectoryRecord*>* dirList = new std::vector<DirectoryRecord*>();
 	
-	
 	while ( curRecord->size != 0 )
 	{
 		dirList->push_back( curRecord );
 		
 		curRecord = (DirectoryRecord*) ((uint32_t)curRecord + curRecord->size);
 	}
-	
 	
 	return dirList;
 }
@@ -176,11 +193,9 @@ DirectoryRecord* ISO::findFile( std::string fileName, DirectoryRecord* dir )
 		if ( !strncmp((*dirList)[curIdx]->name, fileName.c_str(), (*dirList)[curIdx]->nameSize) )	found = true;
 	}
 	
-	
 	if ( found )	ret = (*dirList)[curIdx];
 	
 	delete dirList;
-	
 	
 	return ret;
 }
@@ -190,17 +205,14 @@ void* ISO::getFile( DirectoryRecord* fileRecord )
 	return this->read( fileRecord->lba.LE, fileRecord->fileSize.LE );
 }
 
-void ISO::Create()
+void ISO::Extract(std::string sfo_path ,std::string icon_path)
 {
-	debugNetPrintf(DEBUG,"Enter create\n");
 	if ( mFin.is_open() )
 	{
 		char *sectorBuf = (char*)malloc( ISO::SECTOR_SIZE );
-		debugNetPrintf(DEBUG,"after malloc create\n");
 
 		int err;
 		err = this->readSector( sectorBuf, 16);
-		debugNetPrintf(DEBUG,"after read sector\n");
 		if ( err >= 0 )
 		{
 			PrimaryVolumeDescriptor* pvd = (PrimaryVolumeDescriptor*)sectorBuf;
@@ -208,38 +220,19 @@ void ISO::Create()
 			uint32_t pathTableSize = pvd->pathTableSize.LE;
 			
 			void *pathTableBuf = this->read(lbaPathTableL, pathTableSize);
-			debugNetPrintf(DEBUG,"After read pathTableBuf\n");
 			this->processPathTable( (PathTableRecord*)pathTableBuf, pathTableSize );
-			debugNetPrintf(DEBUG,"After processPathTable\n");
-			
+
 			uint16_t dirId;
-			if ( (dirId = this->findDirPathTable( "PSP_GAME/SYSDIR/" )) > 1 )
-			{
-				this->readSector( sectorBuf, mPathTable[dirId-1]->lba);
-				
-				DirectoryRecord* dir = (DirectoryRecord*)sectorBuf;
-				DirectoryRecord* old = findFile( "EBOOT.OLD", dir );
-				DirectoryRecord* bin = findFile( "EBOOT.BIN", dir );
-				
-			}
-			
 			if ( (dirId = this->findDirPathTable( "PSP_GAME/" )) > 1 )
 			{
 				this->readSector( sectorBuf, mPathTable[dirId-1]->lba);
 				
 				DirectoryRecord* dir = (DirectoryRecord*)sectorBuf;
-				DirectoryRecord* png = findFile( "ICON0.PNG", dir );
+				DirectoryRecord* icon0 = findFile( "ICON0.PNG", dir );
 				DirectoryRecord* sfo = findFile( "PARAM.SFO", dir );
-				
-				if (png != NULL)
-				{
-					mPngData = this->getFile(png);
-				}
-				if (sfo != NULL)
-				{
-					mSfo = this->getFile(sfo);
-				}
-				
+
+				this->write(icon0->lba.LE, icon0->fileSize.LE, icon_path);
+				this->write(sfo->lba.LE, sfo->fileSize.LE, sfo_path);
 			}
 			
 			free(pathTableBuf);
@@ -250,22 +243,6 @@ void ISO::Create()
 		
 		this->close();
 	}
-
-	//YLOG("Create done\n");
-}
-
-void ISO::saveParamSfo(std::string path)
-{
-	SceUID fd = sceIoOpen(path.c_str(), SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0777);
-	int write = sceIoWrite(fd, mSfo, sizeof(mSfo));
-	sceIoClose(fd);
-}
-
-void ISO::saveIcon0(std::string path)
-{
-	SceUID fd = sceIoOpen(path.c_str(), SCE_O_WRONLY | SCE_O_CREAT | SCE_O_TRUNC, 0777);
-	int write = sceIoWrite(fd, mPngData, sizeof(mPngData));
-	sceIoClose(fd);
 }
 
 inline uint32_t ISO::lba2Pos( uint32_t lba )

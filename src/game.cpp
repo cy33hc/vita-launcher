@@ -14,12 +14,14 @@
 #include "config.h"
 #include "db.h"
 #include "eboot.h"
-#include "debugnet.h"
+#include "iso.h"
+//#include "debugnet.h"
 
 #define NUM_CACHED_PAGES 5
 
 GameCategory game_categories[TOTAL_CATEGORY];
 std::map<std::string, GameCategory*> categoryMap;
+std::vector<std::string> psp_iso_extensions;
 
 GameCategory *current_category;
 
@@ -116,6 +118,21 @@ namespace GAME {
         }
     }
 
+    std::string str_tolower(std::string s) {
+        std::transform(s.begin(), s.end(), s.begin(), 
+                [](unsigned char c){ return std::tolower(c); });
+        return s;
+    }
+
+    bool IsRomExtension(std::string str, std::vector<std::string> &file_filters)
+    {
+        if (std::find(file_filters.begin(), file_filters.end(), str_tolower(str)) != file_filters.end()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     void ScanAdernalineIsoGames(sqlite3 *db)
     {
         GameCategory *category = &game_categories[PSP_GAMES];
@@ -125,20 +142,58 @@ namespace GAME {
         games_scanned = 0;
         sprintf(scan_message, "Scanning for %s games in the %s folder", "ISO", PSP_ISO_PATH);
 
+        if (!FS::FolderExists("ux0:data/SMLA00001/data/ISO"))
+        {
+            FS::MkDirs("ux0:data/SMLA00001/data/ISO");
+        }
+
         for(std::size_t j = 0; j < files.size(); ++j)
         {
-            Game game;
-            game.type = TYPE_PSP_ISO;
-            sprintf(game.id, "%s%04d", "SMLAP", j);
-            sprintf(game.category, "%s", category->category);
-            sprintf(game.rom_path, "%s/%s", PSP_ISO_PATH, files[j].c_str());
             int index = files[j].find_last_of(".");
-            sprintf(game.title, "%s", files[j].substr(0, index).c_str());
-            game.tex = no_icon;
-            category->games.push_back(game);
-            DB::InsertGame(db, &game);
-            game_scan_inprogress = game;
-            games_scanned++;
+            if (IsRomExtension(files[j].substr(index), psp_iso_extensions))
+            {
+                Game game;
+                sprintf(game.rom_path, "%s/%s", PSP_ISO_PATH, files[j].c_str());
+                char sfo_path[192];
+                char icon_path[192];
+                sprintf(sfo_path, "ux0:data/SMLA00001/data/ISO/%s.sfo", files[j].substr(0, index).c_str());
+                sprintf(icon_path, "ux0:data/SMLA00001/data/ISO/%s.png", files[j].substr(0, index).c_str());
+                if (!FS::FileExists(sfo_path))
+                {
+                    if (ISO::isISO(game.rom_path))
+                    {
+                        ISO *iso = new ISO(game.rom_path);
+                        iso->Extract(sfo_path, icon_path);
+                        delete iso;
+                    }
+                }
+
+                if (FS::FileExists(sfo_path))
+                {
+                    const auto sfo = FS::Load(sfo_path);
+                    std::string title = std::string(SFO::GetString(sfo.data(), sfo.size(), "TITLE"));
+                    std::replace( title.begin(), title.end(), '\n', ' ');
+                    sprintf(game.title, "%s", title.c_str());
+                }
+                else
+                {
+                    sprintf(game.title, "%s", files[j].substr(0, index).c_str());
+                }
+                
+                game.type = TYPE_PSP_ISO;
+                sprintf(game.id, "%s%04d", "SMLAP", j);
+                sprintf(game.category, "%s", category->category);
+                game.tex = no_icon;
+                category->games.push_back(game);
+                DB::InsertGame(db, &game);
+                game_scan_inprogress = game;
+                games_scanned++;
+            }
+            else
+            {
+                games_to_scan--;
+            }
+            
         }
     }
 
@@ -182,21 +237,6 @@ namespace GAME {
             DB::InsertGame(db, &game);
             game_scan_inprogress = game;
             games_scanned++;
-        }
-    }
-
-    std::string str_tolower(std::string s) {
-        std::transform(s.begin(), s.end(), s.begin(), 
-                [](unsigned char c){ return std::tolower(c); });
-        return s;
-    }
-
-    bool IsRomExtension(std::string str, std::vector<std::string> &file_filters)
-    {
-        if (std::find(file_filters.begin(), file_filters.end(), str_tolower(str)) != file_filters.end()) {
-            return true;
-        } else {
-            return false;
         }
     }
 
@@ -457,6 +497,13 @@ namespace GAME {
         else if (game->type == TYPE_EBOOT)
         {
             sprintf(icon_path, "ux0:data/SMLA00001/data/%s/icon0.png", game->id);
+        }
+        else if (game->type == TYPE_PSP_ISO)
+        {
+            std::string rom_path = std::string(game->rom_path);
+            int index = rom_path.find_last_of(".");
+            int folder = rom_path.find_last_of("/");
+            sprintf(icon_path, "ux0:data/SMLA00001/data/ISO/%s\.png", rom_path.substr(folder+1, index-folder-1).c_str());
         }
         else
         {

@@ -16,13 +16,12 @@ private:
 
 protected:
 	std::ifstream mFin;
-	void* mPngData;
-	void* mSfo;
 	std::vector<PathTableRecord*> mPathTable;
 	
 	virtual bool open( std::string path );
 	virtual int readSector( char *destBuf, unsigned sector );
 	void* read( uint32_t sector, uint32_t len );
+	void write( uint32_t sector, uint32_t len, std::string file_path);
 	virtual void close();
 	
 	void processPathTable( PathTableRecord* pathTable, uint32_t pathTableSize );
@@ -41,9 +40,7 @@ public:
 	ISO( std::string isoPath );
 	virtual ~ISO();
 	
-	virtual void saveParamSfo(std::string path);
-	virtual void saveIcon0(std::string path);
-	void Create();
+	void Extract(std::string sfo_path ,std::string icon_path);
 
 	static bool isISO ( std::string filePath );
 };

@@ -98,6 +98,10 @@ namespace CONFIG {
         defaul_boot_settings.high_memory = HIGH_MEM_DISABLE;
         defaul_boot_settings.cpu_speed = CPU_DEFAULT;
 
+        // setup psp iso extensions
+        psp_iso_extensions.push_back(".iso");
+        psp_iso_extensions.push_back(".cso");
+        
         // Load global config
         show_all_categories = ReadBool(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, true);
         WriteBool(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);

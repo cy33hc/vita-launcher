@@ -12,8 +12,6 @@ CSO::CSO( std::string csoPath )
 
 CSO::~CSO()
 {
-	free(mPngData);
-	free(mSfo);
 }
 
 bool CSO::isCSO ( std::string filePath )
