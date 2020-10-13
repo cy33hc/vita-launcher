@@ -580,7 +580,7 @@ namespace Windows {
                         it!=games_on_filesystem.end(); )
                     {
                         int index = it->find_last_of(".");
-                        if (it->substr(index) == ".png")
+                        if (!GAME::IsRomExtension(it->substr(index), current_category->file_filters))
                         {
                             it = games_on_filesystem.erase(it);
                         }

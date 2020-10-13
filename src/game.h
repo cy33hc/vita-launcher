@@ -149,6 +149,8 @@ namespace GAME {
     const char* GetGameCategory(const char *id);
     GameCategory* GetRomCategoryByName(const char* category_name);
     bool IsRomCategory(int categoryId);
+    bool IsRomExtension(std::string str, std::vector<std::string> &file_filters);
+    std::string str_tolower(std::string s);
 }
 
 #endif

@@ -15,7 +15,7 @@ char *filename[2] = {
    "icon0.png"
 };
 
-int maxbuffer = 8 * 1024;
+int maxbuffer = 1024;
 
 namespace EBOOT {
 
@@ -30,7 +30,7 @@ namespace EBOOT {
         infile = FS::OpenRead(eboot_path);
         FS::Read(infile, &header, sizeof(HEADER));
 
-        char buffer[8192];
+        char buffer[maxbuffer];
         for (int i = 0; i < 2; i++)
         {
             int size;
