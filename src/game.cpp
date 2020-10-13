@@ -15,6 +15,7 @@
 #include "db.h"
 #include "eboot.h"
 #include "iso.h"
+#include "cso.h"
 //#include "debugnet.h"
 
 #define NUM_CACHED_PAGES 5
@@ -165,6 +166,12 @@ namespace GAME {
                         ISO *iso = new ISO(game.rom_path);
                         iso->Extract(sfo_path, icon_path);
                         delete iso;
+                    }
+                    else if (CSO::isCSO(game.rom_path))
+                    {
+                        CSO *cso = new CSO(game.rom_path);
+                        cso->Extract(sfo_path, icon_path);
+                        delete cso;
                     }
                 }
 
