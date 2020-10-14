@@ -5,6 +5,7 @@
 #include "db.h"
 #include "game.h"
 #include "textures.h"
+//#include "debugnet.h"
 
 namespace DB {
     bool TableExists(sqlite3 *database, char* table_name)
@@ -392,10 +393,9 @@ namespace DB {
         sqlite3_stmt *res;
         std::string sql = std::string("DELETE FROM ") + GAMES_TABLE + " WHERE " + COL_TYPE + "=? AND " + COL_CATEGORY + "=?";
         int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
-    
         if (rc == SQLITE_OK) {
-            sqlite3_bind_int(res, 1, 1);
-            sqlite3_bind_text(res, 1, category, strlen(category), NULL);
+            sqlite3_bind_int(res, 1, type);
+            sqlite3_bind_text(res, 2, category, strlen(category), NULL);
             int step = sqlite3_step(res);
             sqlite3_finalize(res);
         }

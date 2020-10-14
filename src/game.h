@@ -113,6 +113,7 @@ extern std::vector<std::string> psp_iso_extensions;
 
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;
+static SceUID scan_games_category_thid = -1;
 
 typedef struct LoadImagesParams {
   int category;
@@ -153,12 +154,14 @@ namespace GAME {
     int FindGamePosition(GameCategory *category, Game *game);
     int RemoveGameFromCategory(GameCategory *category, Game *game);
     void SortGames(GameCategory *category);
-    void RefreshGames();
+    void RefreshGames(bool all_categories);
     const char* GetGameCategory(const char *id);
     GameCategory* GetRomCategoryByName(const char* category_name);
     bool IsRomCategory(int categoryId);
     bool IsRomExtension(std::string str, std::vector<std::string> &file_filters);
     std::string str_tolower(std::string s);
+    void StartScanGamesCategoryThread(const char* category, int type);
+    int ScanGamesCategoryThread(SceSize args, ScanGamesParams *params);
 }
 
 #endif

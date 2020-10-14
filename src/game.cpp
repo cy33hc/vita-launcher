@@ -16,7 +16,7 @@
 #include "eboot.h"
 #include "iso.h"
 #include "cso.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 
 #define NUM_CACHED_PAGES 5
 
@@ -542,7 +542,7 @@ namespace GAME {
 
     void StartScanGamesThread()
     {
-        scan_games_thid = sceKernelCreateThread("load_images_thread", (SceKernelThreadEntry)GAME::ScanGamesThread, 0x10000100, 0x4000, 0, 0, NULL);
+        scan_games_thid = sceKernelCreateThread("scan_games_thread", (SceKernelThreadEntry)GAME::ScanGamesThread, 0x10000100, 0x4000, 0, 0, NULL);
 		if (scan_games_thid >= 0)
 			sceKernelStartThread(scan_games_thid, 0, NULL);
     }
@@ -566,6 +566,55 @@ namespace GAME {
         current_category->page_num = 1;
         view_mode = current_category->view_mode;
         GAME::StartLoadImagesThread(current_category->id, 1, 1);
+        return sceKernelExitDeleteThread(0);
+    }
+
+    void StartScanGamesCategoryThread(const char* category, int type)
+    {
+        ScanGamesParams params;
+        params.type = type;
+        params.category = category;
+        scan_games_category_thid = sceKernelCreateThread("scan_games_category_thread", (SceKernelThreadEntry)GAME::ScanGamesCategoryThread, 0x10000100, 0x4000, 0, 0, NULL);
+		if (scan_games_category_thid >= 0)
+			sceKernelStartThread(scan_games_category_thid, sizeof(ScanGamesParams), &params);
+    }
+
+    int ScanGamesCategoryThread(SceSize args, ScanGamesParams *params)
+    {
+        game_scan_complete = false;
+        sceKernelDelayThread(500000);
+        if (params->type == TYPE_ROM)
+        {
+            sqlite3 *db;
+            sqlite3_open(CACHE_DB_FILE, &db);
+            DB::DeleteGamesByCategoryAndType(db, params->category, params->type);
+            GameCategory *category = categoryMap[params->category];
+            for (std::vector<Game>::iterator it=category->games.begin(); it!=category->games.end(); )
+            {
+                if (it->type == params->type)
+                {
+                    category->games.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
+
+            ScanRetroCategory(db, category);
+            sqlite3_close(db);
+
+            category->page_num = 1;
+            SetMaxPage(category);
+            SortGames(category);
+            current_category = category;
+
+            if (current_category->view_mode == VIEW_MODE_GRID)
+            {
+                GAME::StartLoadImagesThread(category->id, 1, 1);
+            }
+        }
+        game_scan_complete = true;
         return sceKernelExitDeleteThread(0);
     }
 
@@ -639,11 +688,17 @@ namespace GAME {
         qsort(&category->games[0], category->games.size(), sizeof(Game), GameComparator);
     }
 
-    void RefreshGames()
+    void RefreshGames(bool all_categories)
     {
-        
-        FS::Rm(CACHE_DB_FILE);
-        StartScanGamesThread();
+        if (all_categories)
+        {
+            FS::Rm(CACHE_DB_FILE);
+            StartScanGamesThread();
+        }
+        else
+        {
+            StartScanGamesCategoryThread(current_category->category, TYPE_ROM);
+        }
         
     }
 

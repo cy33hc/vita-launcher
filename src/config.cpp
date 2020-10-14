@@ -136,6 +136,7 @@ namespace CONFIG {
         SetupCategory(&game_categories[ATARI_LYNX_GAMES], ATARI_LYNX_GAMES, "aLynx", "A-Lynx", "RETROVITA", "app0:handy_libretro.self", ATARI_LYNX_TITLE_ID_PREFIXES, ATARI_LYNX_FILTERS);
         SetupCategory(&game_categories[BANDAI_GAMES], BANDAI_GAMES, "bandai", "Bandai", "RETROVITA", "app0:mednafen_wswan_libretro.self", BANDAI_TITLE_ID_PREFIXES, BANDAI_FILTERS);
         SetupCategory(&game_categories[C64_GAMES], C64_GAMES, "c64", "C64", "RETROVITA", "app0:vice_x64_libretro.self", C64_TITLE_ID_PREFIXES, C64_FILTERS);
+        SetupCategory(&game_categories[MSX2_GAMES], MSX2_GAMES, "msx2", "MSX2", "RETROVITA", "app0:.self", MSX2_TITLE_ID_PREFIXES, MSX2_FILTERS);
         SetupCategory(&game_categories[PORT_GAMES], PORT_GAMES, "ports", "Ports", nullptr, nullptr, nullptr, nullptr);
         SetupCategory(&game_categories[ORIGINAL_GAMES], ORIGINAL_GAMES, "original", "Originals", nullptr, nullptr, nullptr, nullptr);
         SetupCategory(&game_categories[UTILITIES], UTILITIES, "utilities", "Utilities", nullptr, nullptr, nullptr, nullptr);

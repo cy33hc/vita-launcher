@@ -7,6 +7,7 @@
 #include "game.h"
 #include "db.h"
 #include "config.h"
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -103,7 +104,6 @@ namespace Windows {
         Windows::SetupWindow();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-
         if (ImGui::Begin("Games", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar))
         {
             ImGui::SetCursorPosY(ImGui::GetCursorPosY()-7);
@@ -197,6 +197,18 @@ namespace Windows {
         ImGui::Separator();
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
         ImGui::Text("Page: %d/%d", current_category->page_num, current_category->max_page); ImGui::SameLine();
+
+        /*
+        ImGui::SetCursorPosX(350);
+        ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
+        ImGui::Text("Un-Select"); ImGui::SameLine();
+        ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
+        ImGui::Text("Favorite"); ImGui::SameLine();
+        ImGui::Image(reinterpret_cast<ImTextureID>(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
+        ImGui::Text("Settings"); ImGui::SameLine();
+        ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
+        ImGui::Text("Select"); ImGui::SameLine();
+        */
 
         if (handle_add_game)
         {
@@ -363,6 +375,7 @@ namespace Windows {
         if (ImGui::BeginPopupModal("Settings and Actions", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             static bool refresh_games = false;
+            static bool refresh_current_category = false;
             static bool remove_from_cache = false;
             static bool add_new_game = false;
 
@@ -378,18 +391,25 @@ namespace Windows {
             {
                 if (GAME::IsRomCategory(current_category->id))
                 {
-                    if (!refresh_games && !add_new_game)
+                    if (!refresh_games && !add_new_game && !refresh_current_category)
                     {
                         ImGui::Separator();
                         ImGui::Checkbox("Remove selected game from cache", &remove_from_cache);
                     }
-                    if (!refresh_games && !remove_from_cache)
+                    if (!refresh_games && !remove_from_cache && !refresh_current_category)
                     {
                         ImGui::Separator();
                         ImGui::Checkbox("Add new game to cache", &add_new_game);
                     }
+                    if (!refresh_games && !remove_from_cache && !add_new_game)
+                    {
+                        ImGui::Separator();
+                        char cb_text[64];
+                        sprintf(cb_text, "Rescan games in %s category only", current_category->title);
+                        ImGui::Checkbox(cb_text, &refresh_current_category);
+                    }
                 }
-                if (!remove_from_cache && !add_new_game)
+                if (!remove_from_cache && !add_new_game && !refresh_current_category)
                 {
                     ImGui::Separator();
                     ImGui::Checkbox("Rescan games and rebuild cache", &refresh_games);
@@ -414,7 +434,14 @@ namespace Windows {
                 CloseIniFile();
 
                 if (refresh_games)
-                    GAME::RefreshGames();
+                {
+                    GAME::RefreshGames(true);
+                }
+
+                if (refresh_current_category)
+                {
+                    GAME::RefreshGames(false);
+                }
 
                 if (remove_from_cache)
                 {
@@ -434,6 +461,7 @@ namespace Windows {
                 paused = false;
                 refresh_games = false;
                 remove_from_cache = false;
+                refresh_current_category = false;
                 add_new_game = false;
                 ImGui::CloseCurrentPopup();
             }
