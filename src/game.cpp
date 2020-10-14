@@ -16,7 +16,7 @@
 #include "eboot.h"
 #include "iso.h"
 #include "cso.h"
-//#include "debugnet.h"
+#include "debugnet.h"
 
 #define NUM_CACHED_PAGES 5
 
@@ -60,9 +60,9 @@ namespace GAME {
             sqlite3_open(CACHE_DB_FILE, &db);
             DB::SetupDatabase(db);
 
-            ScanForRetroGames(db);
-            ScanAdernalineIsoGames(db);
-            ScanAdernalineEbootGames(db);
+            ScanRetroGames(db);
+            ScanAdrenalineIsoGames(db);
+            ScanAdrenalineEbootGames(db);
 
             sqlite3_close(db);
         }
@@ -88,13 +88,14 @@ namespace GAME {
                 DB::DeleteFavorite(nullptr, &*it);
             }
         }
-        
+
         for (int i=0; i < TOTAL_CATEGORY; i++)
         {
             SortGames(&game_categories[i]);
             game_categories[i].page_num = 1;
             SetMaxPage(&game_categories[i]);
         }
+
     }
 
     std::string str_tolower(std::string s) {
@@ -112,7 +113,49 @@ namespace GAME {
         }
     }
 
-    void ScanAdernalineIsoGames(sqlite3 *db)
+    void PopulateIsoGameInfo(GameCategory *category, Game *game, std::string rom, int game_index)
+    {
+        int index = rom.find_last_of(".");
+        sprintf(game->rom_path, "%s/%s", PSP_ISO_PATH, rom.c_str());
+        char sfo_path[192];
+        char icon_path[192];
+        sprintf(sfo_path, "ux0:data/SMLA00001/data/ISO/%s.sfo", rom.substr(0, index).c_str());
+        sprintf(icon_path, "ux0:data/SMLA00001/data/ISO/%s.png", rom.substr(0, index).c_str());
+        if (!FS::FileExists(sfo_path))
+        {
+            if (ISO::isISO(game->rom_path))
+            {
+                ISO *iso = new ISO(game->rom_path);
+                iso->Extract(sfo_path, icon_path);
+                delete iso;
+            }
+            else if (CSO::isCSO(game->rom_path))
+            {
+                CSO *cso = new CSO(game->rom_path);
+                cso->Extract(sfo_path, icon_path);
+                delete cso;
+            }
+        }
+
+        if (FS::FileExists(sfo_path))
+        {
+            const auto sfo = FS::Load(sfo_path);
+            std::string title = std::string(SFO::GetString(sfo.data(), sfo.size(), "TITLE"));
+            std::replace( title.begin(), title.end(), '\n', ' ');
+            sprintf(game->title, "%s", title.c_str());
+        }
+        else
+        {
+            sprintf(game->title, "%s", rom.substr(0, index).c_str());
+        }
+        
+        game->type = TYPE_PSP_ISO;
+        sprintf(game->id, "%s%04d", "SMLAP", game_index);
+        sprintf(game->category, "%s", category->category);
+        game->tex = no_icon;
+    }
+
+    void ScanAdrenalineIsoGames(sqlite3 *db)
     {
         GameCategory *category = &game_categories[PSP_GAMES];
         std::vector<std::string> files = FS::ListDir(PSP_ISO_PATH);
@@ -132,42 +175,86 @@ namespace GAME {
             if (IsRomExtension(files[j].substr(index), psp_iso_extensions))
             {
                 Game game;
-                sprintf(game.rom_path, "%s/%s", PSP_ISO_PATH, files[j].c_str());
-                char sfo_path[192];
-                char icon_path[192];
-                sprintf(sfo_path, "ux0:data/SMLA00001/data/ISO/%s.sfo", files[j].substr(0, index).c_str());
-                sprintf(icon_path, "ux0:data/SMLA00001/data/ISO/%s.png", files[j].substr(0, index).c_str());
-                if (!FS::FileExists(sfo_path))
-                {
-                    if (ISO::isISO(game.rom_path))
-                    {
-                        ISO *iso = new ISO(game.rom_path);
-                        iso->Extract(sfo_path, icon_path);
-                        delete iso;
-                    }
-                    else if (CSO::isCSO(game.rom_path))
-                    {
-                        CSO *cso = new CSO(game.rom_path);
-                        cso->Extract(sfo_path, icon_path);
-                        delete cso;
-                    }
-                }
+                PopulateIsoGameInfo(category, &game, files[j], j);
+                category->games.push_back(game);
+                DB::InsertGame(db, &game);
+                game_scan_inprogress = game;
+                games_scanned++;
+            }
+            else
+            {
+                games_to_scan--;
+            }
+            
+        }
+    }
 
-                if (FS::FileExists(sfo_path))
-                {
-                    const auto sfo = FS::Load(sfo_path);
-                    std::string title = std::string(SFO::GetString(sfo.data(), sfo.size(), "TITLE"));
-                    std::replace( title.begin(), title.end(), '\n', ' ');
-                    sprintf(game.title, "%s", title.c_str());
-                }
-                else
-                {
-                    sprintf(game.title, "%s", files[j].substr(0, index).c_str());
-                }
-                
-                game.type = TYPE_PSP_ISO;
-                sprintf(game.id, "%s%04d", "SMLAP", j);
+    void PopulateEbootGameInfo(Game *game, std::string rom)
+    {
+        sprintf(game->rom_path, "%s/%s/EBOOT.PBP", PSP_EBOOT_PATH, rom.c_str());
+        char param_sfo[64];
+        sprintf(param_sfo, "ux0:data/SMLA00001/data/%s/param.sfo", rom.c_str());
+        if (!FS::FileExists(param_sfo))
+        {
+            EBOOT::Extract(game->rom_path, rom.c_str());
+        }
+        const auto sfo = FS::Load(param_sfo);
+        std::string title = std::string(SFO::GetString(sfo.data(), sfo.size(), "TITLE"));
+        std::replace( title.begin(), title.end(), '\n', ' ');
+        char* cat = SFO::GetString(sfo.data(), sfo.size(), "CATEGORY");
+
+        game->type = TYPE_EBOOT;
+        sprintf(game->id, "%s", rom.c_str());
+        sprintf(game->title, "%s", title.c_str());
+        game->tex = no_icon;
+        if (strcmp(cat, "ME") ==0)
+        {
+            sprintf(game->category, "%s", game_categories[PS1_GAMES].category);
+            game_categories[PS1_GAMES].games.push_back(*game);
+        }
+        else
+        {
+            sprintf(game->category, "%s", game_categories[PS_MIMI_GAMES].category);
+            game_categories[PS_MIMI_GAMES].games.push_back(*game);
+        }
+    }
+
+    void ScanAdrenalineEbootGames(sqlite3 *db)
+    {
+        std::vector<std::string> files = FS::ListDir(PSP_EBOOT_PATH);
+
+        games_to_scan = files.size();
+        games_scanned = 0;
+        sprintf(scan_message, "Scanning for %s games in the %s folder", "EBOOT", PSP_EBOOT_PATH);
+
+        for(std::size_t j = 0; j < files.size(); ++j)
+        {
+            Game game;
+            PopulateEbootGameInfo(&game, files[j]);
+            DB::InsertGame(db, &game);
+            game_scan_inprogress = game;
+            games_scanned++;
+        }
+    }
+
+    void ScanRetroCategory(sqlite3 *db, GameCategory *category)
+    {
+        std::vector<std::string> files = FS::ListDir(category->roms_path);
+        games_to_scan = files.size();
+        games_scanned = 0;
+        sprintf(scan_message, "Scanning for %s games in the %s folder", category->title, category->roms_path);
+
+        for(std::size_t j = 0; j < files.size(); ++j)
+        {
+            int index = files[j].find_last_of(".");
+            if (IsRomExtension(files[j].substr(index), category->file_filters))
+            {
+                Game game;
+                game.type = TYPE_ROM;
+                sprintf(game.id, "%s", category->title);
                 sprintf(game.category, "%s", category->category);
+                sprintf(game.rom_path, "%s/%s", category->roms_path, files[j].c_str());
+                sprintf(game.title, "%s", files[j].substr(0, index).c_str());
                 game.tex = no_icon;
                 category->games.push_back(game);
                 DB::InsertGame(db, &game);
@@ -182,85 +269,13 @@ namespace GAME {
         }
     }
 
-    void ScanAdernalineEbootGames(sqlite3 *db)
+    void ScanRetroGames(sqlite3 *db)
     {
-        std::vector<std::string> files = FS::ListDir(PSP_EBOOT_PATH);
-
-        games_to_scan = files.size();
-        games_scanned = 0;
-        sprintf(scan_message, "Scanning for %s games in the %s folder", "EBOOT", PSP_EBOOT_PATH);
-
-        for(std::size_t j = 0; j < files.size(); ++j)
-        {
-            Game game;
-            sprintf(game.rom_path, "%s/%s/EBOOT.PBP", PSP_EBOOT_PATH, files[j].c_str());
-            char param_sfo[64];
-            sprintf(param_sfo, "ux0:data/SMLA00001/data/%s/param.sfo", files[j].c_str());
-            if (!FS::FileExists(param_sfo))
-            {
-                EBOOT::Extract(game.rom_path, files[j].c_str());
-            }
-            const auto sfo = FS::Load(param_sfo);
-            std::string title = std::string(SFO::GetString(sfo.data(), sfo.size(), "TITLE"));
-            std::replace( title.begin(), title.end(), '\n', ' ');
-            char* cat = SFO::GetString(sfo.data(), sfo.size(), "CATEGORY");
-
-            game.type = TYPE_EBOOT;
-            sprintf(game.id, "%s", files[j].c_str());
-            sprintf(game.title, "%s", title.c_str());
-            game.tex = no_icon;
-            if (strcmp(cat, "ME") ==0)
-            {
-                sprintf(game.category, "%s", game_categories[PS1_GAMES].category);
-                game_categories[PS1_GAMES].games.push_back(game);
-            }
-            else
-            {
-                sprintf(game.category, "%s", game_categories[PS_MIMI_GAMES].category);
-                game_categories[PS_MIMI_GAMES].games.push_back(game);
-            }
-            DB::InsertGame(db, &game);
-            game_scan_inprogress = game;
-            games_scanned++;
-        }
-    }
-
-    void ScanForRetroGames(sqlite3 *db)
-    {
-
         for (int i=0; i<TOTAL_ROM_CATEGORY; i++)
         {
             int category_id = ROM_CATEGORIES[i];
-
             GameCategory *category = &game_categories[category_id];
-            std::vector<std::string> files = FS::ListDir(category->roms_path);
-            games_to_scan = files.size();
-            games_scanned = 0;
-            sprintf(scan_message, "Scanning for %s games in the %s folder", category->title, category->roms_path);
-
-            for(std::size_t j = 0; j < files.size(); ++j)
-            {
-                int index = files[j].find_last_of(".");
-                if (IsRomExtension(files[j].substr(index), category->file_filters))
-                {
-                    Game game;
-                    game.type = TYPE_ROM;
-                    sprintf(game.id, "%s", category->title);
-                    sprintf(game.category, "%s", category->category);
-                    sprintf(game.rom_path, "%s/%s", category->roms_path, files[j].c_str());
-                    sprintf(game.title, "%s", files[j].substr(0, index).c_str());
-                    game.tex = no_icon;
-                    category->games.push_back(game);
-                    DB::InsertGame(db, &game);
-                    game_scan_inprogress = game;
-                    games_scanned++;
-                }
-                else
-                {
-                    games_to_scan--;
-                }
-                
-            }
+            ScanRetroCategory(db, category);
         }
     }
 

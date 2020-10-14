@@ -120,13 +120,21 @@ typedef struct LoadImagesParams {
   int page_num;
 } LoadImagesParams;
 
+typedef struct ScanGamesParams {
+  const char* category;
+  int type;
+} ScanGamesParams;
+
 namespace GAME {
     int GameComparator(const void *v1, const void *v2);
     void Init();
     void Scan();
-    void ScanForRetroGames(sqlite3 *db);
-    void ScanAdernalineIsoGames(sqlite3 *db);
-    void ScanAdernalineEbootGames(sqlite3 *db);
+    void ScanRetroCategory(sqlite3 *db, GameCategory *category);
+    void ScanRetroGames(sqlite3 *db);
+    void PopulateIsoGameInfo(GameCategory *category, Game *game, std::string rom, int game_index);
+    void ScanAdrenalineIsoGames(sqlite3 *db);
+    void PopulateEbootGameInfo(Game *game, std::string rom);
+    void ScanAdrenalineEbootGames(sqlite3 *db);
     bool GetGameDetails(const char *id, Game *game);
     bool Launch(Game *game, BootSettings *settings);
     void LoadGamesCache();

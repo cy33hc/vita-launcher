@@ -197,15 +197,6 @@ namespace Windows {
         ImGui::Separator();
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
         ImGui::Text("Page: %d/%d", current_category->page_num, current_category->max_page); ImGui::SameLine();
-        ImGui::SetCursorPosX(350);
-        ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Un-Select"); ImGui::SameLine();
-        ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Favorite"); ImGui::SameLine();
-        ImGui::Image(reinterpret_cast<ImTextureID>(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Settings"); ImGui::SameLine();
-        ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Select"); ImGui::SameLine();
 
         if (handle_add_game)
         {

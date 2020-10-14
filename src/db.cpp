@@ -380,4 +380,29 @@ namespace DB {
             sqlite3_close(db);
         }
    }
+
+   void DeleteGamesByCategoryAndType(sqlite3 *database, const char* category, int type)
+   {
+        sqlite3 *db = database;
+        if (db == nullptr)
+        {
+            sqlite3_open(CACHE_DB_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("DELETE FROM ") + GAMES_TABLE + " WHERE " + COL_TYPE + "=? AND " + COL_CATEGORY + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+    
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_int(res, 1, 1);
+            sqlite3_bind_text(res, 1, category, strlen(category), NULL);
+            int step = sqlite3_step(res);
+            sqlite3_finalize(res);
+        }
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+   }
 }
