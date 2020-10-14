@@ -58,7 +58,7 @@ namespace DB {
             sprintf(game.rom_path, "%s", "");
             game.tex = no_icon;
             game.type = TYPE_BUBBLE;
-            category->games.push_back(game);
+            categoryMap[game.category]->games.push_back(game);
             game_scan_inprogress = game;
             games_scanned++;
             step = sqlite3_step(res); 
@@ -346,7 +346,7 @@ namespace DB {
             game.tex = no_icon;
             games_scanned++;
             game_scan_inprogress = game;
-            category->games.push_back(game);
+            categoryMap[game.category]->games.push_back(game);
             step = sqlite3_step(res);
         }
         sqlite3_finalize(res);

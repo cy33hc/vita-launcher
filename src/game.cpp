@@ -75,7 +75,8 @@ namespace GAME {
         for (std::vector<Game>::iterator it=game_categories[FAVORITES].games.begin(); 
              it!=game_categories[FAVORITES].games.end(); )
         {
-            Game* game = FindGame(current_category, &*it);
+            GameCategory *category = categoryMap[it->category];
+            Game* game = FindGame(category, &*it);
             if (game != nullptr)
             {
                 game->favorite = true;
@@ -85,29 +86,6 @@ namespace GAME {
             {
                 it = game_categories[FAVORITES].games.erase(it);
                 DB::DeleteFavorite(nullptr, &*it);
-            }
-        }
-        
-        for (std::vector<Game>::iterator it=current_category->games.begin();
-            it!=current_category->games.end(); )
-        {
-            bool removed = false;
-            for (int i=2; i<TOTAL_CATEGORY; i++)
-            {
-                GameCategory *category = &game_categories[i];
-                if (strcmp(it->category, category->category) == 0)
-                {
-                    category->games.push_back(*it);
-                    it = current_category->games.erase(it);
-                    games_to_scan--;
-                    removed = true;
-                    break;
-                }
-            }
-
-            if (!removed)
-            {
-                ++it;
             }
         }
         
@@ -206,7 +184,6 @@ namespace GAME {
 
     void ScanAdernalineEbootGames(sqlite3 *db)
     {
-        GameCategory *category = &game_categories[VITA_GAMES];
         std::vector<std::string> files = FS::ListDir(PSP_EBOOT_PATH);
 
         games_to_scan = files.size();
@@ -228,19 +205,20 @@ namespace GAME {
             std::replace( title.begin(), title.end(), '\n', ' ');
             char* cat = SFO::GetString(sfo.data(), sfo.size(), "CATEGORY");
 
-            if (strcmp(cat, "ME") ==0)
-            {
-                sprintf(game.category, "%s", game_categories[PS1_GAMES].category);
-            }
-            else
-            {
-                sprintf(game.category, "%s", game_categories[PS_MIMI_GAMES].category);
-            }
             game.type = TYPE_EBOOT;
             sprintf(game.id, "%s", files[j].c_str());
             sprintf(game.title, "%s", title.c_str());
             game.tex = no_icon;
-            category->games.push_back(game);
+            if (strcmp(cat, "ME") ==0)
+            {
+                sprintf(game.category, "%s", game_categories[PS1_GAMES].category);
+                game_categories[PS1_GAMES].games.push_back(game);
+            }
+            else
+            {
+                sprintf(game.category, "%s", game_categories[PS_MIMI_GAMES].category);
+                game_categories[PS_MIMI_GAMES].games.push_back(game);
+            }
             DB::InsertGame(db, &game);
             game_scan_inprogress = game;
             games_scanned++;
@@ -272,7 +250,7 @@ namespace GAME {
                     sprintf(game.rom_path, "%s/%s", category->roms_path, files[j].c_str());
                     sprintf(game.title, "%s", files[j].substr(0, index).c_str());
                     game.tex = no_icon;
-                    current_category->games.push_back(game);
+                    category->games.push_back(game);
                     DB::InsertGame(db, &game);
                     game_scan_inprogress = game;
                     games_scanned++;
