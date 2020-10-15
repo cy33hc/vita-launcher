@@ -6,7 +6,6 @@
 #include <psp2/net/net.h>
 
 #include <algorithm>
-#include "debugnet.h"
 
 #define ERRNO_EEXIST (int)(0x80010000 + SCE_NET_EEXIST)
 #define ERRNO_ENOENT (int)(0x80010000 + SCE_NET_ENOENT)

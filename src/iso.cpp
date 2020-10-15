@@ -4,7 +4,6 @@
 #include <cstring>
 #include <ios>
 #include "iso.h"
-#include "debugnet.h"
 
 const uint32_t ISO::SECTOR_SIZE = 0x800;
 

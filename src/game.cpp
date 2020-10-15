@@ -16,7 +16,6 @@
 #include "eboot.h"
 #include "iso.h"
 #include "cso.h"
-#include "debugnet.h"
 
 #define NUM_CACHED_PAGES 5
 
