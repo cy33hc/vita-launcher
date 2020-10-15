@@ -683,7 +683,7 @@ namespace GAME {
     {
         for (int i=0; i < category->games.size(); i++)
         {
-            if ((game->type == TYPE_BUBBLE && strcmp(game->id, category->games[i].id) == 0) ||
+            if ((game->type != TYPE_ROM && strcmp(game->id, category->games[i].id) == 0) ||
                 (game->type == TYPE_ROM && strcmp(game->rom_path, category->games[i].rom_path) == 0))
             {
                 return &category->games[i];
