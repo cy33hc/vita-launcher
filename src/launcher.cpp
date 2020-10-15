@@ -257,7 +257,7 @@ namespace Windows {
                 }
             }
         }
-
+        
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()+5);
         ImGui::BeginChild(ImGui::GetID(current_category->title), ImVec2(950,480));
         if (ImGui::IsWindowAppearing())
@@ -306,6 +306,7 @@ namespace Windows {
         ImGui::EndChild();
         ImGui::SetCursorPosY(520);
         ImGui::Separator();
+        /*
         ImGui::SetCursorPosX(300);
         ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Un-Select"); ImGui::SameLine();
@@ -315,7 +316,8 @@ namespace Windows {
         ImGui::Text("Settings"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Select"); ImGui::SameLine();
-        
+        */
+
         if (handle_add_game)
         {
             HandleAddNewGame();
@@ -389,7 +391,7 @@ namespace Windows {
 
             if (!parental_control)
             {
-                if (GAME::IsRomCategory(current_category->id))
+                if (current_category->rom_type == TYPE_ROM)
                 {
                     if (!refresh_games && !add_new_game && !refresh_current_category)
                     {
@@ -401,6 +403,11 @@ namespace Windows {
                         ImGui::Separator();
                         ImGui::Checkbox("Add new game to cache", &add_new_game);
                     }
+                }
+                if (current_category->rom_type == TYPE_PSP_ISO ||
+                    current_category->rom_type == TYPE_ROM ||
+                    current_category->rom_type == TYPE_EBOOT)
+                {
                     if (!refresh_games && !remove_from_cache && !add_new_game)
                     {
                         ImGui::Separator();

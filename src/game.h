@@ -36,6 +36,7 @@ typedef struct {
     int view_mode;
     int list_view_position;
     bool opened;
+    int rom_type;
 } GameCategory;
 
 enum drivers {INFERNO=0, MARCH33=1, NP9660=2};
@@ -110,6 +111,7 @@ extern char adernaline_launcher_boot_bin_path[];
 extern char adernaline_launcher_title_id[];
 extern BootSettings defaul_boot_settings;
 extern std::vector<std::string> psp_iso_extensions;
+extern std::vector<std::string> eboot_extensions;
 
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;
@@ -134,7 +136,7 @@ namespace GAME {
     void ScanRetroGames(sqlite3 *db);
     void PopulateIsoGameInfo(GameCategory *category, Game *game, std::string rom, int game_index);
     void ScanAdrenalineIsoGames(sqlite3 *db);
-    void PopulateEbootGameInfo(Game *game, std::string rom);
+    void PopulateEbootGameInfo(Game *game, std::string rom, int game_index);
     void ScanAdrenalineEbootGames(sqlite3 *db);
     bool GetGameDetails(const char *id, Game *game);
     bool Launch(Game *game, BootSettings *settings);
@@ -160,7 +162,7 @@ namespace GAME {
     bool IsRomCategory(int categoryId);
     bool IsRomExtension(std::string str, std::vector<std::string> &file_filters);
     std::string str_tolower(std::string s);
-    void StartScanGamesCategoryThread(const char* category, int type);
+    void StartScanGamesCategoryThread(GameCategory *category);
     int ScanGamesCategoryThread(SceSize args, ScanGamesParams *params);
 }
 

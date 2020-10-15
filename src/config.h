@@ -82,7 +82,8 @@ namespace CONFIG {
     void LoadConfig();
     void ParseTitlePrefixes(const char* prefix_list, std::vector<std::string> &prefixes, bool toLower);
     void SetupCategory(GameCategory *category, int category_id, const char* category_name, const char* core,
-                       const char* title_id, const char* code, const char* default_prefixes, const char* default_file_filters);
+                       const char* title_id, const char* code, const char* default_prefixes, const char* default_file_filters,
+                       int rom_type);
     void StartDownloadVitaDbThread();
     int DownloadVitaDB(SceSize args, void *argp);
 }

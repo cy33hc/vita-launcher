@@ -6,6 +6,7 @@
 #include <psp2/net/net.h>
 
 #include <algorithm>
+#include "debugnet.h"
 
 #define ERRNO_EEXIST (int)(0x80010000 + SCE_NET_EEXIST)
 #define ERRNO_ENOENT (int)(0x80010000 + SCE_NET_ENOENT)
@@ -185,4 +186,43 @@ namespace FS {
 
         return out;
     }
+
+    std::vector<std::string> ListFiles(const std::string& path)
+    {
+        const auto fd = sceIoDopen(path.c_str());
+        if (static_cast<uint32_t>(fd) == 0x80010002)
+            return {};
+        if (fd < 0)
+            return std::vector<std::string>(0);
+
+        std::vector<std::string> out;
+        while (true)
+        {
+            SceIoDirent dirent;
+            const auto ret = sceIoDread(fd, &dirent);
+            if (ret < 0) {
+                sceIoDclose(fd);
+                return out;
+            }
+            else if (ret == 0)
+                break;
+
+            if (FS::FolderExists(path + "/" + dirent.d_name))
+            {
+                std::vector<std::string> files = FS::ListFiles(path + "/" + dirent.d_name);
+                for (std::vector<std::string>::iterator it=files.begin(); it!=files.end(); )
+                {
+                    out.push_back(std::string(dirent.d_name) + "/" + *it);
+                    ++it;
+                }
+            }
+            else
+            {
+                out.push_back(dirent.d_name);
+            }
+        }
+        sceIoDclose(fd);
+        return out;
+    }
+
 }

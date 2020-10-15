@@ -19,7 +19,7 @@ int maxbuffer = 1024;
 
 namespace EBOOT {
 
-    void Extract(char* eboot_path, char* title_id)
+    void Extract(char* eboot_path, char* rom_folder)
     {
         void *infile;
         void *outfile;
@@ -40,9 +40,9 @@ namespace EBOOT {
             FS::Seek(infile, header.offset[i]);
 
             char output_file[64];
-            sprintf(output_file, "ux0:data/SMLA00001/data/%s", title_id);
+            sprintf(output_file, "ux0:data/SMLA00001/data/%s", rom_folder);
             FS::MkDirs(output_file);
-            sprintf(output_file, "ux0:data/SMLA00001/data/%s/%s", title_id, filename[i]);
+            sprintf(output_file, "ux0:data/SMLA00001/data/%s/%s", rom_folder, filename[i]);
             outfile = FS::Create(output_file);
 
             do {

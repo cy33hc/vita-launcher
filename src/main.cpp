@@ -15,6 +15,7 @@
 #include "game.h"
 #include "config.h"
 #include "net.h"
+#include "fs.h"
 #include "debugnet.h"
 
 namespace Services {
@@ -71,6 +72,7 @@ namespace Services {
 int main(int, char**)
 {
 	debugNetInit(ip_server,port_server,DEBUG);
+	
 	NET::InitNet();
 	NET::InitHttp();
 
