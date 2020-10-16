@@ -51,6 +51,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${CURL_LIBRARIES}
   ${OPENSSL_LIBRARIES}
+  debugnet
   vita2d
   png
   imgui_vita2d

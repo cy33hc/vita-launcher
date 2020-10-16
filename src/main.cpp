@@ -16,7 +16,7 @@
 #include "config.h"
 #include "net.h"
 #include "fs.h"
-//#include "debugnet.h"
+#include "debugnet.h"
 
 namespace Services {
 	int InitImGui(void) {
@@ -27,6 +27,9 @@ namespace Services {
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.MouseDrawCursor = false;
 		ImGui::StyleColorsDark();
+		auto& style = ImGui::GetStyle();
+		style.AntiAliasedLinesUseTex = false;
+
 		ImGui_ImplVita2D_Init();
 
 		ImGui_ImplVita2D_TouchUsage(true);
@@ -71,7 +74,7 @@ namespace Services {
 
 int main(int, char**)
 {
-	//debugNetInit(ip_server,port_server,DEBUG);
+	debugNetInit(ip_server,port_server,DEBUG);
 	
 	NET::InitNet();
 	NET::InitHttp();
