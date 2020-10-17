@@ -139,6 +139,8 @@ namespace GAME {
             delete cso;
         }
 
+        game->type = TYPE_PSP_ISO;
+        game->tex = no_icon;
         if (FS::FileExists(sfo_path))
         {
             const auto sfo = FS::Load(sfo_path);
@@ -150,26 +152,21 @@ namespace GAME {
             if (strcmp(cat, "ME") ==0)
             {
                 sprintf(game->category, "%s", game_categories[PS1_GAMES].category);
-                game_categories[PS1_GAMES].games.push_back(*game);
             }
             else if (strcmp(cat, "UG") ==0)
             {
                 sprintf(game->category, "%s", game_categories[PSP_GAMES].category);
-                game_categories[PSP_GAMES].games.push_back(*game);
             }
             else
             {
                 sprintf(game->category, "%s", game_categories[PS_MIMI_GAMES].category);
-                game_categories[PS_MIMI_GAMES].games.push_back(*game);
             }
         }
         else
         {
             sprintf(game->title, "%s", rom.substr(0, dot_index).c_str());
-        }
-        
-        game->type = TYPE_PSP_ISO;
-        game->tex = no_icon;
+            sprintf(game->category, "%s", game_categories[PSP_GAMES].category);
+        }        
     }
 
     void ScanAdrenalineIsoGames(sqlite3 *db)
@@ -193,7 +190,7 @@ namespace GAME {
             {
                 Game game;
                 PopulateIsoGameInfo(category, &game, files[j], games_scanned);
-                category->games.push_back(game);
+                categoryMap[game.category]->games.push_back(game);
                 DB::InsertGame(db, &game);
                 game_scan_inprogress = game;
                 games_scanned++;
@@ -268,7 +265,7 @@ namespace GAME {
 
     void ScanRetroCategory(sqlite3 *db, GameCategory *category)
     {
-        sprintf(scan_message, "Scanning for %s games in the %s folder", current_category->title, current_category->roms_path);
+        sprintf(scan_message, "Scanning for %s games in the %s folder", category->title, category->roms_path);
         std::vector<std::string> files = FS::ListDir(category->roms_path);
         games_to_scan = files.size();
         games_scanned = 0;
