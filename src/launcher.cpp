@@ -18,6 +18,8 @@ bool paused = false;
 int view_mode;
 static std::vector<std::string> games_on_filesystem;
 static float scroll_direction = 0.0f;
+static int game_position = 0;
+static bool tab_infocus = false;
 
 bool handle_add_game = false;
 bool game_added = false;
@@ -97,6 +99,33 @@ namespace Windows {
             GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num);
             selected_game = nullptr;
         }
+
+        if ((pad_prev.buttons & SCE_CTRL_RIGHT) &&
+            !(pad.buttons & SCE_CTRL_RIGHT) &&
+            current_category->view_mode == VIEW_MODE_GRID &&
+            current_category->max_page > 1 && !paused && !tab_infocus)
+        {
+            if (game_position == 5 || game_position == 11 || game_position == 17)
+            {
+                int prev_page = current_category->page_num;
+                current_category->page_num = GAME::IncrementPage(current_category->page_num, 1);
+                GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num);
+                selected_game = nullptr;
+            }
+        } else if ((pad_prev.buttons & SCE_CTRL_LEFT) &&
+            !(pad.buttons & SCE_CTRL_LEFT) &&
+            current_category->view_mode == VIEW_MODE_GRID &&
+            current_category->max_page > 1 && !paused && !tab_infocus)
+        {
+            if (game_position == 0 || game_position == 6 || game_position == 12)
+            {
+                int prev_page = current_category->page_num;
+                current_category->page_num = GAME::DecrementPage(current_category->page_num, 1);
+                GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num);
+                selected_game = nullptr;
+            }
+        }
+
         pad_prev = pad;
     }
 
@@ -119,6 +148,18 @@ namespace Windows {
         }
         ImGui::End();
         ImGui::PopStyleVar();
+    }
+
+    int GetGamePositionOnPage(Game *game)
+    {
+        for (int i=current_category->page_num*18-18; i < current_category->page_num*18; i++)
+        {
+            if ((game->type != TYPE_ROM && strcmp(game->id, current_category->games[i].id) == 0) ||
+                (game->type == TYPE_ROM && strcmp(game->rom_path, current_category->games[i].rom_path) == 0))
+            {
+                return i % 18;
+            }
+        }
     }
 
     void ShowGridViewWindow()
@@ -173,6 +214,8 @@ namespace Windows {
                     if (ImGui::IsItemFocused())
                     {
                         selected_game = game;
+                        game_position = GetGamePositionOnPage(selected_game);
+                        tab_infocus = false;
                     }
                     ImGui::PopID();
 
@@ -360,6 +403,10 @@ namespace Windows {
                         GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
                     }
                     ImGui::EndTabItem();
+                }
+                if (ImGui::IsItemHovered())
+                {
+                    tab_infocus = true;
                 }
                 ImGui::PopStyleColor();
                 
