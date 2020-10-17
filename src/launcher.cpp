@@ -26,9 +26,13 @@ bool game_added = false;
 bool handle_boot_game = false;
 char game_added_message[256];
 
+float previous_right = 0.0f;
+float previous_left = 0.0f;
+
 namespace Windows {
     void HandleLauncherWindowInput()
     {
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
         SceCtrlData pad;
         sceCtrlPeekBufferNegative(0, &pad, 1);
 
@@ -100,8 +104,8 @@ namespace Windows {
             selected_game = nullptr;
         }
 
-        if ((pad_prev.buttons & SCE_CTRL_RIGHT) &&
-            !(pad.buttons & SCE_CTRL_RIGHT) &&
+        if (previous_right == 0.0f &&
+            io.NavInputs[ImGuiNavInput_DpadRight] == 1.0f &&
             current_category->view_mode == VIEW_MODE_GRID &&
             current_category->max_page > 1 && !paused && !tab_infocus)
         {
@@ -112,8 +116,8 @@ namespace Windows {
                 GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num);
                 selected_game = nullptr;
             }
-        } else if ((pad_prev.buttons & SCE_CTRL_LEFT) &&
-            !(pad.buttons & SCE_CTRL_LEFT) &&
+        } else if (previous_left == 0.0f &&
+            io.NavInputs[ImGuiNavInput_DpadLeft] == 1.0f &&
             current_category->view_mode == VIEW_MODE_GRID &&
             current_category->max_page > 1 && !paused && !tab_infocus)
         {
@@ -127,6 +131,8 @@ namespace Windows {
         }
 
         pad_prev = pad;
+        previous_right = io.NavInputs[ImGuiNavInput_DpadRight];
+        previous_left = io.NavInputs[ImGuiNavInput_DpadLeft];
     }
 
     void LauncherWindow() {
