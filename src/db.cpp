@@ -52,15 +52,18 @@ namespace DB {
         {
             Game game;
             sprintf(game.id, "%s", sqlite3_column_text(res, 0));
-            std::string title = std::string((const char*)sqlite3_column_text(res, 1));
-            std::replace( title.begin(), title.end(), '\n', ' ');
-            sprintf(game.title, "%s", title.c_str());
-            sprintf(game.category, "%s", GAME::GetGameCategory(game.id));
-            sprintf(game.rom_path, "%s", "");
-            game.tex = no_icon;
-            game.type = TYPE_BUBBLE;
-            categoryMap[game.category]->games.push_back(game);
-            game_scan_inprogress = game;
+            if (!GAME::IsMatchPrefixes(game.id, hidden_title_ids))
+            {
+                std::string title = std::string((const char*)sqlite3_column_text(res, 1));
+                std::replace( title.begin(), title.end(), '\n', ' ');
+                sprintf(game.title, "%s", title.c_str());
+                sprintf(game.category, "%s", GAME::GetGameCategory(game.id));
+                sprintf(game.rom_path, "%s", "");
+                game.tex = no_icon;
+                game.type = TYPE_BUBBLE;
+                categoryMap[game.category]->games.push_back(game);
+                game_scan_inprogress = game;
+            }
             games_scanned++;
             step = sqlite3_step(res); 
         }

@@ -112,6 +112,7 @@ extern char adernaline_launcher_title_id[];
 extern BootSettings defaul_boot_settings;
 extern std::vector<std::string> psp_iso_extensions;
 extern std::vector<std::string> eboot_extensions;
+extern std::vector<std::string> hidden_title_ids;
 
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;
@@ -164,6 +165,7 @@ namespace GAME {
     std::string str_tolower(std::string s);
     void StartScanGamesCategoryThread(GameCategory *category);
     int ScanGamesCategoryThread(SceSize args, ScanGamesParams *params);
+    bool IsMatchPrefixes(const char* id, std::vector<std::string> &prefixes);
 }
 
 #endif

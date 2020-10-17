@@ -21,9 +21,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fpermissive")
 
 add_definitions(-DSQLITE_OS_OTHER=1 -DSQLITE_TEMP_STORE=3 -DSQLITE_THREADSAFE=0)
 
-find_package(CURL REQUIRED)
-find_package(OpenSSL REQUIRED)
-
 include_directories(
   src
   sqlite-3.6.23.1
@@ -40,7 +37,6 @@ add_executable(${PROJECT_NAME}
   src/inifile.c
   src/vita_sqlite.c
   src/db.cpp
-  src/net.cpp
   src/config.cpp
   src/eboot.cpp
   src/iso.cpp
@@ -49,8 +45,6 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-  ${CURL_LIBRARIES}
-  ${OPENSSL_LIBRARIES}
   debugnet
   vita2d
   png
@@ -71,6 +65,7 @@ target_link_libraries(${PROJECT_NAME}
   SceNetCtl_stub
   SceHttp_stub
   SceSsl_stub
+  ScePspnetAdhoc_stub
   m
   SceAppMgr_stub
   SceAppUtil_stub

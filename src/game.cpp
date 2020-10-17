@@ -23,6 +23,7 @@ GameCategory game_categories[TOTAL_CATEGORY];
 std::map<std::string, GameCategory*> categoryMap;
 std::vector<std::string> psp_iso_extensions;
 std::vector<std::string> eboot_extensions;
+std::vector<std::string> hidden_title_ids;
 
 GameCategory *current_category;
 
@@ -144,6 +145,23 @@ namespace GAME {
             std::string title = std::string(SFO::GetString(sfo.data(), sfo.size(), "TITLE"));
             std::replace( title.begin(), title.end(), '\n', ' ');
             sprintf(game->title, "%s", title.c_str());
+
+            char* cat = SFO::GetString(sfo.data(), sfo.size(), "CATEGORY");
+            if (strcmp(cat, "ME") ==0)
+            {
+                sprintf(game->category, "%s", game_categories[PS1_GAMES].category);
+                game_categories[PS1_GAMES].games.push_back(*game);
+            }
+            else if (strcmp(cat, "UG") ==0)
+            {
+                sprintf(game->category, "%s", game_categories[PSP_GAMES].category);
+                game_categories[PSP_GAMES].games.push_back(*game);
+            }
+            else
+            {
+                sprintf(game->category, "%s", game_categories[PS_MIMI_GAMES].category);
+                game_categories[PS_MIMI_GAMES].games.push_back(*game);
+            }
         }
         else
         {
@@ -151,7 +169,6 @@ namespace GAME {
         }
         
         game->type = TYPE_PSP_ISO;
-        sprintf(game->category, "%s", category->category);
         game->tex = no_icon;
     }
 
@@ -210,6 +227,11 @@ namespace GAME {
         {
             sprintf(game->category, "%s", game_categories[PS1_GAMES].category);
             game_categories[PS1_GAMES].games.push_back(*game);
+        }
+        else if (strcmp(cat, "UG") ==0)
+        {
+            sprintf(game->category, "%s", game_categories[PSP_GAMES].category);
+            game_categories[PSP_GAMES].games.push_back(*game);
         }
         else
         {
@@ -497,7 +519,11 @@ namespace GAME {
         tex = no_icon;
 
         char icon_path[256];
-        if (game->type == TYPE_BUBBLE)
+        if (game->type == TYPE_BUBBLE && strcmp(game->category, game_categories[PS_MOBILE_GAMES].category) == 0)
+        {
+            sprintf(icon_path, "ur0:appmeta/%s/pic0.png", game->id);
+        }
+        else if (game->type == TYPE_BUBBLE)
         {
             sprintf(icon_path, "ur0:appmeta/%s/icon0.png", game->id);
         }
@@ -601,15 +627,16 @@ namespace GAME {
         sceKernelDelayThread(200000);
         sqlite3 *db;
         sqlite3_open(CACHE_DB_FILE, &db);
-        if (params->type == TYPE_ROM || params->type == TYPE_PSP_ISO)
+        if (params->type == TYPE_ROM)
         {
             GameCategory *category = categoryMap[params->category];
             RemoveGamesFromCategoryByType(db, category, params->type);
         }
         else
         {
-            RemoveGamesFromCategoryByType(db, &game_categories[PS1_GAMES], TYPE_EBOOT);
-            RemoveGamesFromCategoryByType(db, &game_categories[PS_MIMI_GAMES], TYPE_EBOOT);
+            RemoveGamesFromCategoryByType(db, &game_categories[PSP_GAMES], params->type);
+            RemoveGamesFromCategoryByType(db, &game_categories[PS1_GAMES], params->type);
+            RemoveGamesFromCategoryByType(db, &game_categories[PS_MIMI_GAMES], params->type);
         }
 
         if (params->type == TYPE_ROM)
@@ -624,10 +651,9 @@ namespace GAME {
         {
             ScanAdrenalineEbootGames(db);
         }
-        
         sqlite3_close(db);
 
-        if (params->type == TYPE_ROM || params->type == TYPE_PSP_ISO)
+        if (params->type == TYPE_ROM)
         {
             GameCategory *category = categoryMap[params->category];
             category->page_num = 1;
@@ -640,6 +666,9 @@ namespace GAME {
             game_categories[PSP_GAMES].page_num = 1;
             SetMaxPage(&game_categories[PSP_GAMES]);
             SortGames(&game_categories[PSP_GAMES]);
+            game_categories[PS1_GAMES].page_num = 1;
+            SetMaxPage(&game_categories[PS1_GAMES]);
+            SortGames(&game_categories[PS1_GAMES]);
             game_categories[PS_MIMI_GAMES].page_num = 1;
             SetMaxPage(&game_categories[PS_MIMI_GAMES]);
             SortGames(&game_categories[PS_MIMI_GAMES]);
@@ -756,7 +785,7 @@ namespace GAME {
     {
         if (strncmp(title_id, "PSPEMUCFW", 9) == 0)
         {
-            return game_categories[UTILITIES].category;
+            return game_categories[HOMEBREWS].category;
         }
 
         for (int i=1; i<TOTAL_CATEGORY; i++)

@@ -7,7 +7,6 @@
 #include "game.h"
 #include "json.h"
 #include "fs.h"
-#include "net.h"
 
 extern "C" {
 	#include "inifile.h"
@@ -87,6 +86,8 @@ namespace CONFIG {
 
     void LoadConfig()
     {
+        const char* hidden_title_ids_str;
+
 		OpenIniFile (CONFIG_INI_FILE);
 
         // Adernaline Default Boot Settings
@@ -112,6 +113,11 @@ namespace CONFIG {
         // Load parental control config
         parental_control = ReadBool(CONFIG_GLOBAL, CONFIG_PARENT_CONTROL, false);
         WriteBool(CONFIG_GLOBAL, CONFIG_PARENT_CONTROL, parental_control);
+
+        // Config for hidden title ids
+        hidden_title_ids_str = ReadString(CONFIG_GLOBAL, CONFIG_HIDE_TITLE_IDS, "");
+        ParseTitlePrefixes(hidden_title_ids_str, hidden_title_ids, false);
+        WriteString(CONFIG_GLOBAL, CONFIG_HIDE_TITLE_IDS, hidden_title_ids_str);
 
         // Load adernaline config
         sprintf(adernaline_launcher_title_id, "%s", ReadString(CONFIG_GLOBAL, CONFIG_ADERNALINE_LAUNCHER_TITLE_ID, DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID));
@@ -144,58 +150,11 @@ namespace CONFIG {
         SetupCategory(&game_categories[ORIGINAL_GAMES], ORIGINAL_GAMES, "original", "Originals", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
         SetupCategory(&game_categories[UTILITIES], UTILITIES, "utilities", "Utilities", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
         SetupCategory(&game_categories[EMULATORS], EMULATORS, "emulator", "Emulators", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
-        SetupCategory(&game_categories[HOMEBREWS], HOMEBREWS, "homebrew", "Others", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
+        SetupCategory(&game_categories[HOMEBREWS], HOMEBREWS, "homebrew", "Homebrews", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
         SetupCategory(&game_categories[FAVORITES], FAVORITES, "favorites", "Favorites", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
 
 		WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();
-
-        if (!FS::FileExists(VITADB_JSON_FILE))
-        {
-            sprintf(scan_message, "%s", "Downloading game categories from VitaDB website");
-            NET::Download(VITADB_URL, VITADB_JSON_FILE);
-        }
-
-        if (FS::FileExists(VITADB_JSON_FILE))
-        {
-            sprintf(scan_message, "%s", "Extracting games categories from VitaDB json");
-            json vitadb = json::parse(FS::Load(VITADB_JSON_FILE));
-            int arrayLength = static_cast<int>(vitadb.size());
-
-            for (int i=0; i < arrayLength; i++)
-            {
-                std::string type = vitadb[i]["type"].get<std::string>();
-                if (type == "1")
-                {
-                    game_categories[PORT_GAMES].valid_title_ids.push_back(vitadb[i]["titleid"].get<std::string>());
-                }
-                else if (type == "2")
-                {
-                    game_categories[ORIGINAL_GAMES].valid_title_ids.push_back(vitadb[i]["titleid"].get<std::string>());
-                }
-                else if (type == "4")
-                {
-                    game_categories[UTILITIES].valid_title_ids.push_back(vitadb[i]["titleid"].get<std::string>());
-                } else if (type == "5")
-                {
-                    game_categories[EMULATORS].valid_title_ids.push_back(vitadb[i]["titleid"].get<std::string>());
-                }
-            }
-        }
-
-        // Download vitadb only once per day
-        if (FS::FileExists(VITADB_JSON_FILE))
-        {
-            SceIoStat stat;
-            SceDateTime date;
-            time_t time;
-            sceIoGetstat(VITADB_JSON_FILE, &stat);
-            sceRtcGetCurrentClockLocalTime(&date);
-            if (stat.st_mtime.day != date.day)
-            {
-                StartDownloadVitaDbThread();
-            }
-        }
     }
 
     void ParseTitlePrefixes(const char* prefix_list, std::vector<std::string> &prefixes, bool toLower)
@@ -223,18 +182,5 @@ namespace CONFIG {
                 prefix = "";
             }
         }
-    }
-
-    void StartDownloadVitaDbThread()
-    {
-        download_vitadb_thid = sceKernelCreateThread("download_vitadb_thread", (SceKernelThreadEntry)CONFIG::DownloadVitaDB, 0x10000100, 0x4000, 0, 0, NULL);
-		if (download_vitadb_thid >= 0)
-			sceKernelStartThread(download_vitadb_thid, 0, NULL);
-    }
-
-    int DownloadVitaDB(SceSize args, void *argp)
-    {
-        NET::Download(VITADB_URL, VITADB_JSON_FILE);
-        return sceKernelExitDeleteThread(0);
     }
 }

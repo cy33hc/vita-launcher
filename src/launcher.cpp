@@ -198,7 +198,6 @@ namespace Windows {
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
         ImGui::Text("Page: %d/%d", current_category->page_num, current_category->max_page); ImGui::SameLine();
 
-        /*
         ImGui::SetCursorPosX(350);
         ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Un-Select"); ImGui::SameLine();
@@ -208,7 +207,6 @@ namespace Windows {
         ImGui::Text("Settings"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Select"); ImGui::SameLine();
-        */
 
         if (handle_add_game)
         {
@@ -306,7 +304,7 @@ namespace Windows {
         ImGui::EndChild();
         ImGui::SetCursorPosY(520);
         ImGui::Separator();
-        /*
+
         ImGui::SetCursorPosX(300);
         ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Un-Select"); ImGui::SameLine();
@@ -316,7 +314,6 @@ namespace Windows {
         ImGui::Text("Settings"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Select"); ImGui::SameLine();
-        */
 
         if (handle_add_game)
         {
@@ -340,7 +337,15 @@ namespace Windows {
             if (game_categories[i].games.size() > 0 || show_all_categories)
             {
                 ImGui::PushStyleColor(ImGuiCol_TabActive, ImVec4(0.31f, 0.31f, 0.31f, 1.00f));
-                if (ImGui::BeginTabItem(game_categories[i].title))
+                // Add some padding for title so tabs are consistent width
+                std::string title = std::string(game_categories[i].title);
+                if (title.length() == 2)
+                    title = "  " + title + "  ";
+                else if (title.length() == 3)
+                    title = " " + title + " ";
+                else if (title == "Vita")
+                    title = " " + title + " ";
+                if (ImGui::BeginTabItem(title.c_str()))
                 {
                     GameCategory *previous_category = current_category;
                     if (previous_category->id != game_categories[i].id)
@@ -419,7 +424,7 @@ namespace Windows {
                 if (!remove_from_cache && !add_new_game && !refresh_current_category)
                 {
                     ImGui::Separator();
-                    ImGui::Checkbox("Rescan games and rebuild cache", &refresh_games);
+                    ImGui::Checkbox("Rescan all game categories to rebuild cache", &refresh_games);
                 }
             }
             ImGui::Separator();

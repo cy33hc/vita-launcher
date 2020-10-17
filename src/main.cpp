@@ -14,9 +14,8 @@
 #include "textures.h"
 #include "game.h"
 #include "config.h"
-#include "net.h"
 #include "fs.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 
 namespace Services {
 	int InitImGui(void) {
@@ -74,11 +73,8 @@ namespace Services {
 
 int main(int, char**)
 {
-	debugNetInit(ip_server,port_server,DEBUG);
+	//debugNetInit(ip_server,port_server,DEBUG);
 	
-	NET::InitNet();
-	NET::InitHttp();
-
 	Services::Init();
 	Services::InitImGui();
 
@@ -91,7 +87,5 @@ int main(int, char**)
 	Services::ExitImGui();
 	Services::Exit();
 
-	NET::ExitHttp();
-	NET::ExitNet();
 	return 0;
 }
