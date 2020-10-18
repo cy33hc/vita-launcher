@@ -491,6 +491,26 @@ namespace GAME {
         }
     }
 
+    int IncrementCategory(int id, int num_of_ids)
+    {
+        int new_id = id + num_of_ids;
+        if (new_id >= TOTAL_CATEGORY)
+        {
+            new_id = new_id % TOTAL_CATEGORY;
+        }
+        return new_id;
+    }
+
+    int DecrementCategory(int id, int num_of_ids)
+    {
+        int new_id = id - num_of_ids;
+        if (new_id >= 0)
+        {
+            return new_id;
+        }
+        return new_id + TOTAL_CATEGORY;
+    }
+
     int IncrementPage(int page, int num_of_pages)
     {
         int new_page = page + num_of_pages;

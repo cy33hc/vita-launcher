@@ -7,7 +7,7 @@
 #include "game.h"
 #include "db.h"
 #include "config.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -20,6 +20,7 @@ static std::vector<std::string> games_on_filesystem;
 static float scroll_direction = 0.0f;
 static int game_position = 0;
 static bool tab_infocus = false;
+static int category_selected = -1;
 
 bool handle_add_game = false;
 bool game_added = false;
@@ -85,23 +86,31 @@ namespace Windows {
         }
 
         if ((pad_prev.buttons & SCE_CTRL_LTRIGGER) &&
-            !(pad.buttons & SCE_CTRL_LTRIGGER) &&
-            current_category->view_mode == VIEW_MODE_GRID &&
-            current_category->max_page > 1 && !paused)
+            !(pad.buttons & SCE_CTRL_LTRIGGER) && !paused)
         {
-            int prev_page = current_category->page_num;
-            current_category->page_num = GAME::DecrementPage(current_category->page_num, 1);
-            GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num);
-            selected_game = nullptr;
+            GameCategory *next_category = current_category;
+            next_category = &game_categories[GAME::DecrementCategory(next_category->id, 1)];
+            if (!show_all_categories)
+            {
+                while (next_category->games.size() == 0)
+                {
+                    next_category = &game_categories[GAME::DecrementCategory(next_category->id, 1)];
+                }
+            }
+            category_selected = next_category->id;
         } else if ((pad_prev.buttons & SCE_CTRL_RTRIGGER) &&
-                   !(pad.buttons & SCE_CTRL_RTRIGGER) &&
-                   current_category->view_mode == VIEW_MODE_GRID &&
-                   current_category->max_page > 1 && !paused)
+                   !(pad.buttons & SCE_CTRL_RTRIGGER) && !paused)
         {
-            int prev_page = current_category->page_num;
-            current_category->page_num = GAME::IncrementPage(current_category->page_num, 1);
-            GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num);
-            selected_game = nullptr;
+            GameCategory *next_category = current_category;
+            next_category = &game_categories[GAME::IncrementCategory(next_category->id, 1)];
+            if (!show_all_categories)
+            {
+                while (next_category->games.size() == 0)
+                {
+                    next_category = &game_categories[GAME::IncrementCategory(next_category->id, 1)];
+                }
+            }
+            category_selected = next_category->id;
         }
 
         if (previous_right == 0.0f &&
@@ -109,7 +118,9 @@ namespace Windows {
             current_category->view_mode == VIEW_MODE_GRID &&
             current_category->max_page > 1 && !paused && !tab_infocus)
         {
-            if (game_position == 5 || game_position == 11 || game_position == 17)
+            if (game_position == 5 || game_position == 11 || game_position == 17 ||
+                (current_category->page_num == current_category->max_page && 
+                game_position == current_category->games.size() - (current_category->page_num*18-18) -1))
             {
                 int prev_page = current_category->page_num;
                 current_category->page_num = GAME::IncrementPage(current_category->page_num, 1);
@@ -172,7 +183,7 @@ namespace Windows {
     {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.KeyRepeatRate = 0.05f;
-        ImGui_ImplVita2D_SetAnalogRepeatDelay(50000);
+        ImGui_ImplVita2D_SetAnalogRepeatDelay(120000);
 
         int game_start_index = (current_category->page_num * 18) - 18;
 
@@ -394,16 +405,24 @@ namespace Windows {
                     title = " " + title + " ";
                 else if (title == "Vita")
                     title = " " + title + " ";
-                if (ImGui::BeginTabItem(title.c_str()))
+                ImGuiTabItemFlags tab_flags = ImGuiTabItemFlags_None;
+                if (category_selected == i)
+                {
+                    tab_flags = ImGuiTabItemFlags_SetSelected;
+                }
+                if (ImGui::BeginTabItem(title.c_str(), NULL, tab_flags))
                 {
                     GameCategory *previous_category = current_category;
                     if (previous_category->id != game_categories[i].id)
                     {
-                        current_category->opened = false;
+                        for (int i=0; i<TOTAL_CATEGORY; i++)
+                        {
+                            game_categories[i].opened = false;
+                        }
                         current_category = &game_categories[i];
-                        current_category->opened = true;
                         view_mode = current_category->view_mode;
                         selected_game = nullptr;
+                        category_selected = -1;
 
                         GAME::DeleteGamesImages(previous_category);
                         GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
@@ -664,7 +683,7 @@ namespace Windows {
                         it!=games_on_filesystem.end(); )
                     {
                         int index = it->find_last_of(".");
-                        if (!GAME::IsRomExtension(it->substr(index), current_category->file_filters))
+                        if (index == std::string::npos || !GAME::IsRomExtension(it->substr(index), current_category->file_filters))
                         {
                             it = games_on_filesystem.erase(it);
                         }

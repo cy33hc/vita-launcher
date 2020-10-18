@@ -14,6 +14,11 @@ namespace Windows {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     };
 
+    inline void SetTabActive(const char* tab_bar, const char* tab_name)
+    {
+        GImGui->TabBars.GetByKey(ImGui::GetID(tab_bar))->SelectedTabId = ImGui::GetID(tab_name);
+    }
+
     inline void SetNavFocusHere()
     {
         GImGui->NavId = GImGui->CurrentWindow->DC.LastItemId;

@@ -166,6 +166,8 @@ namespace GAME {
     void StartScanGamesCategoryThread(GameCategory *category);
     int ScanGamesCategoryThread(SceSize args, ScanGamesParams *params);
     bool IsMatchPrefixes(const char* id, std::vector<std::string> &prefixes);
+    int IncrementCategory(int id, int num_of_ids);
+    int DecrementCategory(int id, int num_of_ids);
 }
 
 #endif
