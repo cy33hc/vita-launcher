@@ -183,7 +183,7 @@ namespace Windows {
     {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.KeyRepeatRate = 0.05f;
-        ImGui_ImplVita2D_SetAnalogRepeatDelay(120000);
+        ImGui_ImplVita2D_SetAnalogRepeatDelay(100000);
 
         int game_start_index = (current_category->page_num * 18) - 18;
 
