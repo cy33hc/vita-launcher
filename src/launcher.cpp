@@ -465,7 +465,7 @@ namespace Windows {
             ImGui::OpenPopup("Settings and Actions");
         }
 
-        ImGui::SetNextWindowPos(ImVec2(250, 180));
+        ImGui::SetNextWindowPos(ImVec2(280, 140));
         ImGui::SetNextWindowSizeConstraints(ImVec2(400,150), ImVec2(400,400), NULL, NULL);
         if (ImGui::BeginPopupModal("Settings and Actions", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
@@ -535,6 +535,7 @@ namespace Windows {
             {
                 OpenIniFile (CONFIG_INI_FILE);
                 WriteInt(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
+                WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, cb_style_name);
                 if (view_mode != current_category->view_mode)
                 {
                     current_category->view_mode = view_mode;
@@ -545,18 +546,15 @@ namespace Windows {
                         GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
                     }
                 }
+                WriteIniFile(CONFIG_INI_FILE);
+                CloseIniFile();
 
                 if (strcmp(cb_style_name, style_name) != 0)
                 {
                     sprintf(style_name, "%s", cb_style_name);
                     Style::SetStylePath(style_name);
                     Style::LoadStyle(style_path);
-                    WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, style_name);
                 }
-
-                WriteIniFile(CONFIG_INI_FILE);
-                CloseIniFile();
-
 
                 if (refresh_games)
                 {
