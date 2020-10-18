@@ -5,6 +5,7 @@
 
 #include "style.h"
 #include "config.h"
+#include "fs.h"
 
 extern "C" {
 	#include "inifile.h"
@@ -101,6 +102,11 @@ namespace Style {
         else
         {
             sprintf(style_path, "%s/%s\.ini", STYLES_FOLDER, style_name);
+            if (!FS::FileExists(style_path))
+            {
+                sprintf(style_path, "%s", DEFAULT_STYLE_PATH);
+                sprintf(style_name, "%s", CONFIG_DEFAULT_STYLE_NAME);
+            }
         }
     }
 }
