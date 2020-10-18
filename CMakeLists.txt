@@ -41,6 +41,7 @@ add_executable(${PROJECT_NAME}
   src/eboot.cpp
   src/iso.cpp
   src/cso.cpp
+  src/style.cpp
   sqlite-3.6.23.1/sqlite3.c
 )
 
@@ -86,4 +87,5 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE triangle.png triangle.png
   FILE circle.png circle.png
   FILE cross.png cross.png
+  FILE default_style.ini default_style.ini
 )

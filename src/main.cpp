@@ -14,6 +14,7 @@
 #include "textures.h"
 #include "game.h"
 #include "config.h"
+#include "style.h"
 #include "fs.h"
 //#include "debugnet.h"
 
@@ -29,6 +30,8 @@ namespace Services {
 		auto& style = ImGui::GetStyle();
 		style.AntiAliasedLinesUseTex = false;
 
+		Style::LoadStyle(DEFAULT_STYLE_PATH);
+		
 		ImGui_ImplVita2D_Init();
 
 		ImGui_ImplVita2D_TouchUsage(true);
