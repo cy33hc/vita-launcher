@@ -149,11 +149,12 @@ namespace GAME {
             sprintf(game->title, "%s", title.c_str());
 
             char* cat = SFO::GetString(sfo.data(), sfo.size(), "CATEGORY");
+            char* disc_id = SFO::GetString(sfo.data(), sfo.size(), "DISC_ID");
             if (strcmp(cat, "ME") ==0)
             {
                 sprintf(game->category, "%s", game_categories[PS1_GAMES].category);
             }
-            else if (strcmp(cat, "UG") ==0)
+            else if (strcmp(cat, "UG") ==0 || IsMatchPrefixes(disc_id, game_categories[PSP_GAMES].valid_title_ids))
             {
                 sprintf(game->category, "%s", game_categories[PSP_GAMES].category);
             }
@@ -216,6 +217,7 @@ namespace GAME {
         std::string title = std::string(SFO::GetString(sfo.data(), sfo.size(), "TITLE"));
         std::replace( title.begin(), title.end(), '\n', ' ');
         char* cat = SFO::GetString(sfo.data(), sfo.size(), "CATEGORY");
+        char* disc_id = SFO::GetString(sfo.data(), sfo.size(), "DISC_ID");
 
         game->type = TYPE_EBOOT;
         sprintf(game->title, "%s", title.c_str());
@@ -225,7 +227,7 @@ namespace GAME {
             sprintf(game->category, "%s", game_categories[PS1_GAMES].category);
             game_categories[PS1_GAMES].games.push_back(*game);
         }
-        else if (strcmp(cat, "UG") ==0)
+        else if (strcmp(cat, "UG") ==0 || IsMatchPrefixes(disc_id, game_categories[PSP_GAMES].valid_title_ids))
         {
             sprintf(game->category, "%s", game_categories[PSP_GAMES].category);
             game_categories[PSP_GAMES].games.push_back(*game);
