@@ -31,7 +31,7 @@ namespace Services {
 		style.AntiAliasedLinesUseTex = false;
 
 		Style::LoadStyle(DEFAULT_STYLE_PATH);
-		
+
 		ImGui_ImplVita2D_Init();
 
 		ImGui_ImplVita2D_TouchUsage(true);
