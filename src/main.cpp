@@ -16,7 +16,7 @@
 #include "config.h"
 #include "style.h"
 #include "fs.h"
-//#include "debugnet.h"
+#include "debugnet.h"
 
 namespace Services {
 	int InitImGui(void) {
@@ -30,7 +30,7 @@ namespace Services {
 		auto& style = ImGui::GetStyle();
 		style.AntiAliasedLinesUseTex = false;
 
-		Style::LoadStyle(DEFAULT_STYLE_PATH);
+		Style::LoadStyle(style_path);
 
 		ImGui_ImplVita2D_Init();
 
@@ -76,7 +76,7 @@ namespace Services {
 
 int main(int, char**)
 {
-	//debugNetInit(ip_server,port_server,DEBUG);
+	debugNetInit(ip_server,port_server,DEBUG);
 	
 	Services::Init();
 	Services::InitImGui();

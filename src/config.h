@@ -30,6 +30,8 @@
 #define CONFIG_GLOBAL "Global"
 #define CONFIG_SHOW_ALL_CATEGORIES "show_all_categories"
 #define CONFIG_PARENT_CONTROL "parental_control"
+#define CONFIG_STYLE_NAME "style"
+#define CONFIG_DEFAULT_STYLE_NAME "Default"
 
 // Filters for ROM prefixes during scan
 #define PS1_FILTERS ".iso,.bin"

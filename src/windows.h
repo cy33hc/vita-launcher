@@ -29,6 +29,7 @@ namespace Windows {
         GImGui->NavId = 0;
     }
 
+    void Init();
     void HandleLauncherWindowInput();
     void LauncherWindow();
     void ShowGridViewWindow();

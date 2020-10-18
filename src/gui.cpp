@@ -21,6 +21,7 @@ namespace GUI {
 		bool done = false;
 		view_mode = current_category->view_mode;
 		
+		Windows::Init();
 		while (!done) {
 			vita2d_start_drawing();
 			vita2d_clear_screen();

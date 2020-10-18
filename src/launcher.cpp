@@ -6,6 +6,7 @@
 #include "fs.h"
 #include "game.h"
 #include "db.h"
+#include "style.h"
 #include "config.h"
 //#include "debugnet.h"
 extern "C" {
@@ -21,6 +22,8 @@ static float scroll_direction = 0.0f;
 static int game_position = 0;
 static bool tab_infocus = false;
 static int category_selected = -1;
+static char cb_style_name[64];
+static std::vector<std::string> styles;
 
 bool handle_add_game = false;
 bool game_added = false;
@@ -31,6 +34,22 @@ float previous_right = 0.0f;
 float previous_left = 0.0f;
 
 namespace Windows {
+    void Init()
+    {
+        sprintf(cb_style_name, "%s", style_name);
+        // Retrieve styles
+        std::vector<std::string> style_files = FS::ListDir(STYLES_FOLDER);
+        styles.push_back(CONFIG_DEFAULT_STYLE_NAME);
+        for (int i=0; i<style_files.size(); i++)
+        {
+            int index = style_files[i].find_last_of(".");
+            if (index != std::string::npos && style_files[i].substr(index) == ".ini")
+            {
+                styles.push_back(style_files[i].substr(0, index));
+            }
+        }
+    }
+
     void HandleLauncherWindowInput()
     {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -396,7 +415,6 @@ namespace Windows {
             for (int i=0; i<TOTAL_CATEGORY; i++)
             if (game_categories[i].games.size() > 0 || show_all_categories)
             {
-                ImGui::PushStyleColor(ImGuiCol_TabActive, ImVec4(0.31f, 0.31f, 0.31f, 1.00f));
                 // Add some padding for title so tabs are consistent width
                 std::string title = std::string(game_categories[i].title);
                 if (title.length() == 2)
@@ -432,9 +450,7 @@ namespace Windows {
                 if (ImGui::IsItemHovered())
                 {
                     tab_infocus = true;
-                }
-                ImGui::PopStyleColor();
-                
+                }                
             }
             ImGui::EndTabBar();
         }
@@ -449,7 +465,7 @@ namespace Windows {
             ImGui::OpenPopup("Settings and Actions");
         }
 
-        ImGui::SetNextWindowPos(ImVec2(300, 180));
+        ImGui::SetNextWindowPos(ImVec2(250, 180));
         ImGui::SetNextWindowSizeConstraints(ImVec2(400,150), ImVec2(400,400), NULL, NULL);
         if (ImGui::BeginPopupModal("Settings and Actions", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
@@ -460,6 +476,21 @@ namespace Windows {
 
             ImGui::Text("Global Settings");
             ImGui::Checkbox("Show All Categories", &show_all_categories);
+            if (ImGui::BeginCombo("Style", cb_style_name, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightSmall))
+            {
+                for (int n = 0; n < styles.size(); n++)
+                {
+                    const bool is_selected = strcmp(styles[n].c_str(), cb_style_name)==0;
+                    if (ImGui::Selectable(styles[n].c_str(), is_selected))
+                        sprintf(cb_style_name, "%s", styles[n].c_str());
+
+                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+
             ImGui::Separator();
             ImGui::Text("%s View:", current_category->title);
             ImGui::RadioButton("Grid", &view_mode, 0);
@@ -514,8 +545,18 @@ namespace Windows {
                         GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
                     }
                 }
+
+                if (strcmp(cb_style_name, style_name) != 0)
+                {
+                    sprintf(style_name, "%s", cb_style_name);
+                    Style::SetStylePath(style_name);
+                    Style::LoadStyle(style_path);
+                    WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, style_name);
+                }
+
                 WriteIniFile(CONFIG_INI_FILE);
                 CloseIniFile();
+
 
                 if (refresh_games)
                 {

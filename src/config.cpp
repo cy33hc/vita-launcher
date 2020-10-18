@@ -7,6 +7,7 @@
 #include "game.h"
 #include "json.h"
 #include "fs.h"
+#include "style.h"
 
 extern "C" {
 	#include "inifile.h"
@@ -105,6 +106,17 @@ namespace CONFIG {
         psp_iso_extensions.push_back(".iso");
         psp_iso_extensions.push_back(".cso");
         eboot_extensions.push_back(".pbp");
+
+        // Load styles
+        if (!FS::FolderExists(STYLES_FOLDER))
+        {
+            FS::MkDirs(STYLES_FOLDER);
+        }
+
+        char* style_value = ReadString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, CONFIG_DEFAULT_STYLE_NAME);
+        sprintf(style_name, "%s", style_value);
+        WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, style_name);
+        Style::SetStylePath(style_name);
 
         // Load global config
         show_all_categories = ReadBool(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, true);

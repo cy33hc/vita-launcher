@@ -2,14 +2,15 @@
 
 #ifndef _ISO_H_
 #define _ISO_H_
+#include <imgui_vita2d/imgui_vita.h>
 #include <string>
 #include <vector>
 extern "C" {
 	#include "inifile.h"
 }
 
-
 #define DEFAULT_STYLE_PATH                  "ux0:app/SMLA00001/default_style.ini"
+#define STYLES_FOLDER                       "ux0:data/SMLA00001/styles"
 
 #define CONFIG_STYLE                        "Style"
 #define DEFAULT_COLOR                       "1.00,1.00,1.00,1.00"
@@ -63,8 +64,12 @@ extern "C" {
 #define CONFIG_STYLE_NavWindowingDimBg      "NavigationWindowingDimBackground"
 #define CONFIG_STYLE_ModalWindowDimBg       "ModalWindowDimBackground"
 
+extern char style_name[];
+extern char style_path[];
+
 namespace Style {
     void LoadStyle(const char *style_path);
+    void SetStylePath(const char *style_name);
     ImVec4 GetColor(const char *color);
 }
 #endif

@@ -4,9 +4,14 @@
 #include <stdio.h>
 
 #include "style.h"
+#include "config.h"
+
 extern "C" {
 	#include "inifile.h"
 }
+
+char style_path[128];
+char style_name[64];
 
 namespace Style {
     void LoadStyle(const char *style_path)
@@ -54,12 +59,7 @@ namespace Style {
         colors[ImGuiCol_TabActive]              = GetColor(ReadString(CONFIG_STYLE, CONFIG_STYLE_TabActive, DEFAULT_COLOR));
         colors[ImGuiCol_TabUnfocused]           = GetColor(ReadString(CONFIG_STYLE, CONFIG_STYLE_TabUnfocused, DEFAULT_COLOR));
         colors[ImGuiCol_TabUnfocusedActive]     = GetColor(ReadString(CONFIG_STYLE, CONFIG_STYLE_TabUnfocusedActive, DEFAULT_COLOR));
-        colors[ImGuiCol_PlotLines]              = GetColor(ReadString(CONFIG_STYLE, CONFIG_STYLE_PlotLines, DEFAULT_COLOR));
-        colors[ImGuiCol_PlotLinesHovered]       = GetColor(ReadString(CONFIG_STYLE, CONFIG_STYLE_PlotLinesHovered, DEFAULT_COLOR));
-        colors[ImGuiCol_PlotHistogram]          = GetColor(ReadString(CONFIG_STYLE, CONFIG_STYLE_PlotHistogram, DEFAULT_COLOR));
-        colors[ImGuiCol_PlotHistogramHovered]   = GetColor(ReadString(CONFIG_STYLE, CONFIG_STYLE_PlotHistogramHovered, DEFAULT_COLOR));
         colors[ImGuiCol_TextSelectedBg]         = GetColor(ReadString(CONFIG_STYLE, CONFIG_STYLE_TextSelectedBg, DEFAULT_COLOR));
-        colors[ImGuiCol_DragDropTarget]         = GetColor(ReadString(CONFIG_STYLE, CONFIG_STYLE_DragDropTarget, DEFAULT_COLOR));
         colors[ImGuiCol_NavHighlight]           = GetColor(ReadString(CONFIG_STYLE, CONFIG_STYLE_NavHighlight, DEFAULT_COLOR));
         colors[ImGuiCol_NavWindowingHighlight]  = GetColor(ReadString(CONFIG_STYLE, CONFIG_STYLE_NavWindowingHighlight, DEFAULT_COLOR));
         colors[ImGuiCol_NavWindowingDimBg]      = GetColor(ReadString(CONFIG_STYLE, CONFIG_STYLE_NavWindowingDimBg, DEFAULT_COLOR));
@@ -92,4 +92,15 @@ namespace Style {
         return ImVec4(rgba[0],rgba[1],rgba[2],rgba[3]);
     }
 
+    void SetStylePath(const char* style_name)
+    {
+        if (strcmp(style_name, CONFIG_DEFAULT_STYLE_NAME) == 0)
+        {
+            sprintf(style_path, "%s", DEFAULT_STYLE_PATH);
+        }
+        else
+        {
+            sprintf(style_path, "%s/%s\.ini", STYLES_FOLDER, style_name);
+        }
+    }
 }
