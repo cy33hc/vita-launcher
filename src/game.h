@@ -23,6 +23,7 @@ typedef struct {
 typedef struct {
     char id;
     char title[16];
+    char alt_title[32];
     std::vector<Game> games;
     std::vector<std::string> valid_title_ids;
     std::vector<std::string> file_filters;

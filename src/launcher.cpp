@@ -416,7 +416,7 @@ namespace Windows {
             if (game_categories[i].games.size() > 0 || show_all_categories)
             {
                 // Add some padding for title so tabs are consistent width
-                std::string title = std::string(game_categories[i].title);
+                std::string title = std::string(game_categories[i].alt_title);
                 if (title.length() == 2)
                     title = "  " + title + "  ";
                 else if (title.length() == 3)

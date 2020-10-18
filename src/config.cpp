@@ -37,6 +37,9 @@ namespace CONFIG {
         category->opened = false;
         category->rom_type = rom_type;
 
+        sprintf(category->alt_title, "%s", ReadString(category->title, CONFIG_ALT_TITLE, category->title));
+        WriteString(category->title, CONFIG_ALT_TITLE, category->alt_title);
+
         if (core != nullptr)
         {
             sprintf(category->core, "%s", ReadString(category->title, CONFIG_RETRO_CORE, core));

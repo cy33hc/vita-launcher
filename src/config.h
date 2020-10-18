@@ -21,6 +21,7 @@
 #define CONFIG_ADERNALINE_LAUNCHER_TITLE_ID "adernaline_launcher_title_id"
 #define CONFIG_ROM_EXTENSIONS "rom_file_extensions"
 #define CONFIG_HIDE_TITLE_IDS "hidden_title_ids"
+#define CONFIG_ALT_TITLE "alt_title"
 
 #define DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID "ADRLANCHR"
 
