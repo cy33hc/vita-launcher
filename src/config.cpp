@@ -116,6 +116,12 @@ namespace CONFIG {
             FS::MkDirs(STYLES_FOLDER);
         }
 
+        char pspemu_path[16];
+        sprintf(pspemu_path, "%s", ReadString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, DEFAULT_PSPEMU_PATH));
+        WriteString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, pspemu_path);
+        sprintf(pspemu_iso_path, "%s/ISO", pspemu_path);
+        sprintf(pspemu_eboot_path, "%s/PSP/GAME", pspemu_path);
+
         char* style_value = ReadString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, CONFIG_DEFAULT_STYLE_NAME);
         sprintf(style_name, "%s", style_value);
         WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, style_name);
@@ -160,13 +166,19 @@ namespace CONFIG {
         SetupCategory(&game_categories[ATARI_LYNX_GAMES], ATARI_LYNX_GAMES, "aLynx", "A-Lynx", "RETROVITA", "app0:handy_libretro.self", ATARI_LYNX_TITLE_ID_PREFIXES, ATARI_LYNX_FILTERS, TYPE_ROM);
         SetupCategory(&game_categories[BANDAI_GAMES], BANDAI_GAMES, "bandai", "Bandai", "RETROVITA", "app0:mednafen_wswan_libretro.self", BANDAI_TITLE_ID_PREFIXES, BANDAI_FILTERS, TYPE_ROM);
         SetupCategory(&game_categories[C64_GAMES], C64_GAMES, "c64", "C64", "RETROVITA", "app0:vice_x64_libretro.self", C64_TITLE_ID_PREFIXES, C64_FILTERS, TYPE_ROM);
-        SetupCategory(&game_categories[MSX2_GAMES], MSX2_GAMES, "msx2", "MSX2", "RETROVITA", "app0:.self", MSX2_TITLE_ID_PREFIXES, MSX2_FILTERS, TYPE_ROM);
+        SetupCategory(&game_categories[MSX2_GAMES], MSX2_GAMES, "msx2", "MSX2", "RETROVITA", "app0:fmsx_libretro.self", MSX2_TITLE_ID_PREFIXES, MSX2_FILTERS, TYPE_ROM);
+        SetupCategory(&game_categories[T_GRAFX_GAMES], T_GRAFX_GAMES, "tgrafx", "T-Grafx", "RETROVITA", "app0:mednafen_pce_fast_libretro.self", T_GRAFX_TITLE_ID_PREFIXES, T_GRAFX_FILTERS, TYPE_ROM);
+        SetupCategory(&game_categories[VECTREX_GAMES], VECTREX_GAMES, "vectrex", "Vectrex", "RETROVITA", "app0:vecx_libretro.self", VECTREX_TITLE_ID_PREFIXES, VECTREX_FILTERS, TYPE_ROM);
+        SetupCategory(&game_categories[GAW_GAMES], GAW_GAMES, "gaw", "G&W", "RETROVITA", "app0:gw_libretro.self", GAW_TITLE_ID_PREFIXES, GAW_FILTERS, TYPE_ROM);
+        SetupCategory(&game_categories[MAME_2000_GAMES], MAME_2000_GAMES, "mame2k", "MAME2000", "RETROVITA", "app0:mame2000_libretro.self", MAME_2000_TITLE_ID_PREFIXES, MAME_2000_FILTERS, TYPE_ROM);
+        SetupCategory(&game_categories[MAME_2003_GAMES], MAME_2003_GAMES, "mame2k3", "MAME2003", "RETROVITA", "app0:mame2003_plus_libretro.self", MAME_2003_TITLE_ID_PREFIXES, MAME_2003_FILTERS, TYPE_ROM);
         SetupCategory(&game_categories[PORT_GAMES], PORT_GAMES, "ports", "Ports", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
         SetupCategory(&game_categories[ORIGINAL_GAMES], ORIGINAL_GAMES, "original", "Originals", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
         SetupCategory(&game_categories[UTILITIES], UTILITIES, "utilities", "Utilities", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
         SetupCategory(&game_categories[EMULATORS], EMULATORS, "emulator", "Emulators", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
         SetupCategory(&game_categories[HOMEBREWS], HOMEBREWS, "homebrew", "Homebrews", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
         SetupCategory(&game_categories[FAVORITES], FAVORITES, "favorites", "Favorites", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
+
 
 		WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();

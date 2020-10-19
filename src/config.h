@@ -9,8 +9,11 @@
 
 #define VITADB_JSON_FILE "ux0:data/SMLA00001/vitadb.json"
 #define VITADB_URL "https://rinnegatamante.it/vitadb/list_hbs_json.php"
+
 #define PSP_ISO_PATH "ux0:pspemu/ISO"
 #define PSP_EBOOT_PATH "ux0:pspemu/PSP/GAME"
+#define CONFIG_PSPEMU_PATH "pspemu_location"
+#define DEFAULT_PSPEMU_PATH "ux0:pspemu"
 
 #define CONFIG_VIEW_MODE "view_mode"
 #define CONFIG_ROMS_PATH "roms_path"
@@ -53,6 +56,11 @@
 #define BANDAI_FILTERS ".zip,.wsc"
 #define C64_FILTERS ".zip,.d64"
 #define MSX2_FILTERS ".zip,.bin"
+#define T_GRAFX_FILTERS ".zip"
+#define VECTREX_FILTERS ".zip"
+#define GAW_FILTERS ".zip"
+#define MAME_2000_FILTERS ".zip"
+#define MAME_2003_FILTERS ".zip"
 
 // Filters for title prefixes
 #define VITA_TITLE_ID_PREFIXES "PCSA,PCSB,PCSC,PCSD,PCSE,PCSF,PCSG,PCSH,PCSI"
@@ -77,6 +85,11 @@
 #define BANDAI_TITLE_ID_PREFIXES "BANDAI"
 #define C64_TITLE_ID_PREFIXES "C64"
 #define MSX2_TITLE_ID_PREFIXES "MSX2"
+#define T_GRAFX_TITLE_ID_PREFIXES "TGRAFX"
+#define VECTREX_TITLE_ID_PREFIXES "VCTRX"
+#define GAW_TITLE_ID_PREFIXES "GAW"
+#define MAME_2000_TITLE_ID_PREFIXES "M2000"
+#define MAME_2003_TITLE_ID_PREFIXES "M2003"
 
 static SceUID download_vitadb_thid = -1;
 extern bool show_all_categories;

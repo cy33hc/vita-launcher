@@ -85,14 +85,19 @@ typedef struct {
 #define BANDAI_GAMES 20
 #define C64_GAMES 21
 #define MSX2_GAMES 22
-#define PORT_GAMES 23
-#define ORIGINAL_GAMES 24
-#define UTILITIES 25
-#define EMULATORS 26
-#define HOMEBREWS 27
+#define T_GRAFX_GAMES 23
+#define VECTREX_GAMES 24
+#define GAW_GAMES 25
+#define MAME_2000_GAMES 26
+#define MAME_2003_GAMES 27
+#define PORT_GAMES 28
+#define ORIGINAL_GAMES 29
+#define UTILITIES 30
+#define EMULATORS 31
+#define HOMEBREWS 32
 
-#define TOTAL_CATEGORY 28
-#define TOTAL_ROM_CATEGORY 19
+#define TOTAL_CATEGORY 33
+#define TOTAL_ROM_CATEGORY 22
 
 #define TYPE_BUBBLE 0
 #define TYPE_ROM 1
@@ -114,6 +119,8 @@ extern BootSettings defaul_boot_settings;
 extern std::vector<std::string> psp_iso_extensions;
 extern std::vector<std::string> eboot_extensions;
 extern std::vector<std::string> hidden_title_ids;
+extern char pspemu_iso_path[];
+extern char pspemu_eboot_path[];
 
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;

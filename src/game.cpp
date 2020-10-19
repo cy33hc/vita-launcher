@@ -24,6 +24,8 @@ std::map<std::string, GameCategory*> categoryMap;
 std::vector<std::string> psp_iso_extensions;
 std::vector<std::string> eboot_extensions;
 std::vector<std::string> hidden_title_ids;
+char pspemu_iso_path[32];
+char pspemu_eboot_path[32];
 
 GameCategory *current_category;
 
@@ -32,9 +34,11 @@ int games_to_scan = 1;
 int games_scanned = 0;
 Game game_scan_inprogress;
 char scan_message[256];
-int ROM_CATEGORIES[TOTAL_ROM_CATEGORY] = {PS1_GAMES, NES_GAMES, SNES_GAMES, GB_GAMES, GBA_GAMES, N64_GAMES, GBC_GAMES, NEC_GAMES,
-                         GBC_GAMES, NEOGEO_GAMES, GAME_GEAR_GAMES, MASTER_SYSTEM_GAMES, MEGA_DRIVE_GAMES, ATARI_2600_GAMES,
-                         ATARI_7800_GAMES, ATARI_LYNX_GAMES, BANDAI_GAMES, C64_GAMES, MSX2_GAMES};
+int ROM_CATEGORIES[TOTAL_ROM_CATEGORY] = {NES_GAMES, SNES_GAMES, GB_GAMES, GBA_GAMES, N64_GAMES, GBC_GAMES, NEC_GAMES,
+                         NEOGEO_GAMES, GAME_GEAR_GAMES, MASTER_SYSTEM_GAMES, MEGA_DRIVE_GAMES, ATARI_2600_GAMES,
+                         ATARI_7800_GAMES, ATARI_LYNX_GAMES, BANDAI_GAMES, C64_GAMES, MSX2_GAMES,
+                         T_GRAFX_GAMES, VECTREX_GAMES, GAW_GAMES, MAME_2000_GAMES, MAME_2003_GAMES};
+
 char adernaline_launcher_boot_bin_path[32];
 char adernaline_launcher_title_id[12];
 BootSettings defaul_boot_settings;
@@ -122,7 +126,7 @@ namespace GAME {
         char icon_path[192];
         sprintf(sfo_path, "ux0:data/SMLA00001/data/%s", game->id);
         FS::MkDirs(sfo_path);
-        sprintf(game->rom_path, "%s/%s", PSP_ISO_PATH, rom.c_str());
+        sprintf(game->rom_path, "%s/%s", pspemu_iso_path, rom.c_str());
         sprintf(sfo_path, "ux0:data/SMLA00001/data/%s/param.sfo", game->id);
         sprintf(icon_path, "ux0:data/SMLA00001/data/%s/icon0.png", game->id);
 
@@ -172,9 +176,9 @@ namespace GAME {
 
     void ScanAdrenalineIsoGames(sqlite3 *db)
     {
-        sprintf(scan_message, "Scanning for %s games in the %s folder", "ISO", PSP_ISO_PATH);
+        sprintf(scan_message, "Scanning for %s games in the %s folder", "ISO", pspemu_iso_path);
         GameCategory *category = &game_categories[PSP_GAMES];
-        std::vector<std::string> files = FS::ListFiles(PSP_ISO_PATH);
+        std::vector<std::string> files = FS::ListFiles(pspemu_iso_path);
 
         games_to_scan = files.size();
         games_scanned = 0;
@@ -206,7 +210,7 @@ namespace GAME {
 
     void PopulateEbootGameInfo(Game *game, std::string rom, int game_index)
     {
-        sprintf(game->rom_path, "%s/%s", PSP_EBOOT_PATH, rom.c_str());
+        sprintf(game->rom_path, "%s/%s", pspemu_eboot_path, rom.c_str());
         char param_sfo[192];
         sprintf(game->id, "SMLAE%04d", game_index);
         sprintf(param_sfo, "ux0:data/SMLA00001/data/%s/param.sfo", game->id);
@@ -241,8 +245,8 @@ namespace GAME {
 
     void ScanAdrenalineEbootGames(sqlite3 *db)
     {
-        sprintf(scan_message, "Scanning for %s games in the %s folder", "EBOOT", PSP_EBOOT_PATH);
-        std::vector<std::string> files = FS::ListFiles(PSP_EBOOT_PATH);
+        sprintf(scan_message, "Scanning for %s games in the %s folder", "EBOOT", pspemu_eboot_path);
+        std::vector<std::string> files = FS::ListFiles(pspemu_eboot_path);
 
         games_to_scan = files.size();
         games_scanned = 0;
