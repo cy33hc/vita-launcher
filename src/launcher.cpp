@@ -479,7 +479,7 @@ namespace Windows {
 
             ImGui::Text("Global Settings");
             ImGui::Checkbox("Show All Categories", &show_all_categories);
-            if (ImGui::BeginCombo("Style", cb_style_name, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightSmall))
+            if (ImGui::BeginCombo("Style", cb_style_name, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular))
             {
                 for (int n = 0; n < styles.size(); n++)
                 {
