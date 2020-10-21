@@ -238,7 +238,7 @@ namespace Windows {
                 {
                     //ImGui::PushID(button_id);
                     char id[32];
-                    sprintf(id, "%s%d", current_category->category, button_id);
+                    sprintf(id, "%d#image", button_id);
                     Game *game = &current_category->games[game_start_index+button_id];
                     if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127), ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1))) {
                         if (game->type < TYPE_PSP_ISO)
