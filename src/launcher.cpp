@@ -227,6 +227,7 @@ namespace Windows {
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
         ImGui::Separator();
         ImVec2 pos = ImGui::GetCursorPos();
+        ImGuiStyle* style = &ImGui::GetStyle();
         for (int i = 0; i < 3; i++)
         {
             for (int j=0; j < 6; j++)
@@ -235,9 +236,11 @@ namespace Windows {
                 int button_id = (i*6)+j;
                 if (game_start_index+button_id < current_category->games.size())
                 {
-                    ImGui::PushID(button_id);
+                    //ImGui::PushID(button_id);
+                    char id[32];
+                    sprintf(id, "%s%d", current_category->category, button_id);
                     Game *game = &current_category->games[game_start_index+button_id];
-                    if (ImGui::ImageButton(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127), ImVec2(0,0), ImVec2(1,1))) {
+                    if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127), ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1))) {
                         if (game->type < TYPE_PSP_ISO)
                         {
                             GAME::Launch(game, nullptr);
@@ -253,7 +256,7 @@ namespace Windows {
                         game_position = GetGamePositionOnPage(selected_game);
                         tab_infocus = false;
                     }
-                    ImGui::PopID();
+                    //ImGui::PopID();
 
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
                     ImGui::SetCursorPosX(pos.x+(j*160));
