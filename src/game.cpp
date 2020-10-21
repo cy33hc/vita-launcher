@@ -194,11 +194,19 @@ namespace GAME {
             if (index != std::string::npos && IsRomExtension(files[j].substr(index), psp_iso_extensions))
             {
                 Game game;
-                PopulateIsoGameInfo(category, &game, files[j], games_scanned);
-                categoryMap[game.category]->games.push_back(game);
-                DB::InsertGame(db, &game);
-                game_scan_inprogress = game;
-                games_scanned++;
+                try
+                {
+                    PopulateIsoGameInfo(category, &game, files[j], games_scanned);
+                    categoryMap[game.category]->games.push_back(game);
+                    DB::InsertGame(db, &game);
+                    game_scan_inprogress = game;
+                    games_scanned++;
+                }
+                catch(const std::exception& e)
+                {
+                    games_to_scan--;
+                }
+                
             }
             else
             {
@@ -257,10 +265,18 @@ namespace GAME {
             if (index != std::string::npos && IsRomExtension(files[j].substr(index), eboot_extensions))
             {
                 Game game;
-                PopulateEbootGameInfo(&game, files[j], games_scanned);
-                DB::InsertGame(db, &game);
-                game_scan_inprogress = game;
-                games_scanned++;
+                try
+                {
+                    PopulateEbootGameInfo(&game, files[j], games_scanned);
+                    DB::InsertGame(db, &game);
+                    game_scan_inprogress = game;
+                    games_scanned++;
+                }
+                catch(const std::exception& e)
+                {
+                    games_to_scan--;
+                }
+                
             }
             else
             {
@@ -321,6 +337,7 @@ namespace GAME {
     }
 
     bool Launch(Game *game, BootSettings *settings) {
+        GameCategory* category = categoryMap[game->category];
         if (game->type == TYPE_BUBBLE)
         {
             char uri[35];
@@ -328,9 +345,8 @@ namespace GAME {
             sceAppMgrLaunchAppByUri(0xFFFFF, uri);
             sceKernelExitProcess(0);
         }
-        else if (game->type == TYPE_ROM)
+        else if (game->type == TYPE_ROM || (category->id == PS1_GAMES && strcmp(category->rom_launcher_title_id, RETROARCH_TITLE_ID)==0))
         {
-            GameCategory* category = GetRomCategoryByName(game->category);
             if (category != nullptr)
             {
                 if (strcmp(category->rom_launcher_title_id, "RETROVITA") == 0)
