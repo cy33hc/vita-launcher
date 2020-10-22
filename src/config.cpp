@@ -172,10 +172,10 @@ namespace CONFIG {
         SetupCategory(&game_categories[GAW_GAMES], GAW_GAMES, "gaw", "GAW", "RETROVITA", "app0:gw_libretro.self", GAW_TITLE_ID_PREFIXES, GAW_FILTERS, TYPE_ROM);
         SetupCategory(&game_categories[MAME_2000_GAMES], MAME_2000_GAMES, "mame2k", "MAME2000", "RETROVITA", "app0:mame2000_libretro.self", MAME_2000_TITLE_ID_PREFIXES, MAME_2000_FILTERS, TYPE_ROM);
         SetupCategory(&game_categories[MAME_2003_GAMES], MAME_2003_GAMES, "mame2k3", "MAME2003", "RETROVITA", "app0:mame2003_plus_libretro.self", MAME_2003_TITLE_ID_PREFIXES, MAME_2003_FILTERS, TYPE_ROM);
-        SetupCategory(&game_categories[PORT_GAMES], PORT_GAMES, "ports", "Ports", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
-        SetupCategory(&game_categories[ORIGINAL_GAMES], ORIGINAL_GAMES, "original", "Originals", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
-        SetupCategory(&game_categories[UTILITIES], UTILITIES, "utilities", "Utilities", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
-        SetupCategory(&game_categories[EMULATORS], EMULATORS, "emulator", "Emulators", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
+        SetupCategory(&game_categories[PORT_GAMES], PORT_GAMES, "ports", "Ports", nullptr, nullptr, "", nullptr, TYPE_BUBBLE);
+        SetupCategory(&game_categories[ORIGINAL_GAMES], ORIGINAL_GAMES, "original", "Originals", nullptr, nullptr, "", nullptr, TYPE_BUBBLE);
+        SetupCategory(&game_categories[UTILITIES], UTILITIES, "utilities", "Utilities", nullptr, nullptr, "", nullptr, TYPE_BUBBLE);
+        SetupCategory(&game_categories[EMULATORS], EMULATORS, "emulator", "Emulators", nullptr, nullptr, "", nullptr, TYPE_BUBBLE);
         SetupCategory(&game_categories[HOMEBREWS], HOMEBREWS, "homebrew", "Homebrews", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
         SetupCategory(&game_categories[FAVORITES], FAVORITES, "favorites", "Favorites", nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE);
 
