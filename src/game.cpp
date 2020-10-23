@@ -349,10 +349,10 @@ namespace GAME {
         {
             if (category != nullptr)
             {
-                if (strcmp(category->rom_launcher_title_id, "RETROVITA") == 0)
+                if (strcmp(category->rom_launcher_title_id, "RETROVITA") == 0 || category->id == PS1_GAMES)
                 {
                     char uri[512];
-                    sprintf(uri, "psgm:play?titleid=%s&param=%s&param2=%s", category->rom_launcher_title_id, category->core, game->rom_path);
+                    sprintf(uri, "psgm:play?titleid=%s&param=%s&param2=%s", RETROARCH_TITLE_ID, category->core, game->rom_path);
                     sceAppMgrLaunchAppByUri(0xFFFFF, uri);
                     sceKernelDelayThread(1000);
                     sceKernelExitProcess(0);
