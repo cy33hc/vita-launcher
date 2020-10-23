@@ -250,6 +250,13 @@ namespace Windows {
                             handle_boot_game = true;
                         }
                     }
+                    if (ImGui::IsWindowAppearing() && button_id == 0)
+                    {
+                        SetNavFocusHere();
+                        selected_game = game;
+                        game_position = GetGamePositionOnPage(selected_game);
+                        tab_infocus = false;
+                    }
                     if (ImGui::IsItemFocused())
                     {
                         selected_game = game;

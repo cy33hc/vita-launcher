@@ -615,7 +615,7 @@ namespace GAME {
     int ScanGamesThread(SceSize args, void *argp)
     {
         game_scan_complete = false;
-        sceKernelDelayThread(200000);
+        sceKernelDelayThread(10000);
         for (int i=0; i < TOTAL_CATEGORY; i++)
         {
             game_categories[i].games.clear();
@@ -663,7 +663,7 @@ namespace GAME {
     int ScanGamesCategoryThread(SceSize args, ScanGamesParams *params)
     {
         game_scan_complete = false;
-        sceKernelDelayThread(200000);
+        sceKernelDelayThread(50000);
         sqlite3 *db;
         sqlite3_open(CACHE_DB_FILE, &db);
         if (params->type == TYPE_ROM || strcmp(params->category, "ps1") == 0)
