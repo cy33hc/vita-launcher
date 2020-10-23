@@ -34,7 +34,7 @@ int games_to_scan = 1;
 int games_scanned = 0;
 Game game_scan_inprogress;
 char scan_message[256];
-int ROM_CATEGORIES[TOTAL_ROM_CATEGORY] = {NES_GAMES, SNES_GAMES, GB_GAMES, GBA_GAMES, N64_GAMES, GBC_GAMES, NEC_GAMES,
+int ROM_CATEGORIES[TOTAL_ROM_CATEGORY] = {PS1_GAMES, NES_GAMES, SNES_GAMES, GB_GAMES, GBA_GAMES, N64_GAMES, GBC_GAMES, NEC_GAMES,
                          NEOGEO_GAMES, GAME_GEAR_GAMES, MASTER_SYSTEM_GAMES, MEGA_DRIVE_GAMES, ATARI_2600_GAMES,
                          ATARI_7800_GAMES, ATARI_LYNX_GAMES, BANDAI_GAMES, C64_GAMES, MSX2_GAMES,
                          T_GRAFX_GAMES, VECTREX_GAMES, GAW_GAMES, MAME_2000_GAMES, MAME_2003_GAMES};
@@ -666,33 +666,37 @@ namespace GAME {
         sceKernelDelayThread(200000);
         sqlite3 *db;
         sqlite3_open(CACHE_DB_FILE, &db);
-        if (params->type == TYPE_ROM)
+        if (params->type == TYPE_ROM || strcmp(params->category, "ps1") == 0)
         {
             GameCategory *category = categoryMap[params->category];
             RemoveGamesFromCategoryByType(db, category, params->type);
         }
-        else
+        
+        if (params->type > TYPE_ROM)
         {
             RemoveGamesFromCategoryByType(db, &game_categories[PSP_GAMES], params->type);
             RemoveGamesFromCategoryByType(db, &game_categories[PS1_GAMES], params->type);
             RemoveGamesFromCategoryByType(db, &game_categories[PS_MIMI_GAMES], params->type);
         }
 
-        if (params->type == TYPE_ROM)
+        if (params->type == TYPE_ROM  || strcmp(params->category, "ps1") == 0)
         {
             ScanRetroCategory(db, categoryMap[params->category]);
         }
-        else if (params->type == TYPE_PSP_ISO)
+        
+        if (params->type == TYPE_PSP_ISO)
         {
             ScanAdrenalineIsoGames(db);
         }
-        else
+        
+        if (params->type == TYPE_EBOOT)
         {
             ScanAdrenalineEbootGames(db);
         }
+
         sqlite3_close(db);
 
-        if (params->type == TYPE_ROM)
+        if (params->type == TYPE_ROM || strcmp(params->category, "ps1") == 0)
         {
             GameCategory *category = categoryMap[params->category];
             category->page_num = 1;
@@ -700,7 +704,8 @@ namespace GAME {
             SortGames(category);
             current_category = category;
         }
-        else
+        
+        if (params->type > TYPE_ROM)
         {
             game_categories[PSP_GAMES].page_num = 1;
             SetMaxPage(&game_categories[PSP_GAMES]);

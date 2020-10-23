@@ -97,7 +97,7 @@ typedef struct {
 #define HOMEBREWS 32
 
 #define TOTAL_CATEGORY 33
-#define TOTAL_ROM_CATEGORY 22
+#define TOTAL_ROM_CATEGORY 23
 
 #define TYPE_BUBBLE 0
 #define TYPE_ROM 1

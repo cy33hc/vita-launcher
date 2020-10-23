@@ -39,7 +39,7 @@
 #define CONFIG_DEFAULT_STYLE_NAME "Default"
 
 // Filters for ROM prefixes during scan
-#define PS1_FILTERS ".iso,.bin"
+#define PS1_FILTERS ".img,.bin,.chd,.ccd,.mdf,.pbp"
 #define NES_FILTERS ".zip,.nes"
 #define SNES_FILTERS ".zip,.smc,.sfc"
 #define GB_FILTERS ".zip,.gb"
