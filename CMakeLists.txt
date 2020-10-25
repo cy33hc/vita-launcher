@@ -42,6 +42,7 @@ add_executable(${PROJECT_NAME}
   src/iso.cpp
   src/cso.cpp
   src/style.cpp
+  src/ime_dialog.cpp
   sqlite-3.6.23.1/sqlite3.c
 )
 
