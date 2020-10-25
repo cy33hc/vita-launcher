@@ -8,7 +8,7 @@
 #include "db.h"
 #include "style.h"
 #include "config.h"
-//#include "debugnet.h"
+
 extern "C" {
 	#include "inifile.h"
 }
@@ -236,7 +236,6 @@ namespace Windows {
                 int button_id = (i*6)+j;
                 if (game_start_index+button_id < current_category->games.size())
                 {
-                    //ImGui::PushID(button_id);
                     char id[32];
                     sprintf(id, "%d#image", button_id);
                     Game *game = &current_category->games[game_start_index+button_id];
@@ -263,7 +262,6 @@ namespace Windows {
                         game_position = GetGamePositionOnPage(selected_game);
                         tab_infocus = false;
                     }
-                    //ImGui::PopID();
 
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
                     ImGui::SetCursorPosX(pos.x+(j*160));
@@ -509,7 +507,7 @@ namespace Windows {
 
             if (!parental_control)
             {
-                if (current_category->rom_type == TYPE_ROM)
+                if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
                 {
                     if (!refresh_games && !add_new_game && !refresh_current_category)
                     {
@@ -580,10 +578,11 @@ namespace Windows {
                 {
                     if (selected_game != nullptr)
                     {
-                        GAME::RemoveGameFromCategory(current_category, selected_game);
-                        GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
-                        DB::DeleteGame(nullptr, selected_game);
-                        DB::DeleteFavorite(nullptr, selected_game);
+                        Game *game = selected_game;
+                        DB::DeleteGame(nullptr, game);
+                        DB::DeleteFavorite(nullptr, game);
+                        GAME::RemoveGameFromCategory(current_category, game);
+                        GAME::RemoveGameFromCategory(&game_categories[FAVORITES], game);
                         selected_game = nullptr;
                     }
                 }

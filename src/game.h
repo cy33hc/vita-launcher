@@ -35,6 +35,7 @@ typedef struct {
     int max_page;
     int page_num;
     int view_mode;
+    std::vector<std::string> alt_cores;
     int list_view_position;
     bool opened;
     int rom_type;
@@ -75,29 +76,31 @@ typedef struct {
 #define GBA_GAMES 10
 #define N64_GAMES 11
 #define NEOGEO_GAMES 12
-#define GAME_GEAR_GAMES 13
-#define MASTER_SYSTEM_GAMES 14
-#define MEGA_DRIVE_GAMES 15
-#define NEC_GAMES 16
-#define ATARI_2600_GAMES 17
-#define ATARI_7800_GAMES 18
-#define ATARI_LYNX_GAMES 19
-#define BANDAI_GAMES 20
-#define C64_GAMES 21
-#define MSX2_GAMES 22
-#define T_GRAFX_GAMES 23
-#define VECTREX_GAMES 24
-#define GAW_GAMES 25
-#define MAME_2000_GAMES 26
-#define MAME_2003_GAMES 27
-#define PORT_GAMES 28
-#define ORIGINAL_GAMES 29
-#define UTILITIES 30
-#define EMULATORS 31
-#define HOMEBREWS 32
+#define NEOGEO_PC_GAMES 13
+#define SEGA_SATURN_GAMES 14
+#define GAME_GEAR_GAMES 15
+#define MASTER_SYSTEM_GAMES 16
+#define MEGA_DRIVE_GAMES 17
+#define NEC_GAMES 18
+#define ATARI_2600_GAMES 19
+#define ATARI_7800_GAMES 20
+#define ATARI_LYNX_GAMES 21
+#define BANDAI_GAMES 22
+#define C64_GAMES 23
+#define MSX2_GAMES 24
+#define T_GRAFX_GAMES 25
+#define VECTREX_GAMES 26
+#define GAW_GAMES 27
+#define MAME_2000_GAMES 28
+#define MAME_2003_GAMES 29
+#define PORT_GAMES 30
+#define ORIGINAL_GAMES 31
+#define UTILITIES 32
+#define EMULATORS 33
+#define HOMEBREWS 34
 
-#define TOTAL_CATEGORY 33
-#define TOTAL_ROM_CATEGORY 23
+#define TOTAL_CATEGORY 35
+#define TOTAL_ROM_CATEGORY 25
 
 #define TYPE_BUBBLE 0
 #define TYPE_ROM 1

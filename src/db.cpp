@@ -5,7 +5,6 @@
 #include "db.h"
 #include "game.h"
 #include "textures.h"
-//#include "debugnet.h"
 
 namespace DB {
     bool TableExists(sqlite3 *database, char* table_name)

@@ -16,18 +16,21 @@
 #include "config.h"
 #include "style.h"
 #include "fs.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 
-namespace Services {
-	int InitImGui(void) {
+namespace Services
+{
+	int InitImGui(void)
+	{
 
 		// Setup ImGui binding
 		ImGui::CreateContext();
 
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGuiIO &io = ImGui::GetIO();
+		(void)io;
 		io.MouseDrawCursor = false;
 		ImGui::StyleColorsDark();
-		auto& style = ImGui::GetStyle();
+		auto &style = ImGui::GetStyle();
 		style.AntiAliasedLinesUseTex = false;
 
 		Style::LoadStyle(style_path);
@@ -40,44 +43,67 @@ namespace Services {
 		ImGui_ImplVita2D_GamepadUsage(true);
 		ImGui_ImplVita2D_MouseStickUsage(false);
 		ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE);
-		
+
 		Textures::Init();
 
 		return 0;
 	}
-	
-	void ExitImGui(void) {
+
+	void ExitImGui(void)
+	{
 		Textures::Exit();
 
 		// Cleanup
 		ImGui_ImplVita2D_Shutdown();
 		ImGui::DestroyContext();
-		
 	}
-	
-	int Init(void) {
+
+	void initSceAppUtil()
+	{
+		// Init SceAppUtil
+		SceAppUtilInitParam init_param;
+		SceAppUtilBootParam boot_param;
+		memset(&init_param, 0, sizeof(SceAppUtilInitParam));
+		memset(&boot_param, 0, sizeof(SceAppUtilBootParam));
+		sceAppUtilInit(&init_param, &boot_param);
+
+		// Set common dialog config
+		SceCommonDialogConfigParam config;
+		sceCommonDialogConfigParamInit(&config);
+		sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_LANG, (int *)&config.language);
+		sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, (int *)&config.enterButtonAssign);
+		sceCommonDialogSetConfigParam(&config);
+	}
+
+	int Init(void)
+	{
 		vita2d_init();
 		vita2d_set_clear_color(RGBA8(0x00, 0x00, 0x00, 0xFF));
-		
+
+		initSceAppUtil();
+
 		CONFIG::LoadConfig();
 
 		current_category = &game_categories[VITA_GAMES];
 
 		return 0;
 	}
-	
-	void Exit(void) {
+
+	void Exit(void)
+	{
+		// Shutdown AppUtil
+		sceAppUtilShutdown();
 		vita2d_fini();
 	}
-}
+} // namespace Services
 
 #define ip_server "192.168.100.14"
 #define port_server 18194
 
-int main(int, char**)
+int main(int, char **)
 {
-	debugNetInit(ip_server,port_server,DEBUG);
-	
+	//debugNetInit(ip_server,port_server,DEBUG);
+
 	Services::Init();
 	Services::InitImGui();
 

@@ -25,6 +25,7 @@
 #define CONFIG_ROM_EXTENSIONS "rom_file_extensions"
 #define CONFIG_HIDE_TITLE_IDS "hidden_title_ids"
 #define CONFIG_ALT_TITLE "alt_title"
+#define CONFIG_ALT_CORES "alternate_cores"
 
 #define DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID "ADRLANCHR"
 #define RETROARCH_TITLE_ID "RETROVITA"
@@ -47,6 +48,8 @@
 #define N64_FILTERS ".zip,.n64"
 #define GBC_FILTERS ".zip,.gbc"
 #define NEOGEO_FILTERS ".zip,.bin"
+#define NEOGEO_PC_FILTERS ".zip"
+#define SEGA_SATURN_FILTERS ".zip"
 #define GAME_GEAR_FILTERS ".zip,.gg"
 #define MASTER_SYSTEM_FILTERS ".zip"
 #define MEGA_DRIVE_FILTERS ".zip"
@@ -76,6 +79,8 @@
 #define N64_TITLE_ID_PREFIXES "N64"
 #define GBC_TITLE_ID_PREFIXES "GBC"
 #define NEOGEO_TITLE_ID_PREFIXES "NEOGEO"
+#define NEOGEO_PC_TITLE_ID_PREFIXES "NGEOPC"
+#define SEGA_SATURN_TITLE_ID_PREFIXES "SSTARN"
 #define GAME_GEAR_TITLE_ID_PREFIXES "GGEAR"
 #define MASTER_SYSTEM_TITLE_ID_PREFIXES "MSYS"
 #define MEGA_DRIVE_TITLE_ID_PREFIXES "MDRIV"
@@ -92,17 +97,41 @@
 #define MAME_2000_TITLE_ID_PREFIXES "M2000"
 #define MAME_2003_TITLE_ID_PREFIXES "M2003"
 
-static SceUID download_vitadb_thid = -1;
+// Alt retroarch cores
+#define PS1_ALT_CORES ""
+#define NES_ALT_CORES "app0:fceumm_libretro.self,app0:quicknes_libretro.self"
+#define SNES_ALT_CORES "app0:snes9x2005_plus_libretro.self,app0:snes9x2010_libretro.self,app0:snes9x2002_libretro.self"
+#define GB_ALT_CORES "app0:gambatte_libretro.self,app0:tgbdual_libretro.self"
+#define GBA_ALT_CORES "app0:gpsp_libretro.self"
+#define N64_ALT_CORES ""
+#define GBC_ALT_CORES "app0:gambatte_libretro.self,app0:tgbdual_libretro.self"
+#define NEOGEO_ALT_CORES "app0:fbalpha2012_neo_libretro.self,app0:fbneo_libretro.self"
+#define NEOGEO_PC_ALT_CORES "app0:race_libretro.self"
+#define SEGA_SATURN_ALT_CORES ""
+#define GAME_GEAR_ALT_CORES "app0:genesis_plus_gx_libretro.self"
+#define MASTER_SYSTEM_ALT_CORES ""
+#define MEGA_DRIVE_ALT_CORES "app0:genesis_plus_gx_libretro.self"
+#define NEC_ALT_CORES "app0:mednafen_supergrafx_libretro.self"
+#define ATARI_2600_ALT_CORES "app0:stella_libretro.self"
+#define ATARI_7800_ALT_CORES ""
+#define ATARI_LYNX_ALT_CORES ""
+#define BANDAI_ALT_CORES ""
+#define C64_ALT_CORES "app0:frodo_libretro.self"
+#define MSX2_ALT_CORES ""
+#define T_GRAFX_ALT_CORES "app0:mednafen_supergrafx_libretro.self"
+#define VECTREX_ALT_CORES ""
+#define GAW_ALT_CORES ""
+#define MAME_2000_ALT_CORES ""
+#define MAME_2003_ALT_CORES "app0:mame2003_libretro.self"
+
 extern bool show_all_categories;
 extern bool parental_control;
 
 namespace CONFIG {
     void LoadConfig();
-    void ParseTitlePrefixes(const char* prefix_list, std::vector<std::string> &prefixes, bool toLower);
+    void ParseMultiValueString(const char* prefix_list, std::vector<std::string> &prefixes, bool toLower);
     void SetupCategory(GameCategory *category, int category_id, const char* category_name, const char* core,
                        const char* title_id, const char* code, const char* default_prefixes, const char* default_file_filters,
-                       int rom_type);
-    void StartDownloadVitaDbThread();
-    int DownloadVitaDB(SceSize args, void *argp);
+                       const char* alt_cores, int rom_type);
 }
 #endif
