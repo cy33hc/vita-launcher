@@ -110,7 +110,6 @@ typedef struct {
 extern GameCategory game_categories[];
 extern std::map<std::string, GameCategory*> categoryMap;
 extern GameCategory *current_category;
-extern bool game_scan_complete;
 extern int games_to_scan;
 extern int games_scanned;
 extern Game game_scan_inprogress;

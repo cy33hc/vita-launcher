@@ -39,6 +39,8 @@ namespace Windows {
     void ShowTabBar();
     void HandleAddNewGame();
     void HandleAdrenalineGame();
+    void HandleImeInput();
+    void ImeInputFinished(int ime_result);
 }
 
 #endif

@@ -26,6 +26,8 @@
 
 #define IME_DIALOG_ALREADY_RUNNING -1
 
+typedef void (*ime_callback_t) (int ime_result);
+
 namespace Dialog
 {
     int initImeDialog(const char *title, const char *initial_text, int max_text_length, int type, int option, int password);

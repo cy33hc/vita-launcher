@@ -8,7 +8,9 @@
 #include "db.h"
 #include "style.h"
 #include "config.h"
-
+#include "ime_dialog.h"
+#include "gui.h"
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -24,6 +26,7 @@ static bool tab_infocus = false;
 static int category_selected = -1;
 static char cb_style_name[64];
 static std::vector<std::string> styles;
+static ime_callback_t ime_callback = nullptr;
 
 bool handle_add_game = false;
 bool game_added = false;
@@ -357,6 +360,7 @@ namespace Windows {
             ImGui::SetColumnWidth(-1, 760);
             ImGui::PushID(i);
             if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
+            {
                 if (game->type < TYPE_PSP_ISO)
                 {
                     GAME::Launch(game, nullptr);
@@ -365,6 +369,7 @@ namespace Windows {
                 {
                     handle_boot_game = true;
                 }
+            }
             ImGui::PopID();
             if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
             {
@@ -872,4 +877,31 @@ namespace Windows {
         ImGui::PopStyleVar();
     }
 
+    void HandleImeInput()
+    {
+        int ime_result = Dialog::updateImeDialog();
+
+        if (ime_result == IME_DIALOG_RESULT_FINISHED || ime_result == IME_DIALOG_RESULT_CANCELED)
+        {
+            if (ime_callback != nullptr)
+            {
+                ime_callback(ime_result);
+            }
+            gui_mode = GUI_MODE_LAUNCHER;
+        }
+    }
+
+    void ImeInputFinished(int ime_result)
+    {
+        if (ime_result == IME_DIALOG_RESULT_FINISHED)
+        {
+            char *search_term = (char *)Dialog::getImeDialogInputTextUTF8();
+            debugNetPrintf(DEBUG,"IME %s\n", search_term);
+        }
+        else
+        {
+            debugNetPrintf(DEBUG,"IME canceled\n");
+        }
+        
+    }
 }

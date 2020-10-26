@@ -9,6 +9,7 @@
 #include "game.h"
 #include "sfo.h"
 #include "fs.h"
+#include "gui.h"
 #include "windows.h"
 #include "textures.h"
 #include "config.h"
@@ -29,7 +30,6 @@ char pspemu_eboot_path[32];
 
 GameCategory *current_category;
 
-bool game_scan_complete = false;
 int games_to_scan = 1;
 int games_scanned = 0;
 Game game_scan_inprogress;
@@ -614,7 +614,7 @@ namespace GAME {
 
     int ScanGamesThread(SceSize args, void *argp)
     {
-        game_scan_complete = false;
+        gui_mode = GUI_MODE_SCAN;
         sceKernelDelayThread(10000);
         for (int i=0; i < TOTAL_CATEGORY; i++)
         {
@@ -622,7 +622,6 @@ namespace GAME {
         }
 
         GAME::Scan();
-        game_scan_complete = true;
 
         if (game_categories[FAVORITES].games.size() > 0)
         {
@@ -630,6 +629,7 @@ namespace GAME {
         }
         current_category->page_num = 1;
         view_mode = current_category->view_mode;
+        gui_mode  = GUI_MODE_LAUNCHER;
         GAME::StartLoadImagesThread(current_category->id, 1, 1);
         return sceKernelExitDeleteThread(0);
     }
@@ -662,7 +662,7 @@ namespace GAME {
 
     int ScanGamesCategoryThread(SceSize args, ScanGamesParams *params)
     {
-        game_scan_complete = false;
+        gui_mode = GUI_MODE_SCAN;
         sceKernelDelayThread(50000);
         sqlite3 *db;
         sqlite3_open(CACHE_DB_FILE, &db);
@@ -723,7 +723,7 @@ namespace GAME {
         {
             GAME::StartLoadImagesThread(current_category->id, 1, 1);
         }
-        game_scan_complete = true;
+        gui_mode = GUI_MODE_LAUNCHER;
         return sceKernelExitDeleteThread(0);
     }
 
