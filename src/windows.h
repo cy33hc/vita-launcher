@@ -4,7 +4,6 @@
 #include <imgui_vita2d/imgui_vita.h>
 #include <imgui_vita2d/imgui_internal.h>
 
-extern int selected_item;
 extern int view_mode;
 
 namespace Windows {

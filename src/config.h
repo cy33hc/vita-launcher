@@ -130,6 +130,7 @@ extern bool parental_control;
 namespace CONFIG {
     void LoadConfig();
     void ParseMultiValueString(const char* prefix_list, std::vector<std::string> &prefixes, bool toLower);
+    const char *GetMultiValueString(std::vector<std::string> &multi_values);
     void SetupCategory(GameCategory *category, int category_id, const char* category_name, const char* core,
                        const char* title_id, const char* code, const char* default_prefixes, const char* default_file_filters,
                        const char* alt_cores, int rom_type);

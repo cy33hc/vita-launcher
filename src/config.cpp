@@ -221,4 +221,20 @@ namespace CONFIG {
             }
         }
     }
+
+    const char *GetMultiValueString(std::vector<std::string> &multi_values)
+    {
+        std::string vts = "";
+        
+        if (multi_values.size()>0) 
+        { 
+            for (int i=0; i<multi_values.size()-1; i++)
+            {
+                vts.append(multi_values[i]).append(",");
+            }
+            vts.append(multi_values[multi_values.size()-1]);
+        } 
+        
+        return vts.c_str();
+    }
 }

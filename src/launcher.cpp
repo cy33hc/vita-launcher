@@ -487,62 +487,206 @@ namespace Windows {
             static bool remove_from_cache = false;
             static bool add_new_game = false;
 
-            ImGui::Text("Global Settings");
-            ImGui::Checkbox("Show All Categories", &show_all_categories);
-            if (ImGui::BeginCombo("Style", cb_style_name, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular))
+            if (ImGui::BeginTabBar("Settings and Actions#tabbar", ImGuiTabBarFlags_FittingPolicyScroll))
             {
-                for (int n = 0; n < styles.size(); n++)
+                char cat_setting_title[64];
+                if (ImGui::BeginTabItem("Category"))
                 {
-                    const bool is_selected = strcmp(styles[n].c_str(), cb_style_name)==0;
-                    if (ImGui::Selectable(styles[n].c_str(), is_selected))
-                        sprintf(cb_style_name, "%s", styles[n].c_str());
+                    ImGui::Text("Title:"); ImGui::SameLine();
+                    if (ImGui::Selectable(current_category->alt_title, false, ImGuiSelectableFlags_DontClosePopups)) {};
+                    if (ImGui::IsWindowAppearing())
+                    {
+                        SetNavFocusHere();
+                    }
 
-                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-                    if (is_selected)
-                        ImGui::SetItemDefaultFocus();
+                    ImGui::Text("View Mode:"); ImGui::SameLine();
+                    ImGui::RadioButton("Grid", &view_mode, 0); ImGui::SameLine();
+                    ImGui::RadioButton("List", &view_mode, 1);
+
+                    if (current_category->id != FAVORITES && current_category->id != HOMEBREWS)
+                    {
+                        ImGui::Text("Bubble Prefixes:"); ImGui::SameLine();
+                        if (current_category->valid_title_ids.size()>1)
+                            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,47));
+                        else
+                            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,23));
+                        ImGui::BeginChild("Title Prefixes");
+                        ImGui::Columns(2, "Title Prefixes", true);
+                        for (int i=0; i<current_category->valid_title_ids.size(); i++)
+                        {
+                            ImGui::SetColumnWidth(-1,110);
+                            if (ImGui::Selectable(current_category->valid_title_ids[i].c_str(), false, ImGuiSelectableFlags_DontClosePopups))
+                            {
+                            };
+                            ImGui::NextColumn();
+                            char buttonId[64];
+                            sprintf(buttonId, "Delete##%s", current_category->valid_title_ids[i].c_str());
+                            if (ImGui::SmallButton(buttonId))
+                            {
+                            }
+                            ImGui::NextColumn();               
+                            ImGui::Separator();
+                        }
+                        ImGui::Columns(1);
+                        ImGui::EndChild();
+                        ImGui::SameLine();
+                        if (ImGui::SmallButton("Add##title_prefixes"))
+                        {
+                        }
+                    }
+
+                    if (current_category->id == PS1_GAMES || current_category->rom_type == TYPE_ROM)
+                    {
+                        ImGui::Text("Icon Path:"); ImGui::SameLine();
+                        ImGui::PushID("icon_path");
+                        if (ImGui::Selectable(current_category->icon_path, false, ImGuiSelectableFlags_DontClosePopups)) {};
+                        ImGui::PopID();
+
+                        ImGui::PushID("roms_path");
+                        ImGui::Text("Roms Path:"); ImGui::SameLine();
+                        if (ImGui::Selectable(current_category->roms_path, false, ImGuiSelectableFlags_DontClosePopups)) {};
+                        ImGui::PopID();
+
+                        if (strcmp(current_category->rom_launcher_title_id, "DEDALOX64") != 0)
+                        {
+                            ImGui::PushID("retro_core");
+                            ImGui::Text("Retro Core:"); ImGui::SameLine();
+                            if (ImGui::Selectable(current_category->core, false, ImGuiSelectableFlags_DontClosePopups)) {};
+                            ImGui::PopID();
+                        }
+                        
+                        ImGui::Text("Rom Extensions:"); ImGui::SameLine();
+                        if (current_category->file_filters.size()>1)
+                            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,47));
+                        else
+                            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,23));
+                        ImGui::BeginChild("Rom Extensions");
+                        ImGui::Columns(2, "Rom Extensions", true);
+                        for (int i=0; i<current_category->file_filters.size(); i++)
+                        {
+                            ImGui::SetColumnWidth(-1,110);
+                            if (ImGui::Selectable(current_category->file_filters[i].c_str(), false, ImGuiSelectableFlags_DontClosePopups))
+                            {
+                            };
+                            ImGui::NextColumn();
+                            char buttonId[64];
+                            sprintf(buttonId, "Delete##%s", current_category->file_filters[i].c_str());
+                            if (ImGui::SmallButton(buttonId))
+                            {
+                            }
+                            ImGui::NextColumn();               
+                            ImGui::Separator();
+                        }
+                        ImGui::Columns(1);
+                        ImGui::EndChild();
+                        ImGui::SameLine();
+                        if (ImGui::SmallButton("Add##file_filters"))
+                        {
+                        }
+                    }
+
+                    ImGui::EndTabItem();
                 }
-                ImGui::EndCombo();
+
+                if (ImGui::BeginTabItem("Global"))
+                {
+                    ImGui::Checkbox("Show All Categories", &show_all_categories);
+                    if (ImGui::IsWindowAppearing())
+                    {
+                        SetNavFocusHere();
+                    }
+                    ImGui::Text("Style:"); ImGui::SameLine();
+                    if (ImGui::BeginCombo("##Style", cb_style_name, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular))
+                    {
+                        for (int n = 0; n < styles.size(); n++)
+                        {
+                            const bool is_selected = strcmp(styles[n].c_str(), cb_style_name)==0;
+                            if (ImGui::Selectable(styles[n].c_str(), is_selected))
+                                sprintf(cb_style_name, "%s", styles[n].c_str());
+
+                            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                            if (is_selected)
+                                ImGui::SetItemDefaultFocus();
+                        }
+                        ImGui::EndCombo();
+                    }
+
+                    ImGui::Text("Hidden Titles:"); ImGui::SameLine();
+                    if (hidden_title_ids.size()>1)
+                        ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,47));
+                    else
+                        ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,23));
+                    ImGui::BeginChild("Hidden Titles");
+                    ImGui::Columns(2, "Hidden Titles", true);
+                    for (int i=0; i<hidden_title_ids.size(); i++)
+                    {
+                        ImGui::SetColumnWidth(-1,110);
+                        if (ImGui::Selectable(hidden_title_ids[i].c_str(), false, ImGuiSelectableFlags_DontClosePopups))
+                        {
+                        };
+                        ImGui::NextColumn();
+                        char buttonId[64];
+                        sprintf(buttonId, "Delete##%s", hidden_title_ids[i].c_str());
+                        if (ImGui::SmallButton(buttonId))
+                        {
+                        }
+                        ImGui::NextColumn();               
+                        ImGui::Separator();
+                    }
+                    ImGui::Columns(1);
+                    ImGui::EndChild();
+                    ImGui::SameLine();
+                    if (ImGui::SmallButton("Add##hidden_titles"))
+                    {
+                    }
+
+                    ImGui::EndTabItem();
+                }
+
+                if (!parental_control)
+                {
+                    if (ImGui::BeginTabItem("Actions"))
+                    {
+                        if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
+                        {
+                            if (!refresh_games && !add_new_game && !refresh_current_category)
+                            {
+                                ImGui::Separator();
+                                ImGui::Checkbox("Remove selected game from cache", &remove_from_cache);
+                                if (ImGui::IsWindowAppearing())
+                                {
+                                    SetNavFocusHere();
+                                }
+                            }
+                            if (!refresh_games && !remove_from_cache && !refresh_current_category)
+                            {
+                                ImGui::Separator();
+                                ImGui::Checkbox("Add new game to cache", &add_new_game);
+                            }
+                        }
+                        if (current_category->rom_type == TYPE_PSP_ISO ||
+                            current_category->rom_type == TYPE_ROM ||
+                            current_category->rom_type == TYPE_EBOOT)
+                        {
+                            if (!refresh_games && !remove_from_cache && !add_new_game)
+                            {
+                                ImGui::Separator();
+                                char cb_text[64];
+                                sprintf(cb_text, "Rescan games in %s category only", current_category->title);
+                                ImGui::Checkbox(cb_text, &refresh_current_category);
+                            }
+                        }
+                        if (!remove_from_cache && !add_new_game && !refresh_current_category)
+                        {
+                            ImGui::Separator();
+                            ImGui::Checkbox("Rescan all game categories to rebuild cache", &refresh_games);
+                        }
+                        ImGui::EndTabItem();
+                    }
+                }
+                ImGui::EndTabBar();
             }
 
-            ImGui::Separator();
-            ImGui::Text("%s View:", current_category->title);
-            ImGui::RadioButton("Grid", &view_mode, 0);
-            ImGui::SameLine();
-            ImGui::RadioButton("List", &view_mode, 1);
-
-            if (!parental_control)
-            {
-                if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
-                {
-                    if (!refresh_games && !add_new_game && !refresh_current_category)
-                    {
-                        ImGui::Separator();
-                        ImGui::Checkbox("Remove selected game from cache", &remove_from_cache);
-                    }
-                    if (!refresh_games && !remove_from_cache && !refresh_current_category)
-                    {
-                        ImGui::Separator();
-                        ImGui::Checkbox("Add new game to cache", &add_new_game);
-                    }
-                }
-                if (current_category->rom_type == TYPE_PSP_ISO ||
-                    current_category->rom_type == TYPE_ROM ||
-                    current_category->rom_type == TYPE_EBOOT)
-                {
-                    if (!refresh_games && !remove_from_cache && !add_new_game)
-                    {
-                        ImGui::Separator();
-                        char cb_text[64];
-                        sprintf(cb_text, "Rescan games in %s category only", current_category->title);
-                        ImGui::Checkbox(cb_text, &refresh_current_category);
-                    }
-                }
-                if (!remove_from_cache && !add_new_game && !refresh_current_category)
-                {
-                    ImGui::Separator();
-                    ImGui::Checkbox("Rescan all game categories to rebuild cache", &refresh_games);
-                }
-            }
             ImGui::Separator();
             if (ImGui::Button("OK"))
             {
