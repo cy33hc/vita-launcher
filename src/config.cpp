@@ -8,7 +8,7 @@
 #include "json.h"
 #include "fs.h"
 #include "style.h"
-
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -251,7 +251,7 @@ namespace CONFIG {
         return category;
     }
 
-    const char* GetMultiValueString(std::vector<std::string> &multi_values)
+    std::string GetMultiValueString(std::vector<std::string> &multi_values)
     {
         std::string vts = std::string("");
         if (multi_values.size() > 0)
@@ -260,9 +260,9 @@ namespace CONFIG {
             {
                 vts.append(multi_values[i].c_str()).append(",");
             }
-            vts.append(multi_values[multi_values.size()-1]);
+            vts.append(multi_values[multi_values.size()-1].c_str());
         }
-        return vts.c_str();
+        return vts;
     }
 
     void SaveCategoryConfig(GameCategory *cat)
@@ -273,7 +273,7 @@ namespace CONFIG {
         WriteString(cat->title, CONFIG_ALT_TITLE, cat->alt_title);
         if (cat->id != FAVORITES && cat->id != HOMEBREWS)
         {
-            WriteString(cat->title, CONFIG_TITLE_ID_PREFIXES, GetMultiValueString(cat->valid_title_ids));
+            WriteString(cat->title, CONFIG_TITLE_ID_PREFIXES, GetMultiValueString(cat->valid_title_ids).c_str());
         }
 
         if (cat->rom_type == TYPE_ROM || cat->id == PS1_GAMES)
@@ -282,8 +282,8 @@ namespace CONFIG {
             WriteString(cat->title, CONFIG_ROM_LAUNCHER_TITLE_ID, cat->rom_launcher_title_id);
             WriteString(cat->title, CONFIG_ROMS_PATH, cat->roms_path);
             WriteString(cat->title, CONFIG_ICON_PATH, cat->icon_path);
-            WriteString(cat->title, CONFIG_ROM_EXTENSIONS, GetMultiValueString(cat->file_filters));
-            WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores));
+            WriteString(cat->title, CONFIG_ROM_EXTENSIONS, GetMultiValueString(cat->file_filters).c_str());
+            WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores).c_str());
         }
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();

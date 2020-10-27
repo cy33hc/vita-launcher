@@ -41,6 +41,9 @@ namespace Windows {
     void HandleImeInput();
     void MultiValueImeCallback(int ime_result);
     void SingleValueImeCallback(int ime_result);
+    void NullCallback(int ime_result);
+    void AfterTitleChangeCallback(int ime_result);
+    void BeforeTitleChangeCallback(int ime_result);
 }
 
 #endif
