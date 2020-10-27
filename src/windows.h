@@ -39,7 +39,8 @@ namespace Windows {
     void HandleAddNewGame();
     void HandleAdrenalineGame();
     void HandleImeInput();
-    void ImeInputFinished(int ime_result);
+    void MultiValueImeCallback(int ime_result);
+    void SingleValueImeCallback(int ime_result);
 }
 
 #endif

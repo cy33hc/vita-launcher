@@ -134,5 +134,7 @@ namespace CONFIG {
     void SetupCategory(GameCategory *category, int category_id, const char* category_name, const char* core,
                        const char* title_id, const char* code, const char* default_prefixes, const char* default_file_filters,
                        const char* alt_cores, int rom_type);
+    GameCategory GetCategoryConfig(GameCategory *category);
+    void SaveCategoryConfig(GameCategory *cat);
 }
 #endif

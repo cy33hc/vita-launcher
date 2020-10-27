@@ -222,19 +222,70 @@ namespace CONFIG {
         }
     }
 
-    const char *GetMultiValueString(std::vector<std::string> &multi_values)
+    GameCategory GetCategoryConfig(GameCategory *cat)
     {
-        std::string vts = "";
-        
-        if (multi_values.size()>0) 
-        { 
+        GameCategory category;
+        OpenIniFile(CONFIG_INI_FILE);
+
+        category.id = cat->id;
+        category.rom_type = cat->rom_type;
+        category.view_mode = ReadInt(cat->title, CONFIG_VIEW_MODE, VIEW_MODE_GRID);
+        sprintf(category.alt_title, "%s", ReadString(cat->title, CONFIG_ALT_TITLE, ""));
+        char* valid_title_prefixes = ReadString(cat->title, CONFIG_TITLE_ID_PREFIXES, "");
+        ParseMultiValueString(valid_title_prefixes, category.valid_title_ids, false);
+
+        if (cat->rom_type == TYPE_ROM || cat->id == PS1_GAMES)
+        {
+            sprintf(category.core, "%s", ReadString(cat->title, CONFIG_RETRO_CORE, ""));
+            sprintf(category.rom_launcher_title_id, "%s", ReadString(cat->title, CONFIG_ROM_LAUNCHER_TITLE_ID, ""));
+            sprintf(category.roms_path, "%s", ReadString(cat->title, CONFIG_ROMS_PATH, ""));
+            sprintf(category.icon_path, "%s", ReadString(cat->title, CONFIG_ICON_PATH, ""));
+            char* file_filters = ReadString(cat->title, CONFIG_ROM_EXTENSIONS, "");
+            ParseMultiValueString(file_filters, category.file_filters, true);
+            char* alt_cores = ReadString(cat->title, CONFIG_ALT_CORES, "");
+            ParseMultiValueString(alt_cores, category.alt_cores, false);
+        }
+
+        CloseIniFile();
+
+        return category;
+    }
+
+    const char* GetMultiValueString(std::vector<std::string> &multi_values)
+    {
+        std::string vts = std::string("");
+        if (multi_values.size() > 0)
+        {
             for (int i=0; i<multi_values.size()-1; i++)
             {
-                vts.append(multi_values[i]).append(",");
+                vts.append(multi_values[i].c_str()).append(",");
             }
             vts.append(multi_values[multi_values.size()-1]);
-        } 
-        
+        }
         return vts.c_str();
+    }
+
+    void SaveCategoryConfig(GameCategory *cat)
+    {
+        OpenIniFile(CONFIG_INI_FILE);
+
+        WriteInt(cat->title, CONFIG_VIEW_MODE, cat->view_mode);
+        WriteString(cat->title, CONFIG_ALT_TITLE, cat->alt_title);
+        if (cat->id != FAVORITES && cat->id != HOMEBREWS)
+        {
+            WriteString(cat->title, CONFIG_TITLE_ID_PREFIXES, GetMultiValueString(cat->valid_title_ids));
+        }
+
+        if (cat->rom_type == TYPE_ROM || cat->id == PS1_GAMES)
+        {
+            WriteString(cat->title, CONFIG_RETRO_CORE, cat->core);
+            WriteString(cat->title, CONFIG_ROM_LAUNCHER_TITLE_ID, cat->rom_launcher_title_id);
+            WriteString(cat->title, CONFIG_ROMS_PATH, cat->roms_path);
+            WriteString(cat->title, CONFIG_ICON_PATH, cat->icon_path);
+            WriteString(cat->title, CONFIG_ROM_EXTENSIONS, GetMultiValueString(cat->file_filters));
+            WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores));
+        }
+        WriteIniFile(CONFIG_INI_FILE);
+        CloseIniFile();
     }
 }
