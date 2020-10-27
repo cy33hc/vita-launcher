@@ -505,7 +505,7 @@ namespace Windows {
                         ime_before_update = BeforeTitleChangeCallback;
                         ime_after_update = AfterTitleChangeCallback;
                         ime_callback = SingleValueImeCallback;
-                        Dialog::initImeDialog("Title", current_category->alt_title, 32, SCE_IME_TYPE_DEFAULT, 0, 0);
+                        Dialog::initImeDialog("Title", current_category->alt_title, 30, SCE_IME_TYPE_DEFAULT, 0, 0);
                         gui_mode = GUI_MODE_IME;
                         ImGui::CloseCurrentPopup();
                     };
@@ -581,7 +581,7 @@ namespace Windows {
                             ime_before_update = nullptr;
                             ime_after_update = nullptr;
                             ime_callback = SingleValueImeCallback;
-                            Dialog::initImeDialog("Icon Path", current_category->icon_path, 96, SCE_IME_TYPE_DEFAULT, 0, 0);
+                            Dialog::initImeDialog("Icon Path", current_category->icon_path, 95, SCE_IME_TYPE_DEFAULT, 0, 0);
                             gui_mode = GUI_MODE_IME;
                         };
                         ImGui::PopID();
@@ -595,7 +595,7 @@ namespace Windows {
                             ime_before_update = nullptr;
                             ime_after_update = nullptr;
                             ime_callback = SingleValueImeCallback;
-                            Dialog::initImeDialog("Roms Path", current_category->roms_path, 96, SCE_IME_TYPE_DEFAULT, 0, 0);
+                            Dialog::initImeDialog("Roms Path", current_category->roms_path, 95, SCE_IME_TYPE_DEFAULT, 0, 0);
                             gui_mode = GUI_MODE_IME;
                         };
                         ImGui::PopID();
@@ -611,7 +611,7 @@ namespace Windows {
                                 ime_before_update = nullptr;
                                 ime_after_update = nullptr;
                                 ime_callback = SingleValueImeCallback;
-                                Dialog::initImeDialog("Core Path", current_category->core, 64, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                Dialog::initImeDialog("Core Path", current_category->core, 63, SCE_IME_TYPE_DEFAULT, 0, 0);
                                 gui_mode = GUI_MODE_IME;
                             }
                             ImGui::PopID();
@@ -691,6 +691,19 @@ namespace Windows {
                         }
                         ImGui::EndCombo();
                     }
+
+                    ImGui::PushID("pspemu_location");
+                    ImGui::Text("Pspemu Path:"); ImGui::SameLine();
+                    if (ImGui::Selectable(pspemu_path, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                    {
+                        ime_single_field = pspemu_path;
+                        ime_before_update = nullptr;
+                        ime_after_update = AfterPspemuChangeCallback;
+                        ime_callback = SingleValueImeCallback;
+                        Dialog::initImeDialog("Pspemu Path", pspemu_path, 11, SCE_IME_TYPE_DEFAULT, 0, 0);
+                        gui_mode = GUI_MODE_IME;
+                    }
+                    ImGui::PopID();
 
                     ImGui::Text("Hidden Titles:"); ImGui::SameLine();
                     if (ImGui::SmallButton("Add##hidden_titles") && !parental_control)
@@ -796,6 +809,7 @@ namespace Windows {
             {
                 OpenIniFile (CONFIG_INI_FILE);
                 WriteInt(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
+                WriteString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, pspemu_path);
                 WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, cb_style_name);
                 WriteString(CONFIG_GLOBAL, CONFIG_HIDE_TITLE_IDS, CONFIG::GetMultiValueString(hidden_title_ids).c_str());
                 if (view_mode != current_category->view_mode)
@@ -1198,5 +1212,11 @@ namespace Windows {
     void BeforeTitleChangeCallback(int ime_result)
     {
         tmp_category = current_category;
+    }
+
+    void AfterPspemuChangeCallback(int ime_result)
+    {
+        sprintf(pspemu_iso_path, "%s/ISO", pspemu_path);
+        sprintf(pspemu_eboot_path, "%s/PSP/GAME", pspemu_path);
     }
 }

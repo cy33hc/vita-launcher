@@ -25,6 +25,7 @@ std::map<std::string, GameCategory*> categoryMap;
 std::vector<std::string> psp_iso_extensions;
 std::vector<std::string> eboot_extensions;
 std::vector<std::string> hidden_title_ids;
+char pspemu_path[16];
 char pspemu_iso_path[32];
 char pspemu_eboot_path[32];
 

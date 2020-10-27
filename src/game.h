@@ -121,6 +121,7 @@ extern BootSettings defaul_boot_settings;
 extern std::vector<std::string> psp_iso_extensions;
 extern std::vector<std::string> eboot_extensions;
 extern std::vector<std::string> hidden_title_ids;
+extern char pspemu_path[];
 extern char pspemu_iso_path[];
 extern char pspemu_eboot_path[];
 

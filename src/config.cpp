@@ -125,7 +125,6 @@ namespace CONFIG {
             FS::MkDirs(STYLES_FOLDER);
         }
 
-        char pspemu_path[16];
         sprintf(pspemu_path, "%s", ReadString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, DEFAULT_PSPEMU_PATH));
         WriteString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, pspemu_path);
         sprintf(pspemu_iso_path, "%s/ISO", pspemu_path);

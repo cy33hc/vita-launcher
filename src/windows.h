@@ -44,6 +44,7 @@ namespace Windows {
     void NullCallback(int ime_result);
     void AfterTitleChangeCallback(int ime_result);
     void BeforeTitleChangeCallback(int ime_result);
+    void AfterPspemuChangeCallback(int ime_result);
 }
 
 #endif
