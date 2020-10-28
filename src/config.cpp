@@ -8,7 +8,7 @@
 #include "json.h"
 #include "fs.h"
 #include "style.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }

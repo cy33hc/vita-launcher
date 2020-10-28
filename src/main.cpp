@@ -16,7 +16,7 @@
 #include "config.h"
 #include "style.h"
 #include "fs.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 
 namespace Services
 {
@@ -102,7 +102,7 @@ namespace Services
 
 int main(int, char **)
 {
-	debugNetInit(ip_server,port_server,DEBUG);
+	//debugNetInit(ip_server,port_server,DEBUG);
 
 	Services::Init();
 	Services::InitImGui();

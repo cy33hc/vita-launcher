@@ -78,7 +78,7 @@ namespace GAME {
 
         DB::GetFavorites(nullptr, &game_categories[FAVORITES]);
 
-        for (std::vector<Game>::iterator it=game_categories[FAVORITES].games.begin(); 
+        /**for (std::vector<Game>::iterator it=game_categories[FAVORITES].games.begin(); 
              it!=game_categories[FAVORITES].games.end(); )
         {
             GameCategory *category = categoryMap[it->category];
@@ -93,7 +93,7 @@ namespace GAME {
                 it = game_categories[FAVORITES].games.erase(it);
                 DB::DeleteFavorite(nullptr, &*it);
             }
-        }
+        }**/
 
         for (int i=0; i < TOTAL_CATEGORY; i++)
         {
@@ -747,8 +747,9 @@ namespace GAME {
             Game *game = &category->games[i];
             if (game->tex.id != no_icon.id)
             {
-                Textures::Free(&game->tex);
+                Tex tmp = game->tex;
                 game->tex = no_icon;
+                Textures::Free(&tmp);
             }
         }
     }
@@ -828,12 +829,7 @@ namespace GAME {
 
     const char* GetGameCategory(const char *title_id)
     {
-        if (strncmp(title_id, "PSPEMUCFW", 9) == 0)
-        {
-            return game_categories[HOMEBREWS].category;
-        }
-
-        for (int i=1; i<TOTAL_CATEGORY; i++)
+        for (int i=TOTAL_CATEGORY-1; i>0; i--)
         {
             if (IsMatchPrefixes(title_id, game_categories[i].valid_title_ids))
             {

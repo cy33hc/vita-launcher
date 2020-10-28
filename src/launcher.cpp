@@ -10,7 +10,7 @@
 #include "config.h"
 #include "ime_dialog.h"
 #include "gui.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -35,9 +35,11 @@ static std::vector<std::string> *ime_multi_field;
 static char* ime_single_field;
 
 bool handle_add_game = false;
+bool handle_move_game = false;
 bool game_added = false;
+bool game_moved = false;
 bool handle_boot_game = false;
-char game_added_message[256];
+char game_action_message[256];
 
 float previous_right = 0.0f;
 float previous_left = 0.0f;
@@ -314,6 +316,11 @@ namespace Windows {
             HandleAdrenalineGame();
         }
 
+        if (handle_move_game)
+        {
+            HandleMoveGame();
+        }
+
         ShowSettingsDialog();
     }
 
@@ -423,6 +430,11 @@ namespace Windows {
             HandleAdrenalineGame();
         }
 
+        if (handle_move_game)
+        {
+            HandleMoveGame();
+        }
+
         ShowSettingsDialog();
     }
 
@@ -482,14 +494,15 @@ namespace Windows {
             ImGui::OpenPopup("Settings and Actions");
         }
 
-        ImGui::SetNextWindowPos(ImVec2(280, 140));
-        ImGui::SetNextWindowSizeConstraints(ImVec2(400,150), ImVec2(400,400), NULL, NULL);
+        ImGui::SetNextWindowPos(ImVec2(250, 140));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(430,150), ImVec2(430,400), NULL, NULL);
         if (ImGui::BeginPopupModal("Settings and Actions", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             static bool refresh_games = false;
             static bool refresh_current_category = false;
             static bool remove_from_cache = false;
             static bool add_new_game = false;
+            static bool move_game = false;
             float posX = ImGui::GetCursorPosX();
 
             if (ImGui::BeginTabBar("Settings and Actions#tabbar", ImGuiTabBarFlags_FittingPolicyScroll))
@@ -521,7 +534,7 @@ namespace Windows {
 
                     if (current_category->id != FAVORITES && current_category->id != HOMEBREWS)
                     {
-                        ImGui::Text("Bubble Prefixes:"); ImGui::SameLine();
+                        ImGui::Text("Bubble Titles:  "); ImGui::SameLine();
                         if (ImGui::SmallButton("Add##title_prefixes") && !parental_control)
                         {
                             ime_multi_field = &current_category->valid_title_ids;
@@ -715,6 +728,7 @@ namespace Windows {
                         Dialog::initImeDialog("Title Id", "", 9, SCE_IME_TYPE_DEFAULT, 0, 0);
                         gui_mode = GUI_MODE_IME;
                     }
+
                     ImGui::SameLine();
                     if (hidden_title_ids.size()>1)
                         ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,47));
@@ -737,8 +751,8 @@ namespace Windows {
                         };
                         ImGui::NextColumn();
                         char buttonId[64];
-                        sprintf(buttonId, "Delete##%s", it->c_str() && !parental_control);
-                        if (ImGui::SmallButton(buttonId))
+                        sprintf(buttonId, "Delete##%s", it->c_str());
+                        if (ImGui::SmallButton(buttonId) && !parental_control)
                         {
                             hidden_title_ids.erase(it);
                         }
@@ -760,57 +774,90 @@ namespace Windows {
                 {
                     if (ImGui::BeginTabItem("Actions"))
                     {
-                        if (selected_game != nullptr && selected_game->type == TYPE_ROM)
+                        if (selected_game != nullptr && current_category->id != FAVORITES)
                         {
-                            if (!refresh_games && !add_new_game && !refresh_current_category)
+                            if (!refresh_games && !add_new_game && !refresh_current_category && !remove_from_cache)
                             {
-                                ImGui::Separator();
-                                ImGui::Checkbox("Remove selected game from cache", &remove_from_cache);
+                                ImGui::Checkbox("Move selected game", &move_game);
                                 if (ImGui::IsWindowAppearing())
                                 {
                                     SetNavFocusHere();
                                 }
+                                ImGui::Separator();
+                            }
+                        }
+
+                        if (selected_game != nullptr && current_category->id != FAVORITES)
+                        {
+                            if (!refresh_games && !add_new_game && !refresh_current_category && !move_game)
+                            {
+                                ImGui::Checkbox("Hide selected game", &remove_from_cache);
+                                ImGui::Separator();
                             }
                         }
 
                         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
                         {
-                            if (!refresh_games && !remove_from_cache && !refresh_current_category)
+                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game)
                             {
-                                ImGui::Separator();
                                 ImGui::Checkbox("Add new game to cache", &add_new_game);
+                                ImGui::Separator();
                             }
                         }
 
                         if (current_category->rom_type != TYPE_BUBBLE)
                         {
-                            if (!refresh_games && !remove_from_cache && !add_new_game)
+                            if (!refresh_games && !remove_from_cache && !add_new_game && !move_game)
                             {
-                                ImGui::Separator();
                                 char cb_text[64];
                                 sprintf(cb_text, "Rescan games in %s category only", current_category->title);
                                 ImGui::Checkbox(cb_text, &refresh_current_category);
+                                ImGui::Separator();
                             }
                         }
                         
-                        if (!remove_from_cache && !add_new_game && !refresh_current_category)
+                        if (!remove_from_cache && !add_new_game && !refresh_current_category && !move_game)
                         {
-                            ImGui::Separator();
                             ImGui::Checkbox("Rescan all game categories to rebuild cache", &refresh_games);
+                            ImGui::Separator();
                         }
+                        ImGui::EndTabItem();
+                    }
+
+                    if (ImGui::BeginTabItem("Help"))
+                    {
+                        ImGui::Text("1. Title ids can be full 9 characters or partial. A");
+                        ImGui::Text("   partial title is used for matching multiple title ids.");
+                        ImGui::Text("   App performs better with partial title ids.");
+                        ImGui::Text("   Example:");
+                        ImGui::Text("     The partial title id \"PSPEMU\" would match all");
+                        ImGui::Text("     titles that starts with \"PSPEMU\" like PSPEMU001,");
+                        ImGui::Text("     PSPEMU002, PSPEMU003... etc");
+                        ImGui::Text("");
+                        ImGui::Text("2. Some of the settings takes effect after restarting");
+                        ImGui::Text("   the application.");
+                        ImGui::Separator();
                         ImGui::EndTabItem();
                     }
                 }
                 ImGui::EndTabBar();
             }
 
-            ImGui::Separator();
             if (ImGui::Button("OK"))
             {
                 OpenIniFile (CONFIG_INI_FILE);
                 WriteInt(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
                 WriteString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, pspemu_path);
                 WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, cb_style_name);
+
+                if (remove_from_cache && selected_game != nullptr && selected_game->type == TYPE_BUBBLE)
+                {
+                    Game *game = selected_game;
+                    hidden_title_ids.push_back(selected_game->id);
+                    GAME::RemoveGameFromCategory(current_category, game);
+                    GAME::RemoveGameFromCategory(&game_categories[FAVORITES], game);
+                    selected_game = nullptr;
+                }
                 WriteString(CONFIG_GLOBAL, CONFIG_HIDE_TITLE_IDS, CONFIG::GetMultiValueString(hidden_title_ids).c_str());
                 if (view_mode != current_category->view_mode)
                 {
@@ -843,23 +890,24 @@ namespace Windows {
                     GAME::RefreshGames(false);
                 }
 
-                if (remove_from_cache)
+                if (remove_from_cache && selected_game != nullptr && selected_game->title != TYPE_BUBBLE)
                 {
-                    if (selected_game != nullptr)
-                    {
-                        Game *game = selected_game;
-                        DB::DeleteGame(nullptr, game);
-                        DB::DeleteFavorite(nullptr, game);
-                        GAME::RemoveGameFromCategory(current_category, game);
-                        GAME::RemoveGameFromCategory(&game_categories[FAVORITES], game);
-                        selected_game = nullptr;
-                    }
+                    Game *game = selected_game;
+                    DB::DeleteGame(nullptr, game);
+                    DB::DeleteFavorite(nullptr, game);
+                    GAME::RemoveGameFromCategory(current_category, game);
+                    GAME::RemoveGameFromCategory(&game_categories[FAVORITES], game);
+                    selected_game = nullptr;
                 }
 
                 if (add_new_game)
                     handle_add_game = true;
 
+                if (move_game)
+                    handle_move_game = true;
+
                 paused = false;
+                move_game = false;
                 refresh_games = false;
                 remove_from_cache = false;
                 refresh_current_category = false;
@@ -1066,14 +1114,14 @@ namespace Windows {
                         sprintf(game.title, "%s", games_on_filesystem[i].substr(0, index).c_str());
                         game.tex = no_icon;
 
-                        sprintf(game_added_message, "The game already exists in the cache.");
+                        sprintf(game_action_message, "The game already exists in the cache.");
                         if (!DB::GameExists(nullptr, &game))
                         {
                             current_category->games.push_back(game);
                             DB::InsertGame(nullptr, &game);
                             GAME::SortGames(current_category);
                             GAME::SetMaxPage(current_category);
-                            sprintf(game_added_message, "The game has being added to the cache.");
+                            sprintf(game_action_message, "The game has being added to the cache.");
                         }
                         game_added = true;
                         games_on_filesystem.clear();
@@ -1102,7 +1150,7 @@ namespace Windows {
             if (ImGui::BeginPopupModal("Info", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
             {
                 ImGui::PushTextWrapPos(400);
-                ImGui::Text("%s", game_added_message);
+                ImGui::Text("%s", game_action_message);
                 ImGui::PopTextWrapPos();
                 ImGui::Separator();
                 if (ImGui::Button("OK"))
@@ -1110,6 +1158,104 @@ namespace Windows {
                     game_added = false;
                     paused = false;
                     handle_add_game = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
+        
+    }
+
+    void HandleMoveGame()
+    {
+        paused = true;
+
+        if (!game_moved)
+        {
+            if (selected_game->type == TYPE_ROM)
+            {
+                sprintf(game_action_message, "Can't move ROM type games. Since they\nare dependent on RetroArch core of \nthe category.");
+                game_moved = true;
+            }
+            else
+            {
+                ImGui::OpenPopup("Select Category");
+                ImGui::SetNextWindowPos(ImVec2(230, 100));
+                ImGui::SetNextWindowSize(ImVec2(490,330));
+                if (ImGui::BeginPopupModal("Select Category", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+                {
+                    ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(480,260));
+                    ImGui::BeginChild("category list");
+                    if (ImGui::IsWindowAppearing())
+                    {
+                        ImGui::SetWindowFocus();
+                    }
+
+                    for (int i = 1; i < TOTAL_CATEGORY-1; i++)
+                    {
+                        if (current_category->id != game_categories[i].id)
+                        {
+                            if (ImGui::Selectable(game_categories[i].alt_title) &&
+                                selected_game != nullptr)
+                            {
+                                if (selected_game->type > TYPE_ROM)
+                                {
+                                    Game tmp = *selected_game;
+                                    sprintf(tmp.category, "%s", game_categories[i].category);
+                                    tmp.tex = no_icon;
+                                    game_categories[i].games.push_back(tmp);
+                                    DB::UpdateCategory(nullptr, &tmp);
+                                    GAME::SortGames(&game_categories[i]);
+                                    GAME::RemoveGameFromCategory(categoryMap[selected_game->category], selected_game);
+                                    sprintf(game_action_message, "Game moved to %s category", game_categories[i].alt_title);
+                                } else if (selected_game->type == TYPE_BUBBLE)
+                                {
+                                    game_categories[i].valid_title_ids.push_back(selected_game->id);
+                                    OpenIniFile(CONFIG_INI_FILE);
+                                    WriteString(game_categories[i].title, CONFIG_TITLE_ID_PREFIXES, CONFIG::GetMultiValueString(game_categories[i].valid_title_ids).c_str());
+                                    WriteIniFile(CONFIG_INI_FILE);
+                                    CloseIniFile();
+                                    game_categories[i].games.push_back(*selected_game);
+                                    GAME::SortGames(&game_categories[i]);
+                                    GAME::RemoveGameFromCategory(categoryMap[selected_game->category], selected_game);
+                                    sprintf(game_action_message, "Game moved to %s category", game_categories[i].alt_title);
+                                }
+                                
+                                game_moved = true;
+                            }
+                            ImGui::Separator();
+                        }
+                    }
+                    ImGui::EndChild();
+                    ImGui::SetItemDefaultFocus();
+
+                    ImGui::Separator();
+                    if (ImGui::Button("Cancel"))
+                    {
+                        paused = false;
+                        handle_move_game = false;
+                        game_moved = false;
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+            }
+        }
+        else
+        {
+            ImGui::OpenPopup("Info");
+            ImGui::SetNextWindowPos(ImVec2(250, 220));
+            if (ImGui::BeginPopupModal("Info", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::PushTextWrapPos(400);
+                ImGui::Text("%s", game_action_message);
+                ImGui::PopTextWrapPos();
+                ImGui::Separator();
+                if (ImGui::Button("OK"))
+                {
+                    game_moved = false;
+                    paused = false;
+                    handle_move_game = false;
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::EndPopup();

@@ -51,12 +51,12 @@ namespace DB {
         {
             Game game;
             sprintf(game.id, "%s", sqlite3_column_text(res, 0));
-            if (!GAME::IsMatchPrefixes(game.id, hidden_title_ids))
+            if (!GAME::IsMatchPrefixes(game.id, hidden_title_ids) || strcmp(game.id, "PSPEMUCFW")==0)
             {
                 std::string title = std::string((const char*)sqlite3_column_text(res, 1));
                 std::replace( title.begin(), title.end(), '\n', ' ');
-                sprintf(game.title, "%s", title.c_str());
                 sprintf(game.category, "%s", GAME::GetGameCategory(game.id));
+                sprintf(game.title, "%s", title.c_str());
                 sprintf(game.rom_path, "%s", "");
                 game.tex = no_icon;
                 game.type = TYPE_BUBBLE;
@@ -398,6 +398,30 @@ namespace DB {
         if (rc == SQLITE_OK) {
             sqlite3_bind_int(res, 1, type);
             sqlite3_bind_text(res, 2, category, strlen(category), NULL);
+            int step = sqlite3_step(res);
+            sqlite3_finalize(res);
+        }
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+   }
+
+   void UpdateCategory(sqlite3 *database, Game *game)
+   {
+        sqlite3 *db = database;
+        if (db == nullptr)
+        {
+            sqlite3_open(CACHE_DB_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("UPDATE ") + GAMES_TABLE + " SET " + COL_CATEGORY + "=? WHERE " + COL_ROM_PATH + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_text(res, 1, game->category, strlen(game->category), NULL);
+            sqlite3_bind_text(res, 2, game->rom_path, strlen(game->rom_path), NULL);
             int step = sqlite3_step(res);
             sqlite3_finalize(res);
         }
