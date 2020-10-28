@@ -287,4 +287,10 @@ namespace CONFIG {
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();
     }
+
+    void RemoveFromMultiValues(std::vector<std::string> &multi_values, std::string value)
+    {
+        auto itr = std::find(multi_values.begin(), multi_values.end(), value);
+        if (itr != multi_values.end()) multi_values.erase(itr);
+    }
 }

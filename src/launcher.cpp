@@ -1211,8 +1211,10 @@ namespace Windows {
                                 } else if (selected_game->type == TYPE_BUBBLE)
                                 {
                                     game_categories[i].valid_title_ids.push_back(selected_game->id);
+                                    CONFIG::RemoveFromMultiValues(current_category->valid_title_ids, selected_game->id);
                                     OpenIniFile(CONFIG_INI_FILE);
                                     WriteString(game_categories[i].title, CONFIG_TITLE_ID_PREFIXES, CONFIG::GetMultiValueString(game_categories[i].valid_title_ids).c_str());
+                                    WriteString(current_category->title, CONFIG_TITLE_ID_PREFIXES, CONFIG::GetMultiValueString(current_category->valid_title_ids).c_str());
                                     WriteIniFile(CONFIG_INI_FILE);
                                     CloseIniFile();
                                     game_categories[i].games.push_back(*selected_game);
