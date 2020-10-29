@@ -1120,23 +1120,32 @@ namespace Windows {
                 {
                     if (ImGui::Selectable(games_on_filesystem[i].c_str()))
                     {
-                        sprintf(game.id, "%s", current_category->title);
-                        game.type = TYPE_ROM;
-                        sprintf(game.category, "%s", current_category->category);
-                        sprintf(game.rom_path, "%s/%s", current_category->roms_path, games_on_filesystem[i].c_str());
-                        int index = games_on_filesystem[i].find_last_of(".");
-                        sprintf(game.title, "%s", games_on_filesystem[i].substr(0, index).c_str());
-                        game.tex = no_icon;
-
-                        sprintf(game_action_message, "The game already exists in the cache.");
-                        if (!DB::GameExists(nullptr, &game))
+                        if (strlen(current_category->roms_path) + games_on_filesystem[i].length() + 1 < 192)
                         {
-                            current_category->games.push_back(game);
-                            DB::InsertGame(nullptr, &game);
-                            GAME::SortGames(current_category);
-                            GAME::SetMaxPage(current_category);
-                            sprintf(game_action_message, "The game has being added to the cache.");
+                            sprintf(game.id, "%s", current_category->title);
+                            game.type = TYPE_ROM;
+                            sprintf(game.category, "%s", current_category->category);
+                            sprintf(game.rom_path, "%s/%s", current_category->roms_path, games_on_filesystem[i].c_str());
+                            int index = games_on_filesystem[i].find_last_of(".");
+                            if (index > 126) index = 126;
+                            sprintf(game.title, "%s", games_on_filesystem[i].substr(0, index).c_str());
+                            game.tex = no_icon;
+
+                            sprintf(game_action_message, "The game already exists in the cache.");
+                            if (!DB::GameExists(nullptr, &game))
+                            {
+                                current_category->games.push_back(game);
+                                DB::InsertGame(nullptr, &game);
+                                GAME::SortGames(current_category);
+                                GAME::SetMaxPage(current_category);
+                                sprintf(game_action_message, "The game has being added to the cache.");
+                            }
                         }
+                        else
+                        {
+                            sprintf(game_action_message, "The length of the rom name is too long.");
+                        }
+                        
                         game_added = true;
                         games_on_filesystem.clear();
                     }
