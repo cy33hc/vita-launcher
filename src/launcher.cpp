@@ -475,7 +475,6 @@ namespace Windows {
                     }
                     if (ImGui::IsItemHovered())
                     {
-                        category_selected = i;
                         tab_infocus = true;
                     }                
                 }
