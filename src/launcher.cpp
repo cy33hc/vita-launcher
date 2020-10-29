@@ -477,6 +477,7 @@ namespace Windows {
                     }
                     if (ImGui::IsItemHovered())
                     {
+                        category_selected = i;
                         tab_infocus = true;
                     }                
                 }
@@ -1367,4 +1368,5 @@ namespace Windows {
         sprintf(pspemu_iso_path, "%s/ISO", pspemu_path);
         sprintf(pspemu_eboot_path, "%s/PSP/GAME", pspemu_path);
     }
+
 }
