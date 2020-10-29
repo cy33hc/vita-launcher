@@ -496,7 +496,7 @@ namespace Windows {
         }
 
         ImGui::SetNextWindowPos(ImVec2(250, 140));
-        ImGui::SetNextWindowSizeConstraints(ImVec2(430,150), ImVec2(430,400), NULL, NULL);
+        ImGui::SetNextWindowSizeConstraints(ImVec2(430,130), ImVec2(430,400), NULL, NULL);
         if (ImGui::BeginPopupModal("Settings and Actions", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             static bool refresh_games = false;
@@ -504,6 +504,8 @@ namespace Windows {
             static bool remove_from_cache = false;
             static bool add_new_game = false;
             static bool move_game = false;
+            static bool rename_game = false;
+
             float posX = ImGui::GetCursorPosX();
 
             if (ImGui::BeginTabBar("Settings and Actions#tabbar", ImGuiTabBarFlags_FittingPolicyScroll))
@@ -777,20 +779,20 @@ namespace Windows {
                     {
                         if (selected_game != nullptr && current_category->id != FAVORITES)
                         {
-                            if (!refresh_games && !add_new_game && !refresh_current_category && !remove_from_cache)
+                            if (!refresh_games && !add_new_game && !refresh_current_category && !remove_from_cache &&
+                                !move_game && selected_game->type != TYPE_BUBBLE)
                             {
-                                ImGui::Checkbox("Move selected game", &move_game);
-                                if (ImGui::IsWindowAppearing())
-                                {
-                                    SetNavFocusHere();
-                                }
+                                ImGui::Checkbox("Rename selected game", &rename_game);
                                 ImGui::Separator();
                             }
-                        }
 
-                        if (selected_game != nullptr && current_category->id != FAVORITES)
-                        {
-                            if (!refresh_games && !add_new_game && !refresh_current_category && !move_game)
+                            if (!refresh_games && !add_new_game && !refresh_current_category && !remove_from_cache && !rename_game)
+                            {
+                                ImGui::Checkbox("Move selected game", &move_game);
+                                ImGui::Separator();
+                            }
+
+                            if (!refresh_games && !add_new_game && !refresh_current_category && !move_game && !rename_game)
                             {
                                 ImGui::Checkbox("Hide selected game", &remove_from_cache);
                                 ImGui::Separator();
@@ -799,7 +801,7 @@ namespace Windows {
 
                         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
                         {
-                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game)
+                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !rename_game)
                             {
                                 ImGui::Checkbox("Add new game to cache", &add_new_game);
                                 ImGui::Separator();
@@ -808,7 +810,7 @@ namespace Windows {
 
                         if (current_category->rom_type != TYPE_BUBBLE)
                         {
-                            if (!refresh_games && !remove_from_cache && !add_new_game && !move_game)
+                            if (!refresh_games && !remove_from_cache && !add_new_game && !move_game && !rename_game)
                             {
                                 char cb_text[64];
                                 sprintf(cb_text, "Rescan games in %s category only", current_category->title);
@@ -817,7 +819,7 @@ namespace Windows {
                             }
                         }
                         
-                        if (!remove_from_cache && !add_new_game && !refresh_current_category && !move_game)
+                        if (!remove_from_cache && !add_new_game && !refresh_current_category && !move_game && !rename_game)
                         {
                             ImGui::Checkbox("Rescan all game categories to rebuild cache", &refresh_games);
                             ImGui::Separator();
@@ -901,6 +903,16 @@ namespace Windows {
                     selected_game = nullptr;
                 }
 
+                if (rename_game && selected_game != nullptr)
+                {
+                    ime_single_field = selected_game->title;
+                    ime_before_update = nullptr;
+                    ime_after_update = AfterGameTitleChangeCallback;
+                    ime_callback = SingleValueImeCallback;
+                    Dialog::initImeDialog("Game Name", selected_game->title, 127, SCE_IME_TYPE_DEFAULT, 0, 0);
+                    gui_mode = GUI_MODE_IME;
+                }
+
                 if (add_new_game)
                     handle_add_game = true;
 
@@ -913,6 +925,7 @@ namespace Windows {
                 remove_from_cache = false;
                 refresh_current_category = false;
                 add_new_game = false;
+                rename_game = false;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
@@ -1205,7 +1218,7 @@ namespace Windows {
                                     sprintf(tmp.category, "%s", game_categories[i].category);
                                     tmp.tex = no_icon;
                                     game_categories[i].games.push_back(tmp);
-                                    DB::UpdateCategory(nullptr, &tmp);
+                                    DB::UpdateGameCategory(nullptr, &tmp);
                                     GAME::SortGames(&game_categories[i]);
                                     GAME::RemoveGameFromCategory(categoryMap[selected_game->category], selected_game);
                                     sprintf(game_action_message, "Game moved to %s category", game_categories[i].alt_title);
@@ -1369,4 +1382,13 @@ namespace Windows {
         sprintf(pspemu_eboot_path, "%s/PSP/GAME", pspemu_path);
     }
 
+    void AfterGameTitleChangeCallback(int ime_result)
+    {
+        DB::UpdateGameTitle(nullptr, selected_game);
+        Game* game = GAME::FindGame(&game_categories[FAVORITES], selected_game);
+        if (game != nullptr)
+        {
+            sprintf(game->title, "%s", selected_game->title);
+        }
+    }
 }
