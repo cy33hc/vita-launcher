@@ -88,11 +88,6 @@ namespace GAME {
                 game->favorite = true;
                 ++it;
             }
-            else
-            {
-                it = game_categories[FAVORITES].games.erase(it);
-                DB::DeleteFavorite(nullptr, &*it);
-            }
         }
 
         for (int i=0; i < TOTAL_CATEGORY; i++)
@@ -578,7 +573,11 @@ namespace GAME {
         else
         {
             GameCategory* category = categoryMap[game->category];
-            sprintf(icon_path, "%s/%s\.png", category->icon_path, game->title);
+            std::string rom_path = std::string(game->rom_path);
+            int slash_index = rom_path.find_last_of("/");
+            int dot_index = rom_path.find_last_of(".");
+            std::string rom_name = rom_path.substr(slash_index+1, dot_index);
+            sprintf(icon_path, "%s/%s\.png", category->icon_path, rom_name.c_str());
         }
         
         if (FS::FileExists(icon_path))
