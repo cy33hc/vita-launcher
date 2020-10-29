@@ -30,6 +30,8 @@ namespace DB {
     void InsertFavorite(sqlite3 *database, Game *game);
     void GetFavorites(sqlite3 *database, GameCategory *category);
     void DeleteGamesByCategoryAndType(sqlite3 *database, const char* category, int type);
+    void UpdateFavoritesGameCategoryById(sqlite3 *database, Game *game);
+    void UpdateFavoritesGameCategoryByRomPath(sqlite3 *database, Game *game);
     void UpdateGameCategory(sqlite3 *database, Game *game);
     void UpdateGameTitle(sqlite3 *database, Game *game);
 }

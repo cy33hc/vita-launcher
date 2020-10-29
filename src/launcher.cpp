@@ -85,10 +85,9 @@ namespace Windows {
                     }
                     else {
                         selected_game->favorite = false;
+                        DB::DeleteFavorite(nullptr, selected_game);
                         int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
-                        if (index != -1)
-                            DB::DeleteFavorite(nullptr, selected_game);
                     }
                 }
                 else
@@ -105,10 +104,9 @@ namespace Windows {
                     if (game != nullptr)
                     {
                         game->favorite = false;
+                        DB::DeleteFavorite(nullptr, selected_game);
                         int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
-                        if (index != -1)
-                            DB::DeleteFavorite(nullptr, selected_game);
                         selected_game = nullptr;
                     }
                 }
@@ -1228,8 +1226,11 @@ namespace Windows {
                                     tmp.tex = no_icon;
                                     game_categories[i].games.push_back(tmp);
                                     DB::UpdateGameCategory(nullptr, &tmp);
+                                    DB::UpdateFavoritesGameCategoryByRomPath(nullptr, &tmp);
                                     GAME::SortGames(&game_categories[i]);
-                                    GAME::RemoveGameFromCategory(categoryMap[selected_game->category], selected_game);
+                                    GAME::SetMaxPage(&game_categories[i]);
+                                    GAME::RemoveGameFromCategory(current_category, selected_game);
+                                    GAME::SetMaxPage(current_category);
                                     sprintf(game_action_message, "Game moved to %s category", game_categories[i].alt_title);
                                 } else if (selected_game->type == TYPE_BUBBLE)
                                 {
@@ -1240,9 +1241,13 @@ namespace Windows {
                                     WriteString(current_category->title, CONFIG_TITLE_ID_PREFIXES, CONFIG::GetMultiValueString(current_category->valid_title_ids).c_str());
                                     WriteIniFile(CONFIG_INI_FILE);
                                     CloseIniFile();
+                                    sprintf(selected_game->category, "%s", game_categories[i].category);
+                                    DB::UpdateFavoritesGameCategoryById(nullptr, selected_game);
                                     game_categories[i].games.push_back(*selected_game);
                                     GAME::SortGames(&game_categories[i]);
-                                    GAME::RemoveGameFromCategory(categoryMap[selected_game->category], selected_game);
+                                    GAME::SetMaxPage(&game_categories[i]);
+                                    GAME::RemoveGameFromCategory(current_category, selected_game);
+                                    GAME::SetMaxPage(current_category);
                                     sprintf(game_action_message, "Game moved to %s category", game_categories[i].alt_title);
                                 }
                                 

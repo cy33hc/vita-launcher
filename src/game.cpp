@@ -78,7 +78,7 @@ namespace GAME {
 
         DB::GetFavorites(nullptr, &game_categories[FAVORITES]);
 
-        /**for (std::vector<Game>::iterator it=game_categories[FAVORITES].games.begin(); 
+        for (std::vector<Game>::iterator it=game_categories[FAVORITES].games.begin(); 
              it!=game_categories[FAVORITES].games.end(); )
         {
             GameCategory *category = categoryMap[it->category];
@@ -93,7 +93,7 @@ namespace GAME {
                 it = game_categories[FAVORITES].games.erase(it);
                 DB::DeleteFavorite(nullptr, &*it);
             }
-        }**/
+        }
 
         for (int i=0; i < TOTAL_CATEGORY; i++)
         {
