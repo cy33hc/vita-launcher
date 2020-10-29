@@ -47,6 +47,7 @@ namespace Windows {
     void BeforeTitleChangeCallback(int ime_result);
     void AfterPspemuChangeCallback(int ime_result);
     void AfterGameTitleChangeCallback(int ime_result);
+    void AfterPathChangeCallback(int ime_result);
 }
 
 #endif

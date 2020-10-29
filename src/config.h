@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 #include "game.h"
 
 #define CONFIG_INI_FILE "ux0:data/SMLA00001/config.ini"
@@ -137,5 +138,23 @@ namespace CONFIG {
                        const char* alt_cores, int rom_type);
     GameCategory GetCategoryConfig(GameCategory *category);
     void SaveCategoryConfig(GameCategory *cat);
+
+    static inline std::string& ltrim(std::string& str, std::string chars)
+    {
+        str.erase(0, str.find_first_not_of(chars));
+        return str;
+    }
+
+    static inline std::string& rtrim(std::string& str, std::string chars)
+    {
+        str.erase(str.find_last_not_of(chars) + 1);
+        return str;
+    }
+
+    // trim from both ends (in place)
+    static inline std::string& trim(std::string& str, std::string chars)
+    {
+        return ltrim(rtrim(str, chars), chars);
+    }
 }
 #endif

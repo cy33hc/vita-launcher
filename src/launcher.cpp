@@ -595,7 +595,7 @@ namespace Windows {
                         {
                             ime_single_field = current_category->icon_path;
                             ime_before_update = nullptr;
-                            ime_after_update = nullptr;
+                            ime_after_update = AfterPathChangeCallback;
                             ime_callback = SingleValueImeCallback;
                             Dialog::initImeDialog("Icon Path", current_category->icon_path, 95, SCE_IME_TYPE_DEFAULT, 0, 0);
                             gui_mode = GUI_MODE_IME;
@@ -609,7 +609,7 @@ namespace Windows {
                         {
                             ime_single_field = current_category->roms_path;
                             ime_before_update = nullptr;
-                            ime_after_update = nullptr;
+                            ime_after_update = AfterPathChangeCallback;
                             ime_callback = SingleValueImeCallback;
                             Dialog::initImeDialog("Roms Path", current_category->roms_path, 95, SCE_IME_TYPE_DEFAULT, 0, 0);
                             gui_mode = GUI_MODE_IME;
@@ -1309,19 +1309,22 @@ namespace Windows {
 
         if (ime_result == IME_DIALOG_RESULT_FINISHED || ime_result == IME_DIALOG_RESULT_CANCELED)
         {
-            if (ime_before_update != nullptr)
+            if (ime_result == IME_DIALOG_RESULT_FINISHED)
             {
-                ime_before_update(ime_result);
-            }
+                if (ime_before_update != nullptr)
+                {
+                    ime_before_update(ime_result);
+                }
 
-            if (ime_callback != nullptr)
-            {
-                ime_callback(ime_result);
-            }
+                if (ime_callback != nullptr)
+                {
+                    ime_callback(ime_result);
+                }
 
-            if (ime_after_update != nullptr)
-            {
-                ime_after_update(ime_result);
+                if (ime_after_update != nullptr)
+                {
+                    ime_after_update(ime_result);
+                }
             }
 
             gui_mode = GUI_MODE_LAUNCHER;
@@ -1378,6 +1381,7 @@ namespace Windows {
 
     void AfterPspemuChangeCallback(int ime_result)
     {
+        AfterPathChangeCallback(ime_result);
         sprintf(pspemu_iso_path, "%s/ISO", pspemu_path);
         sprintf(pspemu_eboot_path, "%s/PSP/GAME", pspemu_path);
     }
@@ -1390,5 +1394,14 @@ namespace Windows {
         {
             sprintf(game->title, "%s", selected_game->title);
         }
+    }
+
+    void AfterPathChangeCallback(int ime_result)
+    {
+        std::string str = std::string(ime_single_field);
+        CONFIG::trim(str, " ");
+        CONFIG::rtrim(str, "/");
+        CONFIG::rtrim(str, " ");
+        sprintf(ime_single_field, "%s", str.c_str());
     }
 }
