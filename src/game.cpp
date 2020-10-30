@@ -17,6 +17,7 @@
 #include "eboot.h"
 #include "iso.h"
 #include "cso.h"
+//#include "debugnet.h"
 
 #define NUM_CACHED_PAGES 5
 
@@ -576,7 +577,7 @@ namespace GAME {
             std::string rom_path = std::string(game->rom_path);
             int slash_index = rom_path.find_last_of("/");
             int dot_index = rom_path.find_last_of(".");
-            std::string rom_name = rom_path.substr(slash_index+1, dot_index);
+            std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
             sprintf(icon_path, "%s/%s\.png", category->icon_path, rom_name.c_str());
         }
         
