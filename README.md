@@ -1,5 +1,8 @@
 # vita-launcher
 
+Support Forum
+https://gbatemp.net/threads/release-vita-launcher-v1-6-app-to-launch-games-and-apps.574644/
+
 This is a app/game launcher application.
 
 The main purpose of this app is for users who have hundreds of games on their vita.
