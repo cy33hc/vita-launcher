@@ -36,7 +36,9 @@ namespace Windows {
     void ShowSettingsDialog();
     void GameScanWindow();
     void ShowTabBar();
-    void HandleAddNewGame();
+    void HandleAddNewRomGame();
+    void HandleAddNewIsoGame();
+    void HandleAddNewEbootGame();
     void HandleAdrenalineGame();
     void HandleImeInput();
     void HandleMoveGame();

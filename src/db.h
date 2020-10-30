@@ -24,7 +24,7 @@ namespace DB {
     void InsertGame(sqlite3 *database, Game *game);
     bool GameExists(sqlite3 *database, Game *game);
     int GetCachedGamesCount(sqlite3 *database);
-    void GetCachedGames(sqlite3 *database, GameCategory *category);
+    void GetCachedGames(sqlite3 *database);
     void DeleteGame(sqlite3 *database, Game *game);
     void DeleteFavorite(sqlite3 *database, Game *game);
     void InsertFavorite(sqlite3 *database, Game *game);
@@ -34,6 +34,7 @@ namespace DB {
     void UpdateFavoritesGameCategoryByRomPath(sqlite3 *database, Game *game);
     void UpdateGameCategory(sqlite3 *database, Game *game);
     void UpdateGameTitle(sqlite3 *database, Game *game);
+    void GetMaxTitleIdByType(sqlite3 *database, int type, char* max_title_id);
 }
 
 #endif

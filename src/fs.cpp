@@ -52,13 +52,11 @@ namespace FS {
         return sceIoGetstat(path.c_str(), &stat) >= 0;
     }
 
-    bool FolderExists(const std::string& path) {
-        SceUID dfd = sceIoDopen(path.c_str());
-        if (dfd < 0)
-            return 0;
-
-        sceIoDclose(dfd);
-        return 1;
+    bool FolderExists(const std::string& path)
+    {
+        SceIoStat stat;
+        sceIoGetstat(path.c_str(), &stat);
+        return stat.st_mode & SCE_S_IFDIR;
     }
 
     void Rename(const std::string& from, const std::string& to)

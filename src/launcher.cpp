@@ -34,11 +34,13 @@ GameCategory *tmp_category;
 static std::vector<std::string> *ime_multi_field;
 static char* ime_single_field;
 
-bool handle_add_game = false;
+bool handle_add_rom_game = false;
 bool handle_move_game = false;
 bool game_added = false;
 bool game_moved = false;
 bool handle_boot_game = false;
+bool handle_add_iso_game = false;
+bool handle_add_eboot_game = false;
 char game_action_message[256];
 
 float previous_right = 0.0f;
@@ -304,9 +306,19 @@ namespace Windows {
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Select"); ImGui::SameLine();
 
-        if (handle_add_game)
+        if (handle_add_rom_game)
         {
-            HandleAddNewGame();
+            HandleAddNewRomGame();
+        }
+
+        if (handle_add_iso_game)
+        {
+            HandleAddNewIsoGame();
+        }
+
+        if (handle_add_eboot_game)
+        {
+            HandleAddNewEbootGame();
         }
 
         if (handle_boot_game)
@@ -418,9 +430,19 @@ namespace Windows {
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Select"); ImGui::SameLine();
 
-        if (handle_add_game)
+        if (handle_add_rom_game)
         {
-            HandleAddNewGame();
+            HandleAddNewRomGame();
+        }
+
+        if (handle_add_iso_game)
+        {
+            HandleAddNewIsoGame();
+        }
+
+        if (handle_add_eboot_game)
+        {
+            HandleAddNewEbootGame();
         }
 
         if (handle_boot_game)
@@ -499,9 +521,11 @@ namespace Windows {
             static bool refresh_games = false;
             static bool refresh_current_category = false;
             static bool remove_from_cache = false;
-            static bool add_new_game = false;
+            static bool add_rom_game = false;
             static bool move_game = false;
             static bool rename_game = false;
+            static bool add_psp_iso_game = false;
+            static bool add_eboot_game = false;
 
             float posX = ImGui::GetCursorPosX();
 
@@ -776,38 +800,69 @@ namespace Windows {
                     {
                         if (selected_game != nullptr && current_category->id != FAVORITES)
                         {
-                            if (!refresh_games && !add_new_game && !refresh_current_category && !remove_from_cache &&
-                                !move_game && selected_game->type != TYPE_BUBBLE)
+                            if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache &&
+                                !move_game && !add_eboot_game && !add_psp_iso_game && selected_game->type != TYPE_BUBBLE)
                             {
                                 ImGui::Checkbox("Rename selected game", &rename_game);
                                 ImGui::Separator();
                             }
 
-                            if (!refresh_games && !add_new_game && !refresh_current_category && !remove_from_cache && !rename_game)
+                            if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache &&
+                                !rename_game && !add_eboot_game && !add_psp_iso_game)
                             {
                                 ImGui::Checkbox("Move selected game", &move_game);
                                 ImGui::Separator();
                             }
 
-                            if (!refresh_games && !add_new_game && !refresh_current_category && !move_game && !rename_game)
+                            if (!refresh_games && !add_rom_game && !refresh_current_category && !move_game && !rename_game &&
+                                !add_eboot_game && !add_psp_iso_game)
                             {
                                 ImGui::Checkbox("Hide selected game", &remove_from_cache);
                                 ImGui::Separator();
                             }
                         }
 
+                        if (current_category->rom_type == TYPE_PSP_ISO)
+                        {
+                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game &&
+                                !add_eboot_game && !add_rom_game && !rename_game)
+                            {
+                                ImGui::Checkbox("Add new PSP ISO game", &add_psp_iso_game);
+                                ImGui::Separator();
+                            }
+                        }
+
+                        if (current_category->rom_type == TYPE_EBOOT)
+                        {
+                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game &&
+                                !add_psp_iso_game && !add_rom_game && !rename_game)
+                            {
+                                ImGui::Checkbox("Add new EBOOT game", &add_eboot_game);
+                                ImGui::Separator();
+                            }
+                        }
+
                         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
                         {
-                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !rename_game)
+                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game &&
+                                !add_eboot_game && !add_psp_iso_game && !rename_game)
                             {
-                                ImGui::Checkbox("Add new game to cache", &add_new_game);
+                                if (current_category->id == PS1_GAMES)
+                                {
+                                    ImGui::Checkbox("Add new PSX disc format game", &add_rom_game);
+                                }
+                                else
+                                {
+                                    ImGui::Checkbox("Add new game to cache", &add_rom_game);
+                                }
                                 ImGui::Separator();
                             }
                         }
 
                         if (current_category->rom_type != TYPE_BUBBLE)
                         {
-                            if (!refresh_games && !remove_from_cache && !add_new_game && !move_game && !rename_game)
+                            if (!refresh_games && !remove_from_cache && !add_rom_game && !move_game && !rename_game &&
+                                !add_eboot_game && !add_psp_iso_game)
                             {
                                 char cb_text[64];
                                 sprintf(cb_text, "Rescan games in %s category only", current_category->title);
@@ -816,7 +871,8 @@ namespace Windows {
                             }
                         }
                         
-                        if (!remove_from_cache && !add_new_game && !refresh_current_category && !move_game && !rename_game)
+                        if (!remove_from_cache && !add_rom_game && !refresh_current_category && !move_game && !rename_game &&
+                            !add_eboot_game && !add_psp_iso_game)
                         {
                             ImGui::Checkbox("Rescan all game categories to rebuild cache", &refresh_games);
                             ImGui::Separator();
@@ -910,18 +966,26 @@ namespace Windows {
                     gui_mode = GUI_MODE_IME;
                 }
 
-                if (add_new_game)
-                    handle_add_game = true;
+                if (add_rom_game)
+                    handle_add_rom_game = true;
 
                 if (move_game)
                     handle_move_game = true;
 
+                if (add_psp_iso_game)
+                    handle_add_iso_game = true;
+
+                if (add_eboot_game)
+                    handle_add_eboot_game = true;
+                    
                 paused = false;
                 move_game = false;
                 refresh_games = false;
                 remove_from_cache = false;
                 refresh_current_category = false;
-                add_new_game = false;
+                add_psp_iso_game = false;
+                add_eboot_game = false;
+                add_rom_game = false;
                 rename_game = false;
                 ImGui::CloseCurrentPopup();
             }
@@ -1076,7 +1140,7 @@ namespace Windows {
         }
     }
 
-    void HandleAddNewGame()
+    void HandleAddNewRomGame()
     {
         paused = true;
         static Game game;
@@ -1084,8 +1148,8 @@ namespace Windows {
         if (!game_added)
         {
             ImGui::OpenPopup("Select game");
-            ImGui::SetNextWindowPos(ImVec2(230, 100));
-            ImGui::SetNextWindowSize(ImVec2(490,330));
+            ImGui::SetNextWindowPos(ImVec2(150, 100));
+            ImGui::SetNextWindowSize(ImVec2(630,330));
             if (ImGui::BeginPopupModal("Select game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
             {
                 if (games_on_filesystem.size() == 0)
@@ -1106,7 +1170,7 @@ namespace Windows {
                     }
                     std::sort(games_on_filesystem.begin(), games_on_filesystem.end());
                 }
-                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(480,260));
+                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(620,260));
                 ImGui::BeginChild("game list");
                 if (ImGui::IsWindowAppearing())
                 {
@@ -1156,7 +1220,7 @@ namespace Windows {
                 {
                     games_on_filesystem.clear();
                     paused = false;
-                    handle_add_game = false;
+                    handle_add_rom_game = false;
                     game_added = false;
                     ImGui::CloseCurrentPopup();
                 }
@@ -1177,7 +1241,248 @@ namespace Windows {
                 {
                     game_added = false;
                     paused = false;
-                    handle_add_game = false;
+                    handle_add_rom_game = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
+        
+    }
+
+    void HandleAddNewIsoGame()
+    {
+        paused = true;
+        static Game game;
+
+        if (!game_added)
+        {
+            ImGui::OpenPopup("Select game");
+            ImGui::SetNextWindowPos(ImVec2(150, 100));
+            ImGui::SetNextWindowSize(ImVec2(620,330));
+            if (ImGui::BeginPopupModal("Select game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+            {
+                if (games_on_filesystem.size() == 0)
+                {
+                    games_on_filesystem = FS::ListFiles(pspemu_iso_path);
+                    for (std::vector<std::string>::iterator it=games_on_filesystem.begin(); 
+                        it!=games_on_filesystem.end(); )
+                    {
+                        int index = it->find_last_of(".");
+                        if (index == std::string::npos || !GAME::IsRomExtension(it->substr(index), psp_iso_extensions))
+                        {
+                            it = games_on_filesystem.erase(it);
+                        }
+                        else
+                        {
+                            ++it;
+                        }
+                    }
+                    std::sort(games_on_filesystem.begin(), games_on_filesystem.end());
+                }
+                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(610,260));
+                ImGui::BeginChild("game list");
+                if (ImGui::IsWindowAppearing())
+                {
+                    ImGui::SetWindowFocus();
+                }
+
+                for (int i = 0; i < games_on_filesystem.size(); i++)
+                {
+                    if (ImGui::Selectable(games_on_filesystem[i].c_str()))
+                    {
+                        if (strlen(pspemu_iso_path) + games_on_filesystem[i].length() + 1 < 192)
+                        {
+                            sprintf(game.rom_path, "%s/%s", pspemu_iso_path, games_on_filesystem[i].c_str());
+                            game.type = TYPE_PSP_ISO;
+                            if (DB::GameExists(nullptr, &game))
+                            {
+                                sprintf(game_action_message, "The game already exists in the cache.");
+                            }
+                            else
+                            {
+                                sqlite3 *db;
+                                sqlite3_open(CACHE_DB_FILE, &db);
+                                try
+                                {
+                                    char title_id[12];
+                                    DB::GetMaxTitleIdByType(db, TYPE_PSP_ISO,title_id);
+                                    std::string str = std::string(title_id);
+                                    int game_id = std::stoi(str.substr(5))+1;
+                                    GAME::PopulateIsoGameInfo(&game, games_on_filesystem[i], game_id);
+                                    categoryMap[game.category]->games.push_back(game);
+                                    DB::InsertGame(db, &game);
+                                    GAME::SortGames(categoryMap[game.category]);
+                                    GAME::SetMaxPage(categoryMap[game.category]);
+                                    sprintf(game_action_message, "The game has being added to the cache.");
+                                }
+                                catch(const std::exception& e)
+                                {
+                                    sprintf(game_action_message, "Could not add game because it could be corrupted.");
+                                }
+                                sqlite3_close(db);
+                            }
+                        }
+                        else
+                        {
+                            sprintf(game_action_message, "The length of the rom name is too long.");
+                        }
+                        
+                        game_added = true;
+                        games_on_filesystem.clear();
+                    }
+                    ImGui::Separator();
+                }
+                ImGui::EndChild();
+                ImGui::SetItemDefaultFocus();
+
+                ImGui::Separator();
+                if (ImGui::Button("Cancel"))
+                {
+                    games_on_filesystem.clear();
+                    paused = false;
+                    handle_add_iso_game = false;
+                    game_added = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
+        else
+        {
+            ImGui::OpenPopup("Info");
+            ImGui::SetNextWindowPos(ImVec2(250, 220));
+            if (ImGui::BeginPopupModal("Info", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::PushTextWrapPos(400);
+                ImGui::Text("%s", game_action_message);
+                ImGui::PopTextWrapPos();
+                ImGui::Separator();
+                if (ImGui::Button("OK"))
+                {
+                    game_added = false;
+                    paused = false;
+                    handle_add_iso_game = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
+        
+    }
+
+    void HandleAddNewEbootGame()
+    {
+        paused = true;
+        static Game game;
+
+        if (!game_added)
+        {
+            ImGui::OpenPopup("Select game");
+            ImGui::SetNextWindowPos(ImVec2(150, 100));
+            ImGui::SetNextWindowSize(ImVec2(630,330));
+            if (ImGui::BeginPopupModal("Select game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+            {
+                if (games_on_filesystem.size() == 0)
+                {
+                    games_on_filesystem = FS::ListFiles(pspemu_eboot_path);
+                    for (std::vector<std::string>::iterator it=games_on_filesystem.begin(); 
+                        it!=games_on_filesystem.end(); )
+                    {
+                        int index = it->find_last_of(".");
+                        if (index == std::string::npos || !GAME::IsRomExtension(it->substr(index), eboot_extensions))
+                        {
+                            it = games_on_filesystem.erase(it);
+                        }
+                        else
+                        {
+                            ++it;
+                        }
+                    }
+                    std::sort(games_on_filesystem.begin(), games_on_filesystem.end());
+                }
+                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(620,260));
+                ImGui::BeginChild("game list");
+                if (ImGui::IsWindowAppearing())
+                {
+                    ImGui::SetWindowFocus();
+                }
+
+                for (int i = 0; i < games_on_filesystem.size(); i++)
+                {
+                    if (ImGui::Selectable(games_on_filesystem[i].c_str()))
+                    {
+                        if (strlen(pspemu_eboot_path) + games_on_filesystem[i].length() + 1 < 192)
+                        {
+                            sprintf(game.rom_path, "%s/%s", pspemu_eboot_path, games_on_filesystem[i].c_str());
+                            game.type = TYPE_EBOOT;
+                            if (DB::GameExists(nullptr, &game))
+                            {
+                                sprintf(game_action_message, "The game already exists in the cache.");
+                            }
+                            else
+                            {
+                                sqlite3 *db;
+                                sqlite3_open(CACHE_DB_FILE, &db);
+                                try
+                                {
+                                    char title_id[12];
+                                    DB::GetMaxTitleIdByType(db, TYPE_EBOOT, title_id);
+                                    std::string str = std::string(title_id);
+                                    int game_id = std::stoi(str.substr(5))+1;
+                                    GAME::PopulateEbootGameInfo(&game, games_on_filesystem[i], game_id);
+                                    DB::InsertGame(db, &game);
+                                    GAME::SortGames(categoryMap[game.category]);
+                                    GAME::SetMaxPage(categoryMap[game.category]);
+                                    sprintf(game_action_message, "The game has being added to the cache.");
+                                }
+                                catch(const std::exception& e)
+                                {
+                                    sprintf(game_action_message, "Could not add game because it could be corrupted.");
+                                }
+                                sqlite3_close(db);
+                            }
+                        }
+                        else
+                        {
+                            sprintf(game_action_message, "The length of the rom name is too long.");
+                        }
+                        
+                        game_added = true;
+                        games_on_filesystem.clear();
+                    }
+                    ImGui::Separator();
+                }
+                ImGui::EndChild();
+                ImGui::SetItemDefaultFocus();
+
+                ImGui::Separator();
+                if (ImGui::Button("Cancel"))
+                {
+                    games_on_filesystem.clear();
+                    paused = false;
+                    handle_add_eboot_game = false;
+                    game_added = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
+        else
+        {
+            ImGui::OpenPopup("Info");
+            ImGui::SetNextWindowPos(ImVec2(250, 220));
+            if (ImGui::BeginPopupModal("Info", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::PushTextWrapPos(400);
+                ImGui::Text("%s", game_action_message);
+                ImGui::PopTextWrapPos();
+                ImGui::Separator();
+                if (ImGui::Button("OK"))
+                {
+                    game_added = false;
+                    paused = false;
+                    handle_add_eboot_game = false;
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::EndPopup();

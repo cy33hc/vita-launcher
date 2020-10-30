@@ -87,8 +87,8 @@ namespace GAME {
             if (game != nullptr)
             {
                 game->favorite = true;
-                ++it;
             }
+            ++it;
         }
 
         for (int i=0; i < TOTAL_CATEGORY; i++)
@@ -115,7 +115,7 @@ namespace GAME {
         }
     }
 
-    void PopulateIsoGameInfo(GameCategory *category, Game *game, std::string rom, int game_index)
+    void PopulateIsoGameInfo(Game *game, std::string rom, int game_index)
     {
         int dot_index = rom.find_last_of(".");
         sprintf(game->id, "%s%04d", "SMLAP", game_index);
@@ -193,7 +193,7 @@ namespace GAME {
                 Game game;
                 try
                 {
-                    PopulateIsoGameInfo(category, &game, files[j], games_scanned);
+                    PopulateIsoGameInfo(&game, files[j], games_scanned);
                     categoryMap[game.category]->games.push_back(game);
                     DB::InsertGame(db, &game);
                     game_scan_inprogress = game;
@@ -458,7 +458,7 @@ namespace GAME {
         games_to_scan = DB::GetCachedGamesCount(db);
         games_scanned = 0;
         sprintf(scan_message, "%s", "Loading game info from cache");
-        DB::GetCachedGames(db, current_category);
+        DB::GetCachedGames(db);
         sqlite3_close(db);
     };
 
@@ -679,9 +679,10 @@ namespace GAME {
         
         if (params->type > TYPE_ROM)
         {
-            RemoveGamesFromCategoryByType(db, &game_categories[PSP_GAMES], params->type);
-            RemoveGamesFromCategoryByType(db, &game_categories[PS1_GAMES], params->type);
-            RemoveGamesFromCategoryByType(db, &game_categories[PS_MIMI_GAMES], params->type);
+            for (int i=1; i<TOTAL_CATEGORY; i++)
+            {
+                RemoveGamesFromCategoryByType(db, &game_categories[i], params->type);
+            }
         }
 
         if (params->type == TYPE_ROM  || strcmp(params->category, "ps1") == 0)

@@ -146,7 +146,7 @@ namespace GAME {
     void Scan();
     void ScanRetroCategory(sqlite3 *db, GameCategory *category);
     void ScanRetroGames(sqlite3 *db);
-    void PopulateIsoGameInfo(GameCategory *category, Game *game, std::string rom, int game_index);
+    void PopulateIsoGameInfo(Game *game, std::string rom, int game_index);
     void ScanAdrenalineIsoGames(sqlite3 *db);
     void PopulateEbootGameInfo(Game *game, std::string rom, int game_index);
     void ScanAdrenalineEbootGames(sqlite3 *db);

@@ -5,6 +5,7 @@
 #include "db.h"
 #include "game.h"
 #include "textures.h"
+//#include "debugnet.h"
 
 namespace DB {
     bool TableExists(sqlite3 *database, char* table_name)
@@ -269,15 +270,32 @@ namespace DB {
         }
 
         sqlite3_stmt *res;
-        std::string sql = std::string("SELECT * FROM ") + GAMES_TABLE + " WHERE " + 
-            COL_TITLE + "=? AND " + COL_TYPE + "=? AND " + COL_CATEGORY + "=?";
+        std::string sql;
+        if (game->type != TYPE_BUBBLE)
+        {
+            sql = std::string("SELECT * FROM ") + GAMES_TABLE + " WHERE " + 
+                COL_ROM_PATH + "=? AND " + COL_TYPE + "=?";
+        }
+        else
+        {
+            sql = std::string("SELECT * FROM ") + GAMES_TABLE + " WHERE " + 
+                COL_TITLE_ID + "=? AND " + COL_TYPE + "=?";
+        }
+        
         int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
 
         bool found = false;
         if (rc == SQLITE_OK) {
-            sqlite3_bind_text(res, 1, game->title, strlen(game->title), NULL);
+            if (game->type != TYPE_BUBBLE)
+            {
+                sqlite3_bind_text(res, 1, game->rom_path, strlen(game->rom_path), NULL);
+            }
+            else
+            {
+                sqlite3_bind_text(res, 1, game->id, strlen(game->id), NULL);
+            }
+            
             sqlite3_bind_int(res, 2, game->type);
-            sqlite3_bind_text(res, 3, game->category, strlen(game->category), NULL);
             int step = sqlite3_step(res);
             if (step == SQLITE_ROW)
             {
@@ -303,9 +321,8 @@ namespace DB {
         }
 
         sqlite3_stmt *res;
-        int rc = sqlite3_open(VITA_APP_DB_FILE, &db);
         std::string sql = std::string("select count(1) from ") + GAMES_TABLE;
-        rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
     
         int step = sqlite3_step(res);
         int count = 0;
@@ -314,7 +331,6 @@ namespace DB {
             count = sqlite3_column_int(res, 0);
         }
         sqlite3_finalize(res);
-        sqlite3_close(db);
 
         if (database == nullptr)
         {
@@ -324,7 +340,7 @@ namespace DB {
         return count;
     }
 
-   void GetCachedGames(sqlite3 *database, GameCategory *category)
+   void GetCachedGames(sqlite3 *database)
    {
         sqlite3 *db = database;
         if (db == nullptr)
@@ -503,4 +519,33 @@ namespace DB {
             sqlite3_close(db);
         }
    }
+
+    void GetMaxTitleIdByType(sqlite3 *database, int type, char* max_title_id)
+    {
+        sqlite3 *db = database;
+        if (db == nullptr)
+        {
+            sqlite3_open(CACHE_DB_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("select max(title_id) from games where type=?");
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_int(res, 1, type);
+            int step = sqlite3_step(res);
+            if (step == SQLITE_ROW)
+            {
+                sprintf(max_title_id, "%s", sqlite3_column_text(res, 0));
+            }
+            sqlite3_finalize(res);
+        }
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+    }
+
 }
