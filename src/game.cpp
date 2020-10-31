@@ -682,9 +682,20 @@ namespace GAME {
         
         if (params->type > TYPE_ROM)
         {
-            for (int i=1; i<TOTAL_CATEGORY; i++)
+            DB::DeleteGamesByType(db, params->type);
+            for (int i=0; i<TOTAL_CATEGORY; i++)
             {
-                RemoveGamesFromCategoryByType(db, &game_categories[i], params->type);
+                for (std::vector<Game>::iterator it=game_categories[i].games.begin(); it!=game_categories[i].games.end(); )
+                {
+                    if (it->type == params->type)
+                    {
+                        game_categories[i].games.erase(it);
+                    }
+                    else
+                    {
+                        ++it;
+                    }
+                }
             }
         }
 

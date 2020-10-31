@@ -424,6 +424,29 @@ namespace DB {
         }
    }
 
+   void DeleteGamesByType(sqlite3 *database, int type)
+   {
+        sqlite3 *db = database;
+        if (db == nullptr)
+        {
+            sqlite3_open(CACHE_DB_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("DELETE FROM ") + GAMES_TABLE + " WHERE " + COL_TYPE + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_int(res, 1, type);
+            int step = sqlite3_step(res);
+            sqlite3_finalize(res);
+        }
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+   }
+
    void UpdateFavoritesGameCategoryById(sqlite3 *database, Game *game)
    {
         sqlite3 *db = database;
