@@ -487,8 +487,9 @@ namespace GAME {
                     Game *game = &game_categories[category].games[i];
                     if (game->tex.id != no_icon.id)
                     {
-                        Textures::Free(&game->tex);
+                        Tex tmp = game->tex;
                         game->tex = no_icon;
+                        Textures::Free(&tmp);
                     }
                 }
             }
@@ -581,13 +582,15 @@ namespace GAME {
             sprintf(icon_path, "%s/%s\.png", category->icon_path, rom_name.c_str());
         }
         
-        if (FS::FileExists(icon_path))
+        if (Textures::LoadImageFile(icon_path, &tex))
         {
-            if (Textures::LoadImageFile(icon_path, &tex))
-            {
-                game->tex = tex;
-            }
+            game->tex = tex;
         }
+        else
+        {
+            game->tex = no_icon;
+        }
+        
     }
 
     void Exit() {
