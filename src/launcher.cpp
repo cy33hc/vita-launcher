@@ -1147,10 +1147,12 @@ namespace Windows {
 
         if (!game_added)
         {
-            ImGui::OpenPopup("Select game");
+            char game_type[64];
+            sprintf(game_type, "Select %s game", current_category->alt_title);
+            ImGui::OpenPopup(game_type);
             ImGui::SetNextWindowPos(ImVec2(150, 100));
             ImGui::SetNextWindowSize(ImVec2(630,330));
-            if (ImGui::BeginPopupModal("Select game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+            if (ImGui::BeginPopupModal(game_type, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
             {
                 if (games_on_filesystem.size() == 0)
                 {
@@ -1171,7 +1173,7 @@ namespace Windows {
                     std::sort(games_on_filesystem.begin(), games_on_filesystem.end());
                 }
                 ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(620,260));
-                ImGui::BeginChild("game list");
+                ImGui::BeginChild(game_type);
                 if (ImGui::IsWindowAppearing())
                 {
                     ImGui::SetWindowFocus();
@@ -1257,10 +1259,10 @@ namespace Windows {
 
         if (!game_added)
         {
-            ImGui::OpenPopup("Select game");
+            ImGui::OpenPopup("Select PSP ISO game");
             ImGui::SetNextWindowPos(ImVec2(150, 100));
             ImGui::SetNextWindowSize(ImVec2(620,330));
-            if (ImGui::BeginPopupModal("Select game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+            if (ImGui::BeginPopupModal("Select PSP ISO game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
             {
                 if (games_on_filesystem.size() == 0)
                 {
@@ -1281,7 +1283,7 @@ namespace Windows {
                     std::sort(games_on_filesystem.begin(), games_on_filesystem.end());
                 }
                 ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(610,260));
-                ImGui::BeginChild("game list");
+                ImGui::BeginChild("psp iso game list");
                 if (ImGui::IsWindowAppearing())
                 {
                     ImGui::SetWindowFocus();
@@ -1378,10 +1380,10 @@ namespace Windows {
 
         if (!game_added)
         {
-            ImGui::OpenPopup("Select game");
+            ImGui::OpenPopup("Select EBOOT game");
             ImGui::SetNextWindowPos(ImVec2(150, 100));
             ImGui::SetNextWindowSize(ImVec2(630,330));
-            if (ImGui::BeginPopupModal("Select game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+            if (ImGui::BeginPopupModal("Select EBOOT game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
             {
                 if (games_on_filesystem.size() == 0)
                 {
@@ -1402,7 +1404,7 @@ namespace Windows {
                     std::sort(games_on_filesystem.begin(), games_on_filesystem.end());
                 }
                 ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(620,260));
-                ImGui::BeginChild("game list");
+                ImGui::BeginChild("eboot game list");
                 if (ImGui::IsWindowAppearing())
                 {
                     ImGui::SetWindowFocus();
