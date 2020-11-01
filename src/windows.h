@@ -32,6 +32,7 @@ namespace Windows {
     void HandleLauncherWindowInput();
     void LauncherWindow();
     void ShowGridViewWindow();
+    void ShowScrollViewWindow();
     void ShowListViewWindow();
     void ShowSettingsDialog();
     void GameScanWindow();

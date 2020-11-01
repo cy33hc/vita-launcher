@@ -34,6 +34,7 @@
 
 #define VIEW_MODE_GRID 0
 #define VIEW_MODE_LIST 1
+#define VIEW_MODE_SCROLL 2
 
 #define CONFIG_GLOBAL "Global"
 #define CONFIG_SHOW_ALL_CATEGORIES "show_all_categories"

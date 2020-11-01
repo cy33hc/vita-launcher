@@ -17,6 +17,10 @@ typedef struct {
     char rom_path[192];
     bool favorite = false;
     char type;
+    bool icon_missing = false;
+    int visible = 0;
+    uint64_t visible_time = 0;
+    bool thread_started = false;
     Tex tex;
 } Game;
 
@@ -128,6 +132,7 @@ extern char pspemu_eboot_path[];
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;
 static SceUID scan_games_category_thid = -1;
+static SceUID load_image_thid = -1;
 
 typedef struct LoadImagesParams {
   int category;
@@ -155,6 +160,8 @@ namespace GAME {
     void LoadGamesCache();
     void LoadGameImages(int category, int prev_page, int page_num);
     void LoadGameImage(Game *game);
+    void StartLoadGameImageThread(int category, int game_num);
+    int LoadGameImageThread(SceSize args, LoadImagesParams *params);
     void Exit();
     int LoadImagesThread(SceSize args, LoadImagesParams *argp);
     int IncrementPage(int page, int num_of_pages);

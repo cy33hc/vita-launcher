@@ -582,13 +582,47 @@ namespace GAME {
             sprintf(icon_path, "%s/%s\.png", category->icon_path, rom_name.c_str());
         }
         
-        if (Textures::LoadImageFile(icon_path, &tex))
+        if (game->tex.id == no_icon.id)
         {
-            game->tex = tex;
+            if (Textures::LoadImageFile(icon_path, &tex))
+            {
+                game->tex = tex;
+            }
+            else
+            {
+                game->icon_missing = true;
+                game->tex = no_icon;
+            }
         }
-        else
+    }
+
+    int LoadGameImageThread(SceSize args, LoadImagesParams *params)
+    {
+        int end = params->page_num+6;
+        GameCategory *category = &game_categories[params->category];
+        if (end > category->games.size())
         {
-            game->tex = no_icon;
+            end = category->games.size();
+        }
+        for (int i=params->page_num; i<end; i++)
+        {
+            if (category->games[i].visible>0 && !category->games[i].icon_missing)
+            {
+                GAME::LoadGameImage(&category->games[i]);
+            }
+        }
+        return sceKernelExitDeleteThread(0);
+    }
+
+    void StartLoadGameImageThread(int category, int game_num)
+    {
+        SceUID load_image_thid = sceKernelCreateThread("load_image_thread", (SceKernelThreadEntry)GAME::LoadGameImageThread, 0x10000100, 0x4000, 0, 0, NULL);
+        if (load_image_thid >= 0)
+        {
+            LoadImagesParams params;
+            params.category = category;
+            params.page_num = game_num;
+            sceKernelStartThread(load_image_thid, sizeof(LoadImagesParams), &params);
         }
         
     }
@@ -768,6 +802,8 @@ namespace GAME {
             {
                 Tex tmp = game->tex;
                 game->tex = no_icon;
+                game->visible = false;
+                game->thread_started = false;
                 Textures::Free(&tmp);
             }
         }
