@@ -445,8 +445,9 @@ namespace Windows {
             ImGui::SetCursorPosY(ImGui::GetCursorPosY()-2);
             if (game->favorite)
             {
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
                 ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
-                ImGui::SameLine();
+                ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
                 ImGui::Text("%.14s", game->title);
             }
             else

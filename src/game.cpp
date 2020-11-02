@@ -609,6 +609,13 @@ namespace GAME {
             if (category->games[i].visible>0 && !category->games[i].icon_missing)
             {
                 GAME::LoadGameImage(&category->games[i]);
+                // For concurrency, game might be invisible after being visible.
+                if (category->games[i].visible == 0)
+                {
+                    Tex tmp = category->games[i].tex;
+                    category->games[i].tex = no_icon;
+                    Textures::Free(&tmp);
+                }
             }
         }
         return sceKernelExitDeleteThread(0);
