@@ -62,7 +62,10 @@ namespace Textures {
 	}
 
 	void Free(Tex *texture) {
-		vita2d_free_texture(texture->id);
+		if (texture->id != no_icon.id)
+		{
+			vita2d_free_texture(texture->id);
+		}
 	}
 	
 }
