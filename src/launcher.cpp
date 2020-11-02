@@ -300,42 +300,7 @@ namespace Windows {
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
         ImGui::Text("Page: %d/%d", current_category->page_num, current_category->max_page); ImGui::SameLine();
 
-        ImGui::SetCursorPosX(350);
-        ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Un-Select"); ImGui::SameLine();
-        ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Favorite"); ImGui::SameLine();
-        ImGui::Image(reinterpret_cast<ImTextureID>(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Settings"); ImGui::SameLine();
-        ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Select"); ImGui::SameLine();
-
-        if (handle_add_rom_game)
-        {
-            HandleAddNewRomGame();
-        }
-
-        if (handle_add_iso_game)
-        {
-            HandleAddNewIsoGame();
-        }
-
-        if (handle_add_eboot_game)
-        {
-            HandleAddNewEbootGame();
-        }
-
-        if (handle_boot_game)
-        {
-            HandleAdrenalineGame();
-        }
-
-        if (handle_move_game)
-        {
-            HandleMoveGame();
-        }
-
-        ShowSettingsDialog();
+        ShowCommonSubWindow();
     }
 
     void ShowScrollViewWindow()
@@ -459,44 +424,10 @@ namespace Windows {
         }
         ImGui::EndChild();
         ImGui::Columns(1);
+
         ImGui::SetCursorPos(ImVec2(pos.x, 521));
         ImGui::Separator();
-        ImGui::SetCursorPosX(350);
-        ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Un-Select"); ImGui::SameLine();
-        ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Favorite"); ImGui::SameLine();
-        ImGui::Image(reinterpret_cast<ImTextureID>(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Settings"); ImGui::SameLine();
-        ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Select"); ImGui::SameLine();
-
-        if (handle_add_rom_game)
-        {
-            HandleAddNewRomGame();
-        }
-
-        if (handle_add_iso_game)
-        {
-            HandleAddNewIsoGame();
-        }
-
-        if (handle_add_eboot_game)
-        {
-            HandleAddNewEbootGame();
-        }
-
-        if (handle_boot_game)
-        {
-            HandleAdrenalineGame();
-        }
-
-        if (handle_move_game)
-        {
-            HandleMoveGame();
-        }
-
-        ShowSettingsDialog();
+        ShowCommonSubWindow();
     }
 
     void ShowListViewWindow()
@@ -584,8 +515,12 @@ namespace Windows {
         ImGui::EndChild();
         ImGui::SetCursorPosY(520);
         ImGui::Separator();
+        ShowCommonSubWindow();
+    }
 
-        ImGui::SetCursorPosX(300);
+    void ShowCommonSubWindow()
+    {
+        ImGui::SetCursorPosX(350);
         ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Un-Select"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();

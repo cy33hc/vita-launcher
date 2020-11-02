@@ -35,6 +35,7 @@ namespace Windows {
     void ShowScrollViewWindow();
     void ShowListViewWindow();
     void ShowSettingsDialog();
+    void ShowCommonSubWindow();
     void GameScanWindow();
     void ShowTabBar();
     void HandleAddNewRomGame();
