@@ -342,7 +342,6 @@ namespace Windows {
     {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.KeyRepeatRate = 0.05f;
-        ImGuiStyle* style = &ImGui::GetStyle();
         ImGui_ImplVita2D_SetAnalogRepeatDelay(50000);
 
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-3);
@@ -388,10 +387,10 @@ namespace Windows {
             sprintf(id, "%d#image", button_id);
             sprintf(sel_id, "##%d", button_id);
             Game *game = &current_category->games[button_id];
-            ImGui::BeginGroup();
             ImVec2 pos = ImGui::GetCursorPos();
-            ImGui::SetCursorPos(ImVec2(pos.x-5, pos.y));
-            if (ImGui::Button(sel_id, ImVec2(148,154)))
+            ImGui::SetCursorPos(ImVec2(pos.x-3, pos.y));
+            ImGui::BeginGroup();
+            if (ImGui::Selectable(sel_id, false, 0, ImVec2(145,154)))
             {
                 if (game->type < TYPE_PSP_ISO)
                 {
@@ -408,7 +407,7 @@ namespace Windows {
                 tab_infocus = false;
             }
 
-            ImGui::SetCursorPos(ImVec2(pos.x, pos.y+4));
+            ImGui::SetCursorPos(ImVec2(pos.x, pos.y+3));
             ImGui::Image(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127));
             if (ImGui::IsItemVisible())
             {
@@ -424,6 +423,7 @@ namespace Windows {
                         uint64_t current_time = sceKernelGetProcessTimeWide();
                         if (current_time - game->visible_time > 200000 && !game->thread_started)
                         {
+                            //debugNetPrintf(DEBUG,"Starting thread for game button=%d, visible=%d\n", button_id, game->visible);
                             GAME::StartLoadGameImageThread(current_category->id, button_id);
                             game->thread_started = true;
                         }
