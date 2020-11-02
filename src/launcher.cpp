@@ -1791,6 +1791,7 @@ namespace Windows {
         WriteString(tmp_category->title, CONFIG_ALT_TITLE, tmp_category->alt_title);
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();
+        paused = false;
     }
 
     void BeforeTitleChangeCallback(int ime_result)

@@ -37,6 +37,8 @@ namespace CONFIG {
 		category->view_mode = ReadInt(category->title, CONFIG_VIEW_MODE, -1);
         category->opened = false;
         category->rom_type = rom_type;
+        category->order = ReadInt(category->title, CONFIG_CATEGORY_ORDER, category_id);
+        WriteInt(category->title, CONFIG_CATEGORY_ORDER, category->order);
 
         sprintf(category->alt_title, "%s", ReadString(category->title, CONFIG_ALT_TITLE, category->title));
         WriteString(category->title, CONFIG_ALT_TITLE, category->alt_title);

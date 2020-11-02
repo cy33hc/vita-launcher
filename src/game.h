@@ -43,6 +43,7 @@ typedef struct {
     int list_view_position;
     bool opened;
     int rom_type;
+    int order;
 } GameCategory;
 
 enum drivers {INFERNO=0, MARCH33=1, NP9660=2};
