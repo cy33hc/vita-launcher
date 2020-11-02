@@ -213,6 +213,37 @@ namespace Windows {
         }
     }
 
+    void ShowDisplayTitle()
+    {
+        char title_text[192];
+        if (selected_game != nullptr)
+        {
+            if (selected_game->type == TYPE_BUBBLE)
+            {
+                sprintf(title_text, "%s - %s", selected_game->id, selected_game->title);
+            }
+            else
+            {
+                sprintf(title_text, "%s", selected_game->title);
+            }
+        }
+        else
+        {
+            sprintf(title_text, "No game selected");
+        }
+        
+        ImVec2 size = ImGui::CalcTextSize(title_text);
+        int x = 470-(size.x/2);
+        if (x<0) x = 10;
+        ImGui::SetCursorPosX(x);
+        if (selected_game != nullptr && selected_game->favorite)
+        {
+            ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
+            ImGui::SameLine();
+        }
+        ImGui::Text(title_text);
+    }
+
     void ShowGridViewWindow()
     {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -222,23 +253,7 @@ namespace Windows {
         int game_start_index = (current_category->page_num * 18) - 18;
 
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-3);
-        if (selected_game != nullptr)
-        {
-            if (selected_game->type == TYPE_BUBBLE)
-            {
-                ImGui::Text("%s - %s", selected_game->id, selected_game->title);
-            }
-            else
-            {
-                ImGui::Text("%s", selected_game->title);
-            }
-            
-        }
-        else
-        {
-            ImGui::Text("No game selected");
-        }
-
+        ShowDisplayTitle();
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
         ImGui::Separator();
         ImVec2 pos = ImGui::GetCursorPos();
@@ -311,27 +326,7 @@ namespace Windows {
         ImGui_ImplVita2D_SetAnalogRepeatDelay(50000);
 
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-3);
-        if (selected_game != nullptr)
-        {
-            if (selected_game->favorite)
-            {
-                ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
-                ImGui::SameLine();
-            }
-            if (selected_game->type == TYPE_BUBBLE)
-            {
-                ImGui::Text("%s - %s", selected_game->id, selected_game->title);
-            }
-            else
-            {
-                ImGui::Text("%s", selected_game->title);
-            }
-        }
-        else
-        {
-            ImGui::Text("No game selected");
-        }
-
+        ShowDisplayTitle();
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
         ImGui::Separator();
         ImGui::SetNextWindowSizeConstraints(ImVec2(950, 474), ImVec2(950,474));
