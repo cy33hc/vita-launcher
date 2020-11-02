@@ -809,7 +809,7 @@ namespace GAME {
             {
                 Tex tmp = game->tex;
                 game->tex = no_icon;
-                game->visible = false;
+                game->visible = 0;
                 game->thread_started = false;
                 Textures::Free(&tmp);
             }

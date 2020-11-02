@@ -412,6 +412,7 @@ namespace Windows {
             }
             else
             {
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX()-2);
                 ImGui::Text("%.15s", game->title);
             }
             ImGui::EndGroup();
