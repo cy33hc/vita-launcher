@@ -16,6 +16,7 @@
 #include "config.h"
 #include "style.h"
 #include "fs.h"
+#include "net.h"
 //#include "debugnet.h"
 
 namespace Services
@@ -103,7 +104,7 @@ namespace Services
 int main(int, char **)
 {
 	//debugNetInit(ip_server,port_server,DEBUG);
-
+	Net::Init();
 	Services::Init();
 	Services::InitImGui();
 
@@ -115,6 +116,7 @@ int main(int, char **)
 	GAME::Exit();
 	Services::ExitImGui();
 	Services::Exit();
+	Net::Exit();
 
 	return 0;
 }

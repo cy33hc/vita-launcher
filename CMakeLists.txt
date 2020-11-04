@@ -43,6 +43,7 @@ add_executable(${PROJECT_NAME}
   src/cso.cpp
   src/style.cpp
   src/ime_dialog.cpp
+  src/net.cpp
   sqlite-3.6.23.1/sqlite3.c
 )
 
