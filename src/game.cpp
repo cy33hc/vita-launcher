@@ -853,12 +853,6 @@ namespace GAME {
             if ((game->type != TYPE_ROM && strcmp(game->id, category->games[i].id) == 0) ||
                 (game->type == TYPE_ROM && strcmp(game->rom_path, category->games[i].rom_path) == 0))
             {
-                Tex tmp = category->games[i].tex;
-                if (tmp.id != no_icon.id)
-                {
-                    category->games[i].tex = no_icon;
-                    Textures::Free(&tmp);
-                }
                 category->games.erase(category->games.begin()+i);
                 return i;
             }
