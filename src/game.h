@@ -40,6 +40,7 @@ typedef struct {
     int page_num;
     int view_mode;
     std::vector<std::string> alt_cores;
+    bool boot_with_alt_core;
     int list_view_position;
     bool opened;
     int rom_type;
@@ -157,7 +158,7 @@ namespace GAME {
     void PopulateEbootGameInfo(Game *game, std::string rom, int game_index);
     void ScanAdrenalineEbootGames(sqlite3 *db);
     bool GetGameDetails(const char *id, Game *game);
-    bool Launch(Game *game, BootSettings *settings);
+    bool Launch(Game *game, BootSettings *settings = nullptr, char* retro_core = nullptr);
     void LoadGamesCache();
     void LoadGameImages(int category, int prev_page, int page_num);
     void LoadGameImage(Game *game);

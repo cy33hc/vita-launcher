@@ -42,6 +42,7 @@ namespace Windows {
     void HandleAddNewIsoGame();
     void HandleAddNewEbootGame();
     void HandleAdrenalineGame();
+    void HandleBootRomGame();
     void HandleImeInput();
     void HandleMoveGame();
     void MultiValueImeCallback(int ime_result);

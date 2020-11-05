@@ -337,7 +337,7 @@ namespace GAME {
         }
     }
 
-    bool Launch(Game *game, BootSettings *settings) {
+    bool Launch(Game *game, BootSettings *settings, char* retro_core) {
         GameCategory* category = categoryMap[game->category];
         if (game->type == TYPE_BUBBLE)
         {
@@ -353,7 +353,11 @@ namespace GAME {
                 if (strcmp(category->rom_launcher_title_id, "RETROVITA") == 0 || category->id == PS1_GAMES)
                 {
                     char uri[512];
-                    sprintf(uri, "psgm:play?titleid=%s&param=%s&param2=%s", RETROARCH_TITLE_ID, category->core, game->rom_path);
+                    if (retro_core == nullptr)
+                    {
+                        retro_core = category->core;
+                    }
+                    sprintf(uri, "psgm:play?titleid=%s&param=%s&param2=%s", RETROARCH_TITLE_ID, retro_core, game->rom_path);
                     sceAppMgrLaunchAppByUri(0xFFFFF, uri);
                     sceKernelDelayThread(1000);
                     sceKernelExitProcess(0);
@@ -610,7 +614,7 @@ namespace GAME {
             {
                 GAME::LoadGameImage(&category->games[i]);
                 // For concurrency, game might be invisible after being visible.
-                if (category->games[i].visible == 0)
+                if (category->games[i].visible == 0 && category->games[i].tex.id != no_icon.id)
                 {
                     Tex tmp = category->games[i].tex;
                     category->games[i].tex = no_icon;
@@ -805,12 +809,12 @@ namespace GAME {
         for (int i=0; i < category->games.size(); i++)
         {
             Game *game = &category->games[i];
+            game->visible = 0;
+            game->thread_started = false;
             if (game->tex.id != no_icon.id)
             {
                 Tex tmp = game->tex;
                 game->tex = no_icon;
-                game->visible = 0;
-                game->thread_started = false;
                 Textures::Free(&tmp);
             }
         }

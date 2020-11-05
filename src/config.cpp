@@ -47,6 +47,9 @@ namespace CONFIG {
         {
             sprintf(category->core, "%s", ReadString(category->title, CONFIG_RETRO_CORE, core));
             WriteString(category->title, CONFIG_RETRO_CORE, category->core);
+
+            category->boot_with_alt_core = ReadBool(category->title, CONFIG_BOOT_WITH_ALT_CORE, true);
+            WriteBool(category->title, CONFIG_BOOT_WITH_ALT_CORE, category->boot_with_alt_core);
         }
 
         if (title_id != nullptr)
@@ -285,6 +288,7 @@ namespace CONFIG {
             WriteString(cat->title, CONFIG_ICON_PATH, cat->icon_path);
             WriteString(cat->title, CONFIG_ROM_EXTENSIONS, GetMultiValueString(cat->file_filters).c_str());
             WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores).c_str());
+            WriteBool(cat->title, CONFIG_BOOT_WITH_ALT_CORE, cat->boot_with_alt_core);
         }
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();

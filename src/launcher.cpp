@@ -10,7 +10,7 @@
 #include "config.h"
 #include "ime_dialog.h"
 #include "gui.h"
-//#include "debugnet.h"
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -29,6 +29,8 @@ static std::vector<std::string> styles;
 static ime_callback_t ime_callback = nullptr;
 static ime_callback_t ime_after_update = nullptr;
 static ime_callback_t ime_before_update = nullptr;
+static std::vector<std::string> retro_cores;
+
 GameCategory *tmp_category;
 
 static std::vector<std::string> *ime_multi_field;
@@ -39,6 +41,7 @@ bool handle_move_game = false;
 bool game_added = false;
 bool game_moved = false;
 bool handle_boot_game = false;
+bool handle_boot_rom_game = false;
 bool handle_add_iso_game = false;
 bool handle_add_eboot_game = false;
 char game_action_message[256];
@@ -272,9 +275,18 @@ namespace Windows {
                     sprintf(id, "%d#image", button_id);
                     Game *game = &current_category->games[game_start_index+button_id];
                     if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127), ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1))) {
-                        if (game->type < TYPE_PSP_ISO)
+                        if (game->type == TYPE_BUBBLE)
                         {
-                            GAME::Launch(game, nullptr);
+                            GAME::Launch(game);
+                        }
+                        else if (game->type == TYPE_ROM)
+                        {
+                            GameCategory *cat = categoryMap[game->category];
+                            if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                            {
+                                GAME::Launch(game);
+                            }
+                            handle_boot_rom_game = true;
                         }
                         else
                         {
@@ -355,9 +367,18 @@ namespace Windows {
             ImGui::SetCursorPos(ImVec2(pos.x-5, pos.y));
             if (ImGui::Button(sel_id, ImVec2(148,154)))
             {
-                if (game->type < TYPE_PSP_ISO)
+                if (game->type == TYPE_BUBBLE)
                 {
-                    GAME::Launch(game, nullptr);
+                    GAME::Launch(game);
+                }
+                else if (game->type == TYPE_ROM)
+                {
+                    GameCategory *cat = categoryMap[game->category];
+                    if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                    {
+                        GAME::Launch(game);
+                    }
+                    handle_boot_rom_game = true;
                 }
                 else
                 {
@@ -374,11 +395,10 @@ namespace Windows {
             ImGui::Image(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127));
             if (ImGui::IsItemVisible())
             {
-                if (game->tex.id == no_icon.id && !game->icon_missing)
+                if (game->tex.id == no_icon.id)
                 {
                     if (game->visible == 0)
                     {
-                        game->visible++;
                         game->visible_time = sceKernelGetProcessTimeWide();
                     }
                     else if (button_id % 6 == 0)
@@ -386,11 +406,13 @@ namespace Windows {
                         uint64_t current_time = sceKernelGetProcessTimeWide();
                         if (current_time - game->visible_time > 200000 && !game->thread_started)
                         {
+                            debugNetPrintf(DEBUG,"StartLoadGameImageThread %d\n",button_id);
                             GAME::StartLoadGameImageThread(current_category->id, button_id);
                             game->thread_started = true;
                         }
                     }
                 }
+                game->visible++;
             }
             else
             {
@@ -478,9 +500,18 @@ namespace Windows {
             ImGui::PushID(i);
             if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
             {
-                if (game->type < TYPE_PSP_ISO)
+                if (game->type == TYPE_BUBBLE)
                 {
-                    GAME::Launch(game, nullptr);
+                    GAME::Launch(game);
+                }
+                else if (game->type == TYPE_ROM)
+                {
+                    GameCategory *cat = categoryMap[game->category];
+                    if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                    {
+                        GAME::Launch(game);
+                    }
+                    handle_boot_rom_game = true;
                 }
                 else
                 {
@@ -546,6 +577,11 @@ namespace Windows {
         if (handle_boot_game)
         {
             HandleAdrenalineGame();
+        }
+
+        if (handle_boot_rom_game)
+        {
+            HandleBootRomGame();
         }
 
         if (handle_move_game)
@@ -615,8 +651,17 @@ namespace Windows {
             ImGui::OpenPopup("Settings and Actions");
         }
 
-        ImGui::SetNextWindowPos(ImVec2(250, 140));
-        ImGui::SetNextWindowSizeConstraints(ImVec2(430,130), ImVec2(430,400), NULL, NULL);
+        if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
+        {
+            ImGui::SetNextWindowPos(ImVec2(200, 100));
+            ImGui::SetNextWindowSizeConstraints(ImVec2(500,130), ImVec2(500,400), NULL, NULL);
+        }
+        else
+        {
+            ImGui::SetNextWindowPos(ImVec2(250, 140));
+            ImGui::SetNextWindowSizeConstraints(ImVec2(430,130), ImVec2(430,400), NULL, NULL);
+        }
+        
         if (ImGui::BeginPopupModal("Settings and Actions", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             static bool refresh_games = false;
@@ -651,12 +696,14 @@ namespace Windows {
                     {
                         SetNavFocusHere();
                     }
+                    ImGui::Separator();
 
                     ImGui::Text("View Mode:"); ImGui::SameLine();
                     ImGui::SetCursorPosX(posX + 100);
                     ImGui::RadioButton("Page Grid", &view_mode, 0); ImGui::SameLine();
                     ImGui::RadioButton("Scroll Grid", &view_mode, 2); ImGui::SameLine();
                     ImGui::RadioButton("List", &view_mode, 1);
+                    ImGui::Separator();
 
                     if (current_category->id != FAVORITES && current_category->id != HOMEBREWS)
                     {
@@ -707,6 +754,7 @@ namespace Windows {
                         }
                         ImGui::Columns(1);
                         ImGui::EndChild();
+                        ImGui::Separator();
                     }
 
                     if (current_category->id == PS1_GAMES || current_category->rom_type == TYPE_ROM)
@@ -724,6 +772,7 @@ namespace Windows {
                             gui_mode = GUI_MODE_IME;
                         };
                         ImGui::PopID();
+                        ImGui::Separator();
 
                         ImGui::PushID("roms_path");
                         ImGui::Text("Roms Path:"); ImGui::SameLine();
@@ -738,6 +787,7 @@ namespace Windows {
                             gui_mode = GUI_MODE_IME;
                         };
                         ImGui::PopID();
+                        ImGui::Separator();
 
                         if (strcmp(current_category->rom_launcher_title_id, "DEDALOX64") != 0)
                         {
@@ -754,6 +804,57 @@ namespace Windows {
                                 gui_mode = GUI_MODE_IME;
                             }
                             ImGui::PopID();
+                            ImGui::Separator();
+
+                            ImGui::Text("Alternate Cores:"); ImGui::SameLine();
+                            if (ImGui::SmallButton("Add##retro_cores") && !parental_control)
+                            {
+                                ime_multi_field = &current_category->alt_cores;
+                                ime_before_update = nullptr;
+                                ime_after_update = nullptr;
+                                ime_callback = MultiValueImeCallback;
+                                Dialog::initImeDialog("Core Path", "", 63, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                gui_mode = GUI_MODE_IME;
+                            }
+                            ImGui::SameLine();
+                            if (current_category->alt_cores.size()>1)
+                                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(300,47));
+                            else
+                                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(300,23));
+                            ImGui::BeginChild("Alt Cores");
+                            ImGui::Columns(2, "Alt Cores", true);
+                            for (std::vector<std::string>::iterator it=current_category->alt_cores.begin(); 
+                                it!=current_category->alt_cores.end(); )
+                            {
+                                ImGui::SetColumnWidth(-1,220);
+                                if (ImGui::Selectable(it->c_str(), false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                                {
+                                    ime_multi_field = &current_category->alt_cores;
+                                    ime_before_update = nullptr;
+                                    ime_after_update = nullptr;
+                                    ime_callback = MultiValueImeCallback;
+                                    Dialog::initImeDialog("Core Path", it->c_str(), 63, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                    gui_mode = GUI_MODE_IME;
+                                };
+                                ImGui::NextColumn();
+                                char buttonId[64];
+                                sprintf(buttonId, "Delete##%s", it->c_str());
+                                if (ImGui::SmallButton(buttonId) && !parental_control)
+                                {
+                                    current_category->alt_cores.erase(it);
+                                }
+                                else
+                                {
+                                    ++it;
+                                }
+                                ImGui::NextColumn();               
+                                ImGui::Separator();
+                            }
+                            ImGui::Columns(1);
+                            ImGui::EndChild();
+                            ImGui::Separator();
+                            ImGui::Checkbox("Boot with alternate cores", &current_category->boot_with_alt_core);
+                            ImGui::Separator();
                         }
                         
                         ImGui::Text("Rom Extensions:"); ImGui::SameLine();
@@ -803,6 +904,7 @@ namespace Windows {
                         }
                         ImGui::Columns(1);
                         ImGui::EndChild();
+                        ImGui::Separator();
                     }
 
                     ImGui::EndTabItem();
@@ -815,6 +917,8 @@ namespace Windows {
                     {
                         SetNavFocusHere();
                     }
+                    ImGui::Separator();
+
                     ImGui::Text("Style:"); ImGui::SameLine();
                     if (ImGui::BeginCombo("##Style", cb_style_name, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular))
                     {
@@ -830,6 +934,7 @@ namespace Windows {
                         }
                         ImGui::EndCombo();
                     }
+                    ImGui::Separator();
 
                     ImGui::PushID("pspemu_location");
                     ImGui::Text("Pspemu Path:"); ImGui::SameLine();
@@ -843,6 +948,7 @@ namespace Windows {
                         gui_mode = GUI_MODE_IME;
                     }
                     ImGui::PopID();
+                    ImGui::Separator();
 
                     ImGui::Text("Hidden Titles:"); ImGui::SameLine();
                     if (ImGui::SmallButton("Add##hidden_titles") && !parental_control)
@@ -854,7 +960,6 @@ namespace Windows {
                         Dialog::initImeDialog("Title Id", "", 9, SCE_IME_TYPE_DEFAULT, 0, 0);
                         gui_mode = GUI_MODE_IME;
                     }
-
                     ImGui::SameLine();
                     if (hidden_title_ids.size()>1)
                         ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,47));
@@ -892,6 +997,7 @@ namespace Windows {
                     }
                     ImGui::Columns(1);
                     ImGui::EndChild();
+                    ImGui::Separator();
 
                     ImGui::EndTabItem();
                 }
@@ -1238,6 +1344,54 @@ namespace Windows {
                 ImGui::CloseCurrentPopup();
             }
             
+            ImGui::EndPopup();
+        }
+    }
+
+    void HandleBootRomGame()
+    {
+        paused = true;
+        GameCategory *cat = categoryMap[selected_game->category];
+
+        if (retro_cores.size() == 0)
+        {
+            retro_cores.push_back(cat->core);
+            for (int i=0; i<cat->alt_cores.size(); i++)
+            retro_cores.push_back(cat->alt_cores[i]);
+        }
+        
+        ImGui::OpenPopup("Select Retro Core");
+        ImGui::SetNextWindowPos(ImVec2(260, 150));
+        ImGui::SetNextWindowSize(ImVec2(400,230));
+        if (ImGui::BeginPopupModal("Select Retro Core", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+        {
+            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(390,160));
+            ImGui::BeginChild("retrocore list");
+            if (ImGui::IsWindowAppearing())
+            {
+                ImGui::SetWindowFocus();
+            }
+
+            for (int i = 0; i < retro_cores.size(); i++)
+            {
+                if (ImGui::Selectable(retro_cores[i].c_str()) &&
+                    selected_game != nullptr)
+                {
+                    GAME::Launch(selected_game, nullptr, retro_cores[i].c_str());
+                }
+                ImGui::Separator();
+            }
+            ImGui::EndChild();
+            ImGui::SetItemDefaultFocus();
+
+            ImGui::Separator();
+            if (ImGui::Button("Cancel"))
+            {
+                paused = false;
+                handle_boot_rom_game = false;
+                retro_cores.clear();
+                ImGui::CloseCurrentPopup();
+            }
             ImGui::EndPopup();
         }
     }
