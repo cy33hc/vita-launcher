@@ -1785,7 +1785,6 @@ namespace Windows {
                                 {
                                     Game tmp = *selected_game;
                                     sprintf(tmp.category, "%s", game_categories[i].category);
-                                    tmp.tex = no_icon;
                                     tmp.visible = false;
                                     tmp.thread_started = false;
                                     game_categories[i].games.push_back(tmp);
