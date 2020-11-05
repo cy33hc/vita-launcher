@@ -79,6 +79,8 @@ namespace Windows {
                     {
                         Game game = *selected_game;
                         game.tex = no_icon;
+                        game.visible = false;
+                        game.thread_started = false;
                         game_categories[FAVORITES].games.push_back(game);
                         GAME::SortGames(&game_categories[FAVORITES]);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
@@ -1630,6 +1632,8 @@ namespace Windows {
                                     Game tmp = *selected_game;
                                     sprintf(tmp.category, "%s", game_categories[i].category);
                                     tmp.tex = no_icon;
+                                    tmp.visible = false;
+                                    tmp.thread_started = false;
                                     game_categories[i].games.push_back(tmp);
                                     DB::UpdateGameCategory(nullptr, &tmp);
                                     DB::UpdateFavoritesGameCategoryByRomPath(nullptr, &tmp);
@@ -1649,7 +1653,11 @@ namespace Windows {
                                     CloseIniFile();
                                     sprintf(selected_game->category, "%s", game_categories[i].category);
                                     DB::UpdateFavoritesGameCategoryById(nullptr, selected_game);
-                                    game_categories[i].games.push_back(*selected_game);
+                                    Game tmp = *selected_game;
+                                    tmp.tex = no_icon;
+                                    tmp.visible = false;
+                                    tmp.thread_started = false;
+                                    game_categories[i].games.push_back(tmp);
                                     GAME::SortGames(&game_categories[i]);
                                     GAME::SetMaxPage(&game_categories[i]);
                                     GAME::RemoveGameFromCategory(current_category, selected_game);
