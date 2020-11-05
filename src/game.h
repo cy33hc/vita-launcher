@@ -47,26 +47,26 @@ typedef struct {
     int order;
 } GameCategory;
 
-enum drivers {INFERNO=0, MARCH33=1, NP9660=2};
-enum execute {EBOOT_BIN=0, BOOT_BIN=1, EBOOT_OLD=2};
-enum psbutton_mode {MENU=0, LIVEAREA=1, STANDARD=2};
-enum suspend_threads {SUSPEND_YES=0, SUSPEND_NO=1};
-enum plugins {PLUGINS_DEFAULT=0, PLUGINS_ENABLE=1, PLUGINS_DISABLE=2};
-enum nonpdrm {NONPDRM_DEFAULT=0, NONPDRM_ENABLE=1, NONPDRM_DISABLE=2};
-enum high_memory {HIGH_MEM_DEFAULT=0, HIGH_MEM_ENABLE=1, HIGH_MEM_DISABLE=2};
-enum cpu_speed {CPU_DEFAULT=0, CPU_20_10=1, CPU_50_25=2, CPU_75_37=3, CPU_100_50=4, CPU_111_55, CPU_122_61, CPU_133_66,
+enum DRIVERS {INFERNO=0, MARCH33=1, NP9660=2};
+enum EXECUTE {EBOOT_BIN=0, BOOT_BIN=1, EBOOT_OLD=2};
+enum PSBUTTON_MODE {MENU=0, LIVEAREA=1, STANDARD=2};
+enum SUSPEND_THREADS {SUSPEND_YES=0, SUSPEND_NO=1};
+enum PLUGINS {PLUGINS_DEFAULT=0, PLUGINS_ENABLE=1, PLUGINS_DISABLE=2};
+enum NONPDRM {NONPDRM_DEFAULT=0, NONPDRM_ENABLE=1, NONPDRM_DISABLE=2};
+enum HIGH_MEMORY {HIGH_MEM_DEFAULT=0, HIGH_MEM_ENABLE=1, HIGH_MEM_DISABLE=2};
+enum CPU_SPEED {CPU_DEFAULT=0, CPU_20_10=1, CPU_50_25=2, CPU_75_37=3, CPU_100_50=4, CPU_111_55, CPU_122_61, CPU_133_66,
                 CPU_166_83, CPU_200_100, CPU_222_111, CPU_288_144, CPU_300_150, CPU_333_166};
 
 typedef struct {
-    drivers driver;
-    execute execute;
+    DRIVERS driver;
+    EXECUTE execute;
     bool customized;
-    psbutton_mode ps_button_mode;
-    suspend_threads suspend_threads;
-    plugins plugins;
-    nonpdrm nonpdrm;
-    high_memory high_memory;
-    cpu_speed cpu_speed;
+    PSBUTTON_MODE ps_button_mode;
+    SUSPEND_THREADS suspend_threads;
+    PLUGINS plugins;
+    NONPDRM nonpdrm;
+    HIGH_MEMORY high_memory;
+    CPU_SPEED cpu_speed;
 } BootSettings;
 
 #define FAVORITES 0

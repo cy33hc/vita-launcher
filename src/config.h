@@ -108,7 +108,7 @@
 #define GB_ALT_CORES "app0:gambatte_libretro.self,app0:tgbdual_libretro.self"
 #define GBA_ALT_CORES "app0:gpsp_libretro.self"
 #define N64_ALT_CORES ""
-#define GBC_ALT_CORES "app0:gambatte_libretro.self,app0:tgbdual_libretro.self"
+#define GBC_ALT_CORES "app0:tgbdual_libretro.self"
 #define NEOGEO_ALT_CORES "app0:fbalpha2012_neo_libretro.self,app0:fbneo_libretro.self"
 #define NEOGEO_PC_ALT_CORES "app0:race_libretro.self"
 #define SEGA_SATURN_ALT_CORES ""

@@ -93,7 +93,7 @@ namespace Windows {
                     else {
                         selected_game->favorite = false;
                         DB::DeleteFavorite(nullptr, selected_game);
-                        int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
+                        GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
                     }
                 }
@@ -112,7 +112,7 @@ namespace Windows {
                     {
                         game->favorite = false;
                         DB::DeleteFavorite(nullptr, selected_game);
-                        int index = GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
+                        GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
                         selected_game = nullptr;
                     }

@@ -101,7 +101,7 @@ namespace Style {
         }
         else
         {
-            sprintf(style_path, "%s/%s\.ini", STYLES_FOLDER, style_name);
+            sprintf(style_path, "%s/%s.ini", STYLES_FOLDER, style_name);
             if (!FS::FileExists(style_path))
             {
                 sprintf(style_path, "%s", DEFAULT_STYLE_PATH);
