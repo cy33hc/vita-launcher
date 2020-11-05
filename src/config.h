@@ -28,7 +28,7 @@
 #define CONFIG_ALT_TITLE "alt_title"
 #define CONFIG_ALT_CORES "alternate_cores"
 #define CONFIG_CATEGORY_ORDER "category_order"
-#define CONFIG_BOOT_WITH_ALT_CORE "boot_with_alt_code"
+#define CONFIG_BOOT_WITH_ALT_CORE "boot_with_alt_core"
 
 #define DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID "ADRLANCHR"
 #define RETROARCH_TITLE_ID "RETROVITA"
