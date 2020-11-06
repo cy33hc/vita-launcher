@@ -135,8 +135,7 @@ namespace CONFIG {
         sprintf(pspemu_iso_path, "%s/ISO", pspemu_path);
         sprintf(pspemu_eboot_path, "%s/PSP/GAME", pspemu_path);
 
-        char* style_value = ReadString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, CONFIG_DEFAULT_STYLE_NAME);
-        sprintf(style_name, "%s", style_value);
+        const char* style_value = ReadString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, CONFIG_DEFAULT_STYLE_NAME);
         WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, style_name);
         Style::SetStylePath(style_name);
 
@@ -235,7 +234,7 @@ namespace CONFIG {
         category.rom_type = cat->rom_type;
         category.view_mode = ReadInt(cat->title, CONFIG_VIEW_MODE, VIEW_MODE_GRID);
         sprintf(category.alt_title, "%s", ReadString(cat->title, CONFIG_ALT_TITLE, ""));
-        char* valid_title_prefixes = ReadString(cat->title, CONFIG_TITLE_ID_PREFIXES, "");
+        const char* valid_title_prefixes = ReadString(cat->title, CONFIG_TITLE_ID_PREFIXES, "");
         ParseMultiValueString(valid_title_prefixes, category.valid_title_ids, false);
 
         if (cat->rom_type == TYPE_ROM || cat->id == PS1_GAMES)
@@ -244,9 +243,9 @@ namespace CONFIG {
             sprintf(category.rom_launcher_title_id, "%s", ReadString(cat->title, CONFIG_ROM_LAUNCHER_TITLE_ID, ""));
             sprintf(category.roms_path, "%s", ReadString(cat->title, CONFIG_ROMS_PATH, ""));
             sprintf(category.icon_path, "%s", ReadString(cat->title, CONFIG_ICON_PATH, ""));
-            char* file_filters = ReadString(cat->title, CONFIG_ROM_EXTENSIONS, "");
+            const char* file_filters = ReadString(cat->title, CONFIG_ROM_EXTENSIONS, "");
             ParseMultiValueString(file_filters, category.file_filters, true);
-            char* alt_cores = ReadString(cat->title, CONFIG_ALT_CORES, "");
+            const char* alt_cores = ReadString(cat->title, CONFIG_ALT_CORES, "");
             ParseMultiValueString(alt_cores, category.alt_cores, false);
         }
 
