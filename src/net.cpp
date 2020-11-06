@@ -84,6 +84,8 @@ namespace Net
     free(net_memory);
     free(caList[0]);
     free(caList[1]);
+    free(caList[2]);
+    free(caList[3]);
     sceSysmoduleUnloadModule(SCE_SYSMODULE_PSPNET_ADHOC);
     sceSysmoduleUnloadModule(SCE_SYSMODULE_HTTPS);
     sceSysmoduleUnloadModule(SCE_SYSMODULE_NET);
