@@ -36,6 +36,8 @@ namespace DB {
     void UpdateGameCategory(sqlite3 *database, Game *game);
     void UpdateGameTitle(sqlite3 *database, Game *game);
     void GetMaxTitleIdByType(sqlite3 *database, int type, char* max_title_id);
+    void FindMatchingThumbnail(char* db_name, std::vector<std::string> &tokens, char* thumbnail);
+    void FindMatchingThumbnail(sqlite3 *database, std::vector<std::string> &tokens, char* thumbnail);
 }
 
 #endif
