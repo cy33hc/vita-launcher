@@ -155,7 +155,7 @@ namespace GAME {
             {
                 sprintf(game->category, "%s", game_categories[PS1_GAMES].category);
             }
-            else if (strcmp(cat, "UG") ==0 || IsMatchPrefixes(disc_id, game_categories[PSP_GAMES].valid_title_ids))
+            else if (strcmp(cat, "UG") ==0 || (disc_id != NULL && IsMatchPrefixes(disc_id, game_categories[PSP_GAMES].valid_title_ids)))
             {
                 sprintf(game->category, "%s", game_categories[PSP_GAMES].category);
             }
@@ -236,7 +236,7 @@ namespace GAME {
             sprintf(game->category, "%s", game_categories[PS1_GAMES].category);
             game_categories[PS1_GAMES].games.push_back(*game);
         }
-        else if (strcmp(cat, "UG") ==0 || IsMatchPrefixes(disc_id, game_categories[PSP_GAMES].valid_title_ids))
+        else if (strcmp(cat, "UG") ==0 || (disc_id != NULL && IsMatchPrefixes(disc_id, game_categories[PSP_GAMES].valid_title_ids)))
         {
             sprintf(game->category, "%s", game_categories[PSP_GAMES].category);
             game_categories[PSP_GAMES].games.push_back(*game);
