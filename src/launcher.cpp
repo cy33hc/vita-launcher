@@ -31,6 +31,7 @@ static ime_callback_t ime_after_update = nullptr;
 static ime_callback_t ime_before_update = nullptr;
 static std::vector<std::string> retro_cores;
 static BootSettings settings;
+static char retro_core[128];
 
 GameCategory *tmp_category;
 
@@ -288,6 +289,8 @@ namespace Windows {
                                 GAME::Launch(game);
                             }
                             handle_boot_rom_game = true;
+                            sprintf(retro_core, "%s", cat->core);
+                            DB::GetRomCoreSettings(game->rom_path, retro_core);
                         }
                         else
                         {
@@ -382,6 +385,8 @@ namespace Windows {
                         GAME::Launch(game);
                     }
                     handle_boot_rom_game = true;
+                    sprintf(retro_core, "%s", cat->core);
+                    DB::GetRomCoreSettings(game->rom_path, retro_core);
                 }
                 else
                 {
@@ -517,6 +522,8 @@ namespace Windows {
                         GAME::Launch(game);
                     }
                     handle_boot_rom_game = true;
+                    sprintf(retro_core, "%s", cat->core);
+                    DB::GetRomCoreSettings(game->rom_path, retro_core);
                 }
                 else
                 {
@@ -1386,12 +1393,20 @@ namespace Windows {
                 if (ImGui::Selectable(retro_cores[i].c_str()) &&
                     selected_game != nullptr)
                 {
+                    DB::SaveRomCoreSettings(selected_game->rom_path, retro_cores[i].c_str());
                     GAME::Launch(selected_game, nullptr, retro_cores[i].c_str());
+                }
+                if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
+                {
+                    if (strcmp(retro_core, retro_cores[i].c_str()) == 0)
+                    {
+                        SetNavFocusHere();
+                        sprintf(retro_core, "");
+                    }
                 }
                 ImGui::Separator();
             }
             ImGui::EndChild();
-            ImGui::SetItemDefaultFocus();
 
             ImGui::Separator();
             if (ImGui::Button("Cancel"))

@@ -646,7 +646,7 @@ namespace DB {
         sqlite3_close(db);
     }
 
-    void GetRetroRomCoreSettings(char* rom_path, char* core)
+    void GetRomCoreSettings(char* rom_path, char* core)
     {
         sqlite3 *db;
         sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
@@ -753,7 +753,7 @@ namespace DB {
                 if (rc == SQLITE_OK)
                 {
                     sqlite3_bind_text(res, 1, rom_path, strlen(rom_path), NULL);
-                    sqlite3_bind_text(res, 3, core, strlen(core), NULL);
+                    sqlite3_bind_text(res, 2, core, strlen(core), NULL);
                     step = sqlite3_step(res);
                     sqlite3_finalize(res);
                 }
