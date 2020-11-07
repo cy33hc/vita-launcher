@@ -571,4 +571,195 @@ namespace DB {
         }
     }
 
+    void SetupPerGameSettingsDatabase()
+    {
+        sqlite3 *db;
+        sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+
+        if (!TableExists(db, PSP_GAME_SETTINGS_TABLE))
+        {
+            std::string sql = std::string("CREATE TABLE ") + PSP_GAME_SETTINGS_TABLE + "(" +
+                COL_ROM_PATH + " TEXT," +
+                COL_DRIVERS + " INTEGER," +
+                COL_EXECUTE + " INTEGER," +
+                COL_CUSTOMIZED + " INTEGER," +
+                COL_PSBUTTON_MODE + " INTEGER," +
+                COL_SUSPEND_THREADS + " INTEGER," +
+                COL_PLUGINS + " INTEGER," +
+                COL_NONPDRM + " INTEGER," +
+                COL_HIGH_MEMORY + " INTEGER," +
+                COL_CPU_SPEED + " INTEGER)";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX psp_games_settings_index ON ") + PSP_GAME_SETTINGS_TABLE + "(" + 
+                COL_ROM_PATH + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+        }
+
+        if (!TableExists(db, RETROROM_GAME_SETTINGS_TABLE))
+        {
+            std::string sql = std::string("CREATE TABLE ") + RETROROM_GAME_SETTINGS_TABLE + "(" +
+                COL_ROM_PATH + " TEXT," +
+                COL_RETRO_CORE + " TEXT)";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX retro_games_settings_index ON ") + RETROROM_GAME_SETTINGS_TABLE + "(" + 
+                COL_ROM_PATH + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+        }
+
+        sqlite3_close(db);
+    }
+
+    void GetPspGameSettings(char* rom_path, BootSettings *settings)
+    {
+        sqlite3 *db;
+        sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("SELECT ") + COL_DRIVERS + "," + COL_EXECUTE + "," + 
+            COL_CUSTOMIZED + "," + COL_PSBUTTON_MODE + "," + COL_SUSPEND_THREADS + "," + COL_PLUGINS + "," + 
+            COL_NONPDRM + "," + COL_HIGH_MEMORY + "," + COL_CPU_SPEED + " FROM " + PSP_GAME_SETTINGS_TABLE +
+            " WHERE " + COL_ROM_PATH + "=?";
+
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        if (rc == SQLITE_OK)
+        {
+            sqlite3_bind_text(res, 1, rom_path, strlen(rom_path), NULL);
+            int step = sqlite3_step(res);
+            if (step == SQLITE_ROW)
+            {
+                settings->driver = sqlite3_column_int(res, 0);
+                settings->execute = sqlite3_column_int(res, 1);
+                settings->customized = sqlite3_column_int(res, 2);
+                settings->ps_button_mode = sqlite3_column_int(res, 3);
+                settings->suspend_threads = sqlite3_column_int(res, 4);
+                settings->plugins = sqlite3_column_int(res, 5);
+                settings->nonpdrm = sqlite3_column_int(res, 6);
+                settings->high_memory = sqlite3_column_int(res, 7);
+                settings->cpu_speed = sqlite3_column_int(res, 8);
+            }
+            sqlite3_finalize(res);
+        }
+
+        sqlite3_close(db);
+    }
+
+    void GetRomCoreSettings(char* rom_path, char* core)
+    {
+        sqlite3 *db;
+        sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("SELECT ") + COL_RETRO_CORE + " FROM " + 
+            RETROROM_GAME_SETTINGS_TABLE + " WHERE " + COL_ROM_PATH + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        if (rc == SQLITE_OK)
+        {
+            sqlite3_bind_text(res, 1, rom_path, strlen(rom_path), NULL);
+            int step = sqlite3_step(res);
+            if (step == SQLITE_ROW)
+            {
+                sprintf(core, "%s", sqlite3_column_text(res, 0));
+            }
+            sqlite3_finalize(res);
+        }
+
+        sqlite3_close(db);
+    }
+
+    void SavePspGameSettings(char* rom_path, BootSettings *settings)
+    {
+        sqlite3 *db;
+        sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("UPDATE ") + PSP_GAME_SETTINGS_TABLE + " SET " + 
+                COL_DRIVERS + "=?, " + COL_EXECUTE + "=?, " + COL_CUSTOMIZED + "=?, " +
+                COL_PSBUTTON_MODE + "=?, " + COL_SUSPEND_THREADS + "=?, " + COL_PLUGINS + "=?, " + 
+                COL_NONPDRM + "=?, " + COL_HIGH_MEMORY + "=?, " + COL_CPU_SPEED + "=? " + 
+                "WHERE " + COL_ROM_PATH + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_int(res, 1, settings->driver);
+            sqlite3_bind_int(res, 2, settings->execute);
+            sqlite3_bind_int(res, 3, settings->customized);
+            sqlite3_bind_int(res, 4, settings->ps_button_mode);
+            sqlite3_bind_int(res, 5, settings->suspend_threads);
+            sqlite3_bind_int(res, 6, settings->plugins);
+            sqlite3_bind_int(res, 7, settings->nonpdrm);
+            sqlite3_bind_int(res, 8, settings->high_memory);
+            sqlite3_bind_int(res, 9, settings->cpu_speed);
+            sqlite3_bind_text(res, 10, rom_path, strlen(rom_path), NULL);
+            int step = sqlite3_step(res);
+            int updated = sqlite3_changes(db);
+            sqlite3_finalize(res);
+
+            if (updated == 0)
+            {
+                sql = std::string("INSERT INTO ") + PSP_GAME_SETTINGS_TABLE + "(" + COL_ROM_PATH + "," + 
+                    COL_DRIVERS + ", " + COL_EXECUTE + ", " + COL_CUSTOMIZED + ", " +
+                    COL_PSBUTTON_MODE + ", " + COL_SUSPEND_THREADS + ", " + COL_PLUGINS + ", " + 
+                    COL_NONPDRM + ", " + COL_HIGH_MEMORY + ", " + COL_CPU_SPEED + ") " + 
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+            
+                if (rc == SQLITE_OK)
+                {
+                    sqlite3_bind_text(res, 1, rom_path, strlen(rom_path), NULL);
+                    sqlite3_bind_int(res, 2, settings->driver);
+                    sqlite3_bind_int(res, 3, settings->execute);
+                    sqlite3_bind_int(res, 4, settings->customized);
+                    sqlite3_bind_int(res, 5, settings->ps_button_mode);
+                    sqlite3_bind_int(res, 6, settings->suspend_threads);
+                    sqlite3_bind_int(res, 7, settings->plugins);
+                    sqlite3_bind_int(res, 8, settings->nonpdrm);
+                    sqlite3_bind_int(res, 9, settings->high_memory);
+                    sqlite3_bind_int(res, 10, settings->cpu_speed);
+                    step = sqlite3_step(res);
+                    sqlite3_finalize(res);
+                }
+            }
+        }
+
+        sqlite3_close(db);
+    }
+
+    void SaveRomCoreSettings(char* rom_path, char* core)
+    {
+        sqlite3 *db;
+        sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("UPDATE ") + RETROROM_GAME_SETTINGS_TABLE + " SET " + 
+            COL_RETRO_CORE + "=? WHERE " + COL_ROM_PATH + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+        if (rc == SQLITE_OK)
+        {
+            sqlite3_bind_text(res, 1, core, strlen(core), NULL);
+            sqlite3_bind_text(res, 2, rom_path, strlen(rom_path), NULL);
+            int step = sqlite3_step(res);
+            int updated = sqlite3_changes(db);
+            sqlite3_finalize(res);
+
+            if (updated == 0)
+            {
+                sql = std::string("INSERT INTO ") + RETROROM_GAME_SETTINGS_TABLE + "(" +
+                    COL_ROM_PATH + "," + COL_RETRO_CORE + ") VALUES (?, ?)";
+                rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+            
+                if (rc == SQLITE_OK)
+                {
+                    sqlite3_bind_text(res, 1, rom_path, strlen(rom_path), NULL);
+                    sqlite3_bind_text(res, 2, core, strlen(core), NULL);
+                    step = sqlite3_step(res);
+                    sqlite3_finalize(res);
+                }
+            }
+        }
+        sqlite3_close(db);
+    }
+
 }

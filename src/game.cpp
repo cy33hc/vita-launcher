@@ -61,6 +61,11 @@ namespace GAME {
         games_scanned = 0;
         DB::GetVitaDbGames(current_category);
         
+        if (!FS::FileExists(PER_GAME_SETTINGS_DB_FILE))
+        {
+            DB::SetupPerGameSettingsDatabase();
+        }
+
         if (!FS::FileExists(CACHE_DB_FILE))
         {
             sqlite3 *db;
@@ -384,6 +389,7 @@ namespace GAME {
             boot_data[12] = 1;
             boot_data[20] = settings->ps_button_mode;
             boot_data[24] = settings->suspend_threads;
+            boot_data[28] = settings->cpu_speed;
             boot_data[32] = settings->plugins;
             boot_data[36] = settings->nonpdrm;
             boot_data[40] = settings->high_memory;
