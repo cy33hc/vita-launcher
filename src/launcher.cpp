@@ -10,7 +10,7 @@
 #include "config.h"
 #include "ime_dialog.h"
 #include "gui.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -416,7 +416,7 @@ namespace Windows {
                         uint64_t current_time = sceKernelGetProcessTimeWide();
                         if (current_time - game->visible_time > 200000 && !game->thread_started)
                         {
-                            debugNetPrintf(DEBUG,"StartLoadGameImageThread %d\n",button_id);
+                            //debugNetPrintf(DEBUG,"StartLoadGameImageThread %d\n",button_id);
                             GAME::StartLoadGameImageThread(current_category->id, button_id);
                             game->thread_started = true;
                         }
