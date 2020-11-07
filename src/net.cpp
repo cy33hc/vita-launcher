@@ -33,7 +33,7 @@ namespace Net
     sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
     sceSysmoduleLoadModule(SCE_SYSMODULE_HTTPS);
     sceSysmoduleLoadModule(SCE_SYSMODULE_PSPNET_ADHOC);
-    net_memory = malloc(NET_MEMORY_SIZE);
+    net_memory = (char*)malloc(NET_MEMORY_SIZE);
 
     SceNetInitParam param;
     param.memory = net_memory;
@@ -56,10 +56,10 @@ namespace Net
     memcpy(&adhocId.data[0], "SMLA00001", SCE_NET_ADHOCCTL_ADHOCID_LEN);
     sceNetAdhocctlInit(&adhocId);
 
-    caList[0] = malloc(sizeof(SceHttpsData));
-    caList[1] = malloc(sizeof(SceHttpsData));
-    caList[2] = malloc(sizeof(SceHttpsData));
-    caList[3] = malloc(sizeof(SceHttpsData));
+    caList[0] = (SceHttpsData*) malloc(sizeof(SceHttpsData));
+    caList[1] = (SceHttpsData*) malloc(sizeof(SceHttpsData));
+    caList[2] = (SceHttpsData*) malloc(sizeof(SceHttpsData));
+    caList[3] = (SceHttpsData*) malloc(sizeof(SceHttpsData));
     caList[0]->ptr = DigiCert_High_Assurance_EV_Root_CA_pem;
     caList[0]->size = DigiCert_High_Assurance_EV_Root_CA_pem_size;
     caList[1]->ptr = DigiCert_SHA2_High_Assurance_Server_CA_pem;
@@ -68,7 +68,7 @@ namespace Net
     caList[2]->size = Baltimore_CyberTrust_Root_pem_size;
     caList[3]->ptr = Cloudflare_Inc_ECC_CA_3_pem;
     caList[3]->size = Cloudflare_Inc_ECC_CA_3_pem_size;
-    int res = sceHttpsLoadCert(4, caList, NULL, NULL);
+    int res = sceHttpsLoadCert(4, (const SceHttpsData**)caList, NULL, NULL);
     //debugNetPrintf(DEBUG,"sceHttpsLoadCert res 0x%08X\n", res);
 
   }
