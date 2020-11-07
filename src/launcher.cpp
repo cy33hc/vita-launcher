@@ -30,6 +30,7 @@ static ime_callback_t ime_callback = nullptr;
 static ime_callback_t ime_after_update = nullptr;
 static ime_callback_t ime_before_update = nullptr;
 static std::vector<std::string> retro_cores;
+static BootSettings settings;
 
 GameCategory *tmp_category;
 
@@ -291,6 +292,8 @@ namespace Windows {
                         else
                         {
                             handle_boot_game = true;
+                            settings = defaul_boot_settings;
+                            DB::GetPspGameSettings(selected_game->rom_path, &settings);
                         }
                     }
                     if (ImGui::IsWindowAppearing() && button_id == 0)
@@ -383,6 +386,8 @@ namespace Windows {
                 else
                 {
                     handle_boot_game = true;
+                    settings = defaul_boot_settings;
+                    DB::GetPspGameSettings(selected_game->rom_path, &settings);
                 }
             }
             if (ImGui::IsItemFocused())
@@ -516,6 +521,8 @@ namespace Windows {
                 else
                 {
                     handle_boot_game = true;
+                    settings = defaul_boot_settings;
+                    DB::GetPspGameSettings(selected_game->rom_path, &settings);
                 }
             }
             ImGui::PopID();
@@ -1215,12 +1222,10 @@ namespace Windows {
         else
         {
             ImGui::SetNextWindowPos(ImVec2(230, 100));
-            ImGui::SetNextWindowSize(ImVec2(495,350));
+            ImGui::SetNextWindowSize(ImVec2(495,375));
         }
         if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
         {
-            static BootSettings settings = defaul_boot_settings;
-
             float posX = ImGui::GetCursorPosX();
             if (current_category->id == PS1_GAMES)
             {
@@ -1307,15 +1312,18 @@ namespace Windows {
                 ImGui::SetCursorPosX(posX + 110);
                 if (ImGui::RadioButton("288/144", settings.cpu_speed == CPU_288_144)) { settings.cpu_speed = CPU_288_144; } ImGui::SameLine();
                 ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("222/111", settings.cpu_speed == CPU_222_111)) { settings.cpu_speed = CPU_222_111; } ImGui::SameLine();
+                if (ImGui::RadioButton("266/133", settings.cpu_speed == CPU_266_133)) { settings.cpu_speed = CPU_266_133; } ImGui::SameLine();
                 ImGui::SetCursorPosX(posX + 320);
-                if (ImGui::RadioButton("200/100", settings.cpu_speed == CPU_200_100)) { settings.cpu_speed = CPU_200_100; }
+                if (ImGui::RadioButton("222/111", settings.cpu_speed == CPU_222_111)) { settings.cpu_speed = CPU_222_111; }
                 ImGui::SetCursorPosX(posX + 110);
-                if (ImGui::RadioButton("166/83", settings.cpu_speed == CPU_166_83)) { settings.cpu_speed = CPU_166_83; } ImGui::SameLine();
+                if (ImGui::RadioButton("200/100", settings.cpu_speed == CPU_200_100)) { settings.cpu_speed = CPU_200_100; } ImGui::SameLine();
                 ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("100/50", settings.cpu_speed == CPU_100_50)) { settings.cpu_speed = CPU_100_50; } ImGui::SameLine();
+                if (ImGui::RadioButton("166/83", settings.cpu_speed == CPU_166_83)) { settings.cpu_speed = CPU_166_83; } ImGui::SameLine();
                 ImGui::SetCursorPosX(posX + 320);
+                if (ImGui::RadioButton("100/50", settings.cpu_speed == CPU_100_50)) { settings.cpu_speed = CPU_100_50; }
+                ImGui::SetCursorPosX(posX + 110);
                 if (ImGui::RadioButton("133/66", settings.cpu_speed == CPU_133_66)) { settings.cpu_speed = CPU_133_66; } ImGui::SameLine();
+                ImGui::SetCursorPosX(posX + 220);
                 if (ImGui::RadioButton("50/25", settings.cpu_speed == CPU_50_25)) { settings.cpu_speed = CPU_50_25; }
             }
 
@@ -1329,6 +1337,7 @@ namespace Windows {
                     WriteIniFile(CONFIG_INI_FILE);
                     CloseIniFile();
                 }
+                DB::SavePspGameSettings(selected_game->rom_path, &settings);
                 paused = false;
                 handle_boot_game = false;
                 GAME::Launch(selected_game, &settings);

@@ -5,16 +5,31 @@
 #include "game.h"
 
 #define CACHE_DB_FILE "ux0:data/SMLA00001/cache.db"
+#define PER_GAME_SETTINGS_DB_FILE "ux0:data/SMLA00001/game_settings.db"
 #define VITA_APP_DB_FILE "ur0:shell/db/app.db"
 
 #define GAMES_TABLE "games"
 #define FAVORITES_TABLE "favorites"
+#define PSP_GAME_SETTINGS_TABLE "psp_settings"
+#define RETROROM_GAME_SETTINGS_TABLE "retrorom_settings"
 
 #define COL_TITLE_ID "title_id"
 #define COL_TYPE "type"
 #define COL_TITLE "title"
 #define COL_CATEGORY "category"
 #define COL_ROM_PATH "rom_path"
+
+#define COL_DRIVERS                   "drivers"
+#define COL_EXECUTE                   "execute"
+#define COL_CUSTOMIZED                "customized"
+#define COL_PSBUTTON_MODE             "ps_button_mode"
+#define COL_SUSPEND_THREADS           "suspend_threads"
+#define COL_PLUGINS                   "plugins"
+#define COL_NONPDRM                   "nonpdrm"
+#define COL_HIGH_MEMORY               "high_memory"
+#define COL_CPU_SPEED                 "cpu_speed"
+
+#define COL_RETRO_CORE                "retro_code"
 
 namespace DB {
     bool TableExists(sqlite3 *db, char* table_name);
@@ -36,6 +51,11 @@ namespace DB {
     void UpdateGameCategory(sqlite3 *database, Game *game);
     void UpdateGameTitle(sqlite3 *database, Game *game);
     void GetMaxTitleIdByType(sqlite3 *database, int type, char* max_title_id);
+    void SetupPerGameSettingsDatabase();
+    void GetPspGameSettings(char* rom_path, BootSettings *settings);
+    void GetRomCoreSettings(char* rom_path, char* core);
+    void SavePspGameSettings(char* rom_path, BootSettings *settings);
+    void SaveRomCoreSettings(char* rom_path, char* core);
 }
 
 #endif
