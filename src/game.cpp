@@ -17,7 +17,10 @@
 #include "eboot.h"
 #include "iso.h"
 #include "cso.h"
-//#include "debugnet.h"
+#include "debugnet.h"
+extern "C" {
+	#include "inifile.h"
+}
 
 #define NUM_CACHED_PAGES 5
 
@@ -72,9 +75,10 @@ namespace GAME {
             sqlite3_open(CACHE_DB_FILE, &db);
             DB::SetupDatabase(db);
 
-            ScanRetroGames(db);
-            ScanAdrenalineIsoGames(db);
-            ScanAdrenalineEbootGames(db);
+            //ScanRetroGames(db);
+            //ScanAdrenalineIsoGames(db);
+            //ScanAdrenalineEbootGames(db);
+            //ScanScummVMGames(db);
 
             sqlite3_close(db);
         }
@@ -935,4 +939,46 @@ namespace GAME {
         }
         return false;
     }
+/*
+    void ScanScummVMGames(sqlite3 *db)
+    {
+        OpenIniFile(SCUMMVM_INI_FILE);
+        int count = GetSectionCount();
+        debugNetPrintf(DEBUG,"section count %d\n", count);
+        const char *sections[count];
+        GetSections(sections);
+
+        sprintf(scan_message, "Scanning for SCUMMVM games in the %s file", SCUMMVM_INI_FILE);
+        games_to_scan = count;
+        games_scanned = 0;
+
+        for (int i=0; i<count; i++)
+        {
+            Game game;
+            char section[64];
+            memset(section, 0, 64);
+            int len = strlen(sections[i]);
+            strncpy(section, sections[i]+1, len-2);
+            debugNetPrintf(DEBUG,"section ||%s||\n", section);
+            char* id = ReadString("sky", SCUMMVM_GAME_ID, NULL);
+            debugNetPrintf(DEBUG,"id = %s\n", id);
+            if (id != NULL)
+            {
+                game.type = TYPE_ROM;
+                sprintf(game.rom_path, ReadString("sky", SCUMMVM_GAME_PATH, ""));
+                sprintf(game.category, game_categories[SCUMMVM_GAMES].category);
+                sprintf(game.id, ReadString("sky", SCUMMVM_GAME_ID, ""));
+                sprintf(game.title, ReadString("sky", SCUMMVM_GAME_TITLE, ""));
+                debugNetPrintf(DEBUG,"rom_path = %s, id=%s, title=%s\n", game.rom_path, game.id, game.title);
+                game.tex = no_icon;
+                game_categories[SCUMMVM_GAMES].games.push_back(game);
+                DB::InsertGame(db, &game);
+                game_scan_inprogress = game;
+            }
+            games_scanned++;
+        }
+
+        CloseIniFile();
+    }
+*/
 }

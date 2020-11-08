@@ -11,6 +11,8 @@
 #define VITADB_JSON_FILE "ux0:data/SMLA00001/vitadb.json"
 #define VITADB_URL "https://rinnegatamante.it/vitadb/list_hbs_json.php"
 
+#define SCUMMVM_INI_FILE "ux0:data/scummvm/scummvm.ini"
+
 #define PSP_ISO_PATH "ux0:pspemu/ISO"
 #define PSP_EBOOT_PATH "ux0:pspemu/PSP/GAME"
 #define CONFIG_PSPEMU_PATH "pspemu_location"
@@ -69,6 +71,7 @@
 #define GAW_FILTERS ".zip"
 #define MAME_2000_FILTERS ".zip"
 #define MAME_2003_FILTERS ".zip"
+#define SCUMMVM_FILTERS ""
 
 // Filters for title prefixes
 #define VITA_TITLE_ID_PREFIXES "PCSA,PCSB,PCSC,PCSD,PCSE,PCSF,PCSG,PCSH,PCSI"
@@ -100,6 +103,7 @@
 #define GAW_TITLE_ID_PREFIXES "GAW"
 #define MAME_2000_TITLE_ID_PREFIXES "M2000"
 #define MAME_2003_TITLE_ID_PREFIXES "M2003"
+#define SCUMMVM_TITLE_ID_PREFIXES "SCMVM"
 
 // Alt retroarch cores
 #define PS1_ALT_CORES ""
@@ -127,6 +131,10 @@
 #define GAW_ALT_CORES ""
 #define MAME_2000_ALT_CORES ""
 #define MAME_2003_ALT_CORES "app0:mame2003_libretro.self"
+
+#define SCUMMVM_GAME_ID "gameid"
+#define SCUMMVM_GAME_TITLE "description"
+#define SCUMMVM_GAME_PATH "path"
 
 extern bool show_all_categories;
 extern bool parental_control;
