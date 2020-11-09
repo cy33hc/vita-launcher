@@ -158,8 +158,8 @@ namespace GAME {
             std::replace( title.begin(), title.end(), '\n', ' ');
             sprintf(game->title, "%s", title.c_str());
 
-            const char* cat = SFO::GetString(sfo.data(), sfo.size(), "CATEGORY");
-            const char* disc_id = SFO::GetString(sfo.data(), sfo.size(), "DISC_ID");
+            char* cat = SFO::GetString(sfo.data(), sfo.size(), "CATEGORY");
+            char* disc_id = SFO::GetString(sfo.data(), sfo.size(), "DISC_ID");
             if (strcmp(cat, "ME") ==0)
             {
                 sprintf(game->category, "%s", game_categories[PS1_GAMES].category);
@@ -234,8 +234,8 @@ namespace GAME {
         const auto sfo = FS::Load(param_sfo);
         std::string title = std::string(SFO::GetString(sfo.data(), sfo.size(), "TITLE"));
         std::replace( title.begin(), title.end(), '\n', ' ');
-        const char* cat = SFO::GetString(sfo.data(), sfo.size(), "CATEGORY");
-        const char* disc_id = SFO::GetString(sfo.data(), sfo.size(), "DISC_ID");
+        char* cat = SFO::GetString(sfo.data(), sfo.size(), "CATEGORY");
+        char* disc_id = SFO::GetString(sfo.data(), sfo.size(), "DISC_ID");
 
         game->type = TYPE_EBOOT;
         sprintf(game->title, "%s", title.c_str());
@@ -593,7 +593,7 @@ namespace GAME {
             int slash_index = rom_path.find_last_of("/");
             int dot_index = rom_path.find_last_of(".");
             std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
-            sprintf(icon_path, "%s/%s.png", category->icon_path, rom_name.c_str());
+            sprintf(icon_path, "%s/%s\.png", category->icon_path, rom_name.c_str());
         }
         
         if (game->tex.id == no_icon.id)
