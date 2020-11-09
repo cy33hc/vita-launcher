@@ -75,10 +75,10 @@ namespace GAME {
             sqlite3_open(CACHE_DB_FILE, &db);
             DB::SetupDatabase(db);
 
-            //ScanRetroGames(db);
-            //ScanAdrenalineIsoGames(db);
-            //ScanAdrenalineEbootGames(db);
-            //ScanScummVMGames(db);
+            ScanRetroGames(db);
+            ScanAdrenalineIsoGames(db);
+            ScanAdrenalineEbootGames(db);
+            ScanScummVMGames(db);
 
             sqlite3_close(db);
         }
@@ -380,7 +380,16 @@ namespace GAME {
                     sceKernelExitProcess(0);
                 }
             }
-        } else if (game->type >= TYPE_PSP_ISO)
+        } 
+        else if (game->type == TYPE_SCUMMVM)
+        {
+            char uri[512];
+            sprintf(uri, "psgm:play?titleid=%s&param=%s&param2=%s", category->rom_launcher_title_id, game->rom_path, game->id);
+            sceAppMgrLaunchAppByUri(0xFFFFF, uri);
+            sceKernelDelayThread(1000);
+            sceKernelExitProcess(0);
+        }
+        else if (game->type == TYPE_PSP_ISO || game->type == TYPE_EBOOT)
         {
             char boot_data[320];
             memset(boot_data, 0, sizeof(boot_data));
@@ -586,6 +595,10 @@ namespace GAME {
         {
             sprintf(icon_path, "ux0:data/SMLA00001/data/%s/icon0.png", game->id);
         }
+        else if (game->type == TYPE_SCUMMVM)
+        {
+            sprintf(icon_path, "%s/icon0.png", game->rom_path);
+        }
         else
         {
             GameCategory* category = categoryMap[game->category];
@@ -593,7 +606,7 @@ namespace GAME {
             int slash_index = rom_path.find_last_of("/");
             int dot_index = rom_path.find_last_of(".");
             std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
-            sprintf(icon_path, "%s/%s\.png", category->icon_path, rom_name.c_str());
+            sprintf(icon_path, "%s/%s.png", category->icon_path, rom_name.c_str());
         }
         
         if (game->tex.id == no_icon.id)
@@ -729,13 +742,13 @@ namespace GAME {
         sceKernelDelayThread(50000);
         sqlite3 *db;
         sqlite3_open(CACHE_DB_FILE, &db);
-        if (params->type == TYPE_ROM || strcmp(params->category, "ps1") == 0)
+        if (params->type == TYPE_ROM || strcmp(params->category, "ps1") == 0 || params->type == TYPE_SCUMMVM)
         {
             GameCategory *category = categoryMap[params->category];
             RemoveGamesFromCategoryByType(db, category, params->type);
         }
         
-        if (params->type > TYPE_ROM)
+        if (params->type == TYPE_EBOOT || params->type == TYPE_PSP_ISO)
         {
             DB::DeleteGamesByType(db, params->type);
             for (int i=0; i<TOTAL_CATEGORY; i++)
@@ -769,9 +782,14 @@ namespace GAME {
             ScanAdrenalineEbootGames(db);
         }
 
+        if (params->type == TYPE_SCUMMVM)
+        {
+            ScanScummVMGames(db);
+        }
+
         sqlite3_close(db);
 
-        if (params->type == TYPE_ROM || strcmp(params->category, "ps1") == 0)
+        if (params->type == TYPE_ROM || strcmp(params->category, "ps1") == 0 || params->type == TYPE_SCUMMVM)
         {
             GameCategory *category = categoryMap[params->category];
             category->page_num = 1;
@@ -780,7 +798,7 @@ namespace GAME {
             current_category = category;
         }
         
-        if (params->type > TYPE_ROM)
+        if (params->type == TYPE_EBOOT || params->type == TYPE_PSP_ISO)
         {
             game_categories[PSP_GAMES].page_num = 1;
             SetMaxPage(&game_categories[PSP_GAMES]);
@@ -847,8 +865,8 @@ namespace GAME {
     {
         for (int i=0; i < category->games.size(); i++)
         {
-            if ((game->type != TYPE_ROM && strcmp(game->id, category->games[i].id) == 0) ||
-                (game->type == TYPE_ROM && strcmp(game->rom_path, category->games[i].rom_path) == 0))
+            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, category->games[i].id) == 0) ||
+                ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, category->games[i].rom_path) == 0))
             {
                 return i;
             }
@@ -860,8 +878,8 @@ namespace GAME {
     {
         for (int i=0; i < category->games.size(); i++)
         {
-            if ((game->type != TYPE_ROM && strcmp(game->id, category->games[i].id) == 0) ||
-                (game->type == TYPE_ROM && strcmp(game->rom_path, category->games[i].rom_path) == 0))
+            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, category->games[i].id) == 0) ||
+                ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, category->games[i].rom_path) == 0))
             {
                 category->games.erase(category->games.begin()+i);
                 return i;
@@ -939,13 +957,16 @@ namespace GAME {
         }
         return false;
     }
-/*
+
     void ScanScummVMGames(sqlite3 *db)
     {
         OpenIniFile(SCUMMVM_INI_FILE);
         int count = GetSectionCount();
-        debugNetPrintf(DEBUG,"section count %d\n", count);
-        const char *sections[count];
+        char* sections[count];
+        for (int i=0; i<count; i++)
+        {
+            sections[i] = malloc(64);
+        }
         GetSections(sections);
 
         sprintf(scan_message, "Scanning for SCUMMVM games in the %s file", SCUMMVM_INI_FILE);
@@ -959,17 +980,13 @@ namespace GAME {
             memset(section, 0, 64);
             int len = strlen(sections[i]);
             strncpy(section, sections[i]+1, len-2);
-            debugNetPrintf(DEBUG,"section ||%s||\n", section);
-            char* id = ReadString("sky", SCUMMVM_GAME_ID, NULL);
-            debugNetPrintf(DEBUG,"id = %s\n", id);
-            if (id != NULL)
+            sprintf(game.rom_path, ReadString(section, SCUMMVM_GAME_PATH, ""));
+            if (game.rom_path[0] != 0)
             {
-                game.type = TYPE_ROM;
-                sprintf(game.rom_path, ReadString("sky", SCUMMVM_GAME_PATH, ""));
+                game.type = TYPE_SCUMMVM;
                 sprintf(game.category, game_categories[SCUMMVM_GAMES].category);
-                sprintf(game.id, ReadString("sky", SCUMMVM_GAME_ID, ""));
-                sprintf(game.title, ReadString("sky", SCUMMVM_GAME_TITLE, ""));
-                debugNetPrintf(DEBUG,"rom_path = %s, id=%s, title=%s\n", game.rom_path, game.id, game.title);
+                sprintf(game.id, ReadString(section, SCUMMVM_GAME_ID, ""));
+                sprintf(game.title, ReadString(section, SCUMMVM_GAME_TITLE, ""));
                 game.tex = no_icon;
                 game_categories[SCUMMVM_GAMES].games.push_back(game);
                 DB::InsertGame(db, &game);
@@ -978,7 +995,12 @@ namespace GAME {
             games_scanned++;
         }
 
+        for (int i=0; i<count; i++)
+        {
+            free(sections[i]);
+        }
+
         CloseIniFile();
     }
-*/
+
 }

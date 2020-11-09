@@ -667,3 +667,44 @@ MakeNewEntry (void)
     }
 	return pEntry;
 }
+
+/*=========================================================================
+   GetSectionCount  : Get the number of sections
+*========================================================================*/
+int
+GetSectionCount ()
+{
+	struct ENTRY *pEntry = Entry;
+	int count = 0;
+	while (pEntry != NULL)
+	{
+		if (pEntry->Type == tpSECTION)
+		{
+			count++;
+		}
+		pEntry = pEntry->pNext;
+	}
+	
+	return count;
+}
+
+/*=========================================================================
+   GetSections  : Retrieve the sections
+*========================================================================*/
+void
+GetSections (char *sections[])
+{
+	struct ENTRY *pEntry = Entry;
+	int i = 0;
+
+	while (pEntry != NULL)
+	{
+		if (pEntry->Type == tpSECTION)
+		{
+			sprintf(sections[i], pEntry->Text);
+			i++;
+		}
+		pEntry = pEntry->pNext;
+	}
+}
+

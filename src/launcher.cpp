@@ -212,8 +212,8 @@ namespace Windows {
     {
         for (int i=current_category->page_num*18-18; i < current_category->page_num*18; i++)
         {
-            if ((game->type != TYPE_ROM && strcmp(game->id, current_category->games[i].id) == 0) ||
-                (game->type == TYPE_ROM && strcmp(game->rom_path, current_category->games[i].rom_path) == 0))
+            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, current_category->games[i].id) == 0) ||
+                ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, current_category->games[i].rom_path) == 0))
             {
                 return i % 18;
             }
@@ -277,7 +277,7 @@ namespace Windows {
                     sprintf(id, "%d#image", button_id);
                     Game *game = &current_category->games[game_start_index+button_id];
                     if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127), ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1))) {
-                        if (game->type == TYPE_BUBBLE)
+                        if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                         {
                             GAME::Launch(game);
                         }
@@ -373,7 +373,7 @@ namespace Windows {
             ImGui::SetCursorPos(ImVec2(pos.x-5, pos.y));
             if (ImGui::Button(sel_id, ImVec2(148,154)))
             {
-                if (game->type == TYPE_BUBBLE)
+                if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                 {
                     GAME::Launch(game);
                 }
@@ -510,7 +510,7 @@ namespace Windows {
             ImGui::PushID(i);
             if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
             {
-                if (game->type == TYPE_BUBBLE)
+                if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                 {
                     GAME::Launch(game);
                 }
@@ -1030,7 +1030,8 @@ namespace Windows {
                             }
 
                             if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache &&
-                                !rename_game && !add_eboot_game && !add_psp_iso_game)
+                                !rename_game && !add_eboot_game && !add_psp_iso_game && current_category->rom_type != TYPE_ROM &&
+                                current_category->rom_type != TYPE_SCUMMVM)
                             {
                                 ImGui::Checkbox("Move selected game", &move_game);
                                 ImGui::Separator();
@@ -1779,7 +1780,7 @@ namespace Windows {
 
         if (!game_moved)
         {
-            if (selected_game->type == TYPE_ROM)
+            if (selected_game->type == TYPE_ROM || selected_game->type == TYPE_SCUMMVM)
             {
                 sprintf(game_action_message, "Can't move ROM type games. Since they\nare dependent on RetroArch core of \nthe category.");
                 game_moved = true;

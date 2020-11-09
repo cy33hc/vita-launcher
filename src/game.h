@@ -159,7 +159,7 @@ namespace GAME {
     void ScanAdrenalineIsoGames(sqlite3 *db);
     void PopulateEbootGameInfo(Game *game, std::string rom, int game_index);
     void ScanAdrenalineEbootGames(sqlite3 *db);
-    //void ScanScummVMGames(sqlite3 *db);
+    void ScanScummVMGames(sqlite3 *db);
     bool GetGameDetails(const char *id, Game *game);
     bool Launch(Game *game, BootSettings *settings = nullptr, char* retro_core = nullptr);
     void LoadGamesCache();

@@ -68,6 +68,8 @@ bool	DeleteKey (cchr *Section, cchr *Key);
 void    CloseIniFile ();
 bool    WriteIniFile (cchr *FileName);
 
+int     GetSectionCount();
+void    GetSections(char *sections[]);
 #endif
 
 
