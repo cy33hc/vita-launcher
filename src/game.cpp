@@ -384,7 +384,7 @@ namespace GAME {
         else if (game->type == TYPE_SCUMMVM)
         {
             char uri[512];
-            sprintf(uri, "psgm:play?titleid=%s&param=%s&param2=%s", category->rom_launcher_title_id, game->rom_path, game->id);
+            sprintf(uri, "psgm:play?titleid=%s&path=%s&game_id=%s", category->rom_launcher_title_id, game->rom_path, game->id);
             sceAppMgrLaunchAppByUri(0xFFFFF, uri);
             sceKernelDelayThread(1000);
             sceKernelExitProcess(0);
