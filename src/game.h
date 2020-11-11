@@ -11,7 +11,7 @@
 #include "sqlite3.h"
 
 typedef struct {
-    char id[16];
+    char id[20];
     char title[128];
     char category[10];
     char rom_path[192];
