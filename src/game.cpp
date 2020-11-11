@@ -17,7 +17,7 @@
 #include "eboot.h"
 #include "iso.h"
 #include "cso.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
