@@ -11,7 +11,7 @@
 #include "sqlite3.h"
 
 typedef struct {
-    char id[16];
+    char id[20];
     char title[128];
     char category[10];
     char rom_path[192];
@@ -55,7 +55,7 @@ enum PLUGINS {PLUGINS_DEFAULT=0, PLUGINS_ENABLE=1, PLUGINS_DISABLE=2};
 enum NONPDRM {NONPDRM_DEFAULT=0, NONPDRM_ENABLE=1, NONPDRM_DISABLE=2};
 enum HIGH_MEMORY {HIGH_MEM_DEFAULT=0, HIGH_MEM_ENABLE=1, HIGH_MEM_DISABLE=2};
 enum CPU_SPEED {CPU_DEFAULT=0, CPU_20_10=1, CPU_50_25=2, CPU_75_37=3, CPU_100_50=4, CPU_111_55, CPU_122_61, CPU_133_66,
-                CPU_166_83, CPU_200_100, CPU_222_111, CPU_288_144, CPU_300_150, CPU_333_166};
+                CPU_166_83, CPU_200_100, CPU_222_111, CPU_266_133, CPU_288_144, CPU_300_150, CPU_333_166};
 
 typedef struct {
     DRIVERS driver;
@@ -99,19 +99,21 @@ typedef struct {
 #define GAW_GAMES 27
 #define MAME_2000_GAMES 28
 #define MAME_2003_GAMES 29
-#define PORT_GAMES 30
-#define ORIGINAL_GAMES 31
-#define UTILITIES 32
-#define EMULATORS 33
-#define HOMEBREWS 34
+#define SCUMMVM_GAMES 30
+#define PORT_GAMES 31
+#define ORIGINAL_GAMES 32
+#define UTILITIES 33
+#define EMULATORS 34
+#define HOMEBREWS 35
 
-#define TOTAL_CATEGORY 35
+#define TOTAL_CATEGORY 36
 #define TOTAL_ROM_CATEGORY 25
 
 #define TYPE_BUBBLE 0
 #define TYPE_ROM 1
 #define TYPE_PSP_ISO 2
 #define TYPE_EBOOT 3
+#define TYPE_SCUMMVM 4
 
 extern GameCategory game_categories[];
 extern std::map<std::string, GameCategory*> categoryMap;
@@ -157,6 +159,7 @@ namespace GAME {
     void ScanAdrenalineIsoGames(sqlite3 *db);
     void PopulateEbootGameInfo(Game *game, std::string rom, int game_index);
     void ScanAdrenalineEbootGames(sqlite3 *db);
+    void ScanScummVMGames(sqlite3 *db);
     bool GetGameDetails(const char *id, Game *game);
     bool Launch(Game *game, BootSettings *settings = nullptr, char* retro_core = nullptr);
     void LoadGamesCache();

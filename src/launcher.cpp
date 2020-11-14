@@ -10,7 +10,7 @@
 #include "config.h"
 #include "ime_dialog.h"
 #include "gui.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -30,6 +30,8 @@ static ime_callback_t ime_callback = nullptr;
 static ime_callback_t ime_after_update = nullptr;
 static ime_callback_t ime_before_update = nullptr;
 static std::vector<std::string> retro_cores;
+static BootSettings settings;
+static char retro_core[128];
 
 GameCategory *tmp_category;
 
@@ -210,8 +212,8 @@ namespace Windows {
     {
         for (int i=current_category->page_num*18-18; i < current_category->page_num*18; i++)
         {
-            if ((game->type != TYPE_ROM && strcmp(game->id, current_category->games[i].id) == 0) ||
-                (game->type == TYPE_ROM && strcmp(game->rom_path, current_category->games[i].rom_path) == 0))
+            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, current_category->games[i].id) == 0) ||
+                ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, current_category->games[i].rom_path) == 0))
             {
                 return i % 18;
             }
@@ -275,7 +277,7 @@ namespace Windows {
                     sprintf(id, "%d#image", button_id);
                     Game *game = &current_category->games[game_start_index+button_id];
                     if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127), ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1))) {
-                        if (game->type == TYPE_BUBBLE)
+                        if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                         {
                             GAME::Launch(game);
                         }
@@ -287,10 +289,14 @@ namespace Windows {
                                 GAME::Launch(game);
                             }
                             handle_boot_rom_game = true;
+                            sprintf(retro_core, "%s", cat->core);
+                            DB::GetRomCoreSettings(game->rom_path, retro_core);
                         }
                         else
                         {
                             handle_boot_game = true;
+                            settings = defaul_boot_settings;
+                            DB::GetPspGameSettings(selected_game->rom_path, &settings);
                         }
                     }
                     if (ImGui::IsWindowAppearing() && button_id == 0)
@@ -367,7 +373,7 @@ namespace Windows {
             ImGui::SetCursorPos(ImVec2(pos.x-5, pos.y));
             if (ImGui::Button(sel_id, ImVec2(148,154)))
             {
-                if (game->type == TYPE_BUBBLE)
+                if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                 {
                     GAME::Launch(game);
                 }
@@ -379,10 +385,14 @@ namespace Windows {
                         GAME::Launch(game);
                     }
                     handle_boot_rom_game = true;
+                    sprintf(retro_core, "%s", cat->core);
+                    DB::GetRomCoreSettings(game->rom_path, retro_core);
                 }
                 else
                 {
                     handle_boot_game = true;
+                    settings = defaul_boot_settings;
+                    DB::GetPspGameSettings(selected_game->rom_path, &settings);
                 }
             }
             if (ImGui::IsItemFocused())
@@ -406,7 +416,7 @@ namespace Windows {
                         uint64_t current_time = sceKernelGetProcessTimeWide();
                         if (current_time - game->visible_time > 200000 && !game->thread_started)
                         {
-                            debugNetPrintf(DEBUG,"StartLoadGameImageThread %d\n",button_id);
+                            //debugNetPrintf(DEBUG,"StartLoadGameImageThread %d\n",button_id);
                             GAME::StartLoadGameImageThread(current_category->id, button_id);
                             game->thread_started = true;
                         }
@@ -500,7 +510,7 @@ namespace Windows {
             ImGui::PushID(i);
             if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
             {
-                if (game->type == TYPE_BUBBLE)
+                if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                 {
                     GAME::Launch(game);
                 }
@@ -512,10 +522,14 @@ namespace Windows {
                         GAME::Launch(game);
                     }
                     handle_boot_rom_game = true;
+                    sprintf(retro_core, "%s", cat->core);
+                    DB::GetRomCoreSettings(game->rom_path, retro_core);
                 }
                 else
                 {
                     handle_boot_game = true;
+                    settings = defaul_boot_settings;
+                    DB::GetPspGameSettings(selected_game->rom_path, &settings);
                 }
             }
             ImGui::PopID();
@@ -1016,7 +1030,8 @@ namespace Windows {
                             }
 
                             if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache &&
-                                !rename_game && !add_eboot_game && !add_psp_iso_game)
+                                !rename_game && !add_eboot_game && !add_psp_iso_game && current_category->rom_type != TYPE_ROM &&
+                                current_category->rom_type != TYPE_SCUMMVM)
                             {
                                 ImGui::Checkbox("Move selected game", &move_game);
                                 ImGui::Separator();
@@ -1215,12 +1230,10 @@ namespace Windows {
         else
         {
             ImGui::SetNextWindowPos(ImVec2(230, 100));
-            ImGui::SetNextWindowSize(ImVec2(495,350));
+            ImGui::SetNextWindowSize(ImVec2(495,375));
         }
         if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
         {
-            static BootSettings settings = defaul_boot_settings;
-
             float posX = ImGui::GetCursorPosX();
             if (current_category->id == PS1_GAMES)
             {
@@ -1307,15 +1320,18 @@ namespace Windows {
                 ImGui::SetCursorPosX(posX + 110);
                 if (ImGui::RadioButton("288/144", settings.cpu_speed == CPU_288_144)) { settings.cpu_speed = CPU_288_144; } ImGui::SameLine();
                 ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("222/111", settings.cpu_speed == CPU_222_111)) { settings.cpu_speed = CPU_222_111; } ImGui::SameLine();
+                if (ImGui::RadioButton("266/133", settings.cpu_speed == CPU_266_133)) { settings.cpu_speed = CPU_266_133; } ImGui::SameLine();
                 ImGui::SetCursorPosX(posX + 320);
-                if (ImGui::RadioButton("200/100", settings.cpu_speed == CPU_200_100)) { settings.cpu_speed = CPU_200_100; }
+                if (ImGui::RadioButton("222/111", settings.cpu_speed == CPU_222_111)) { settings.cpu_speed = CPU_222_111; }
                 ImGui::SetCursorPosX(posX + 110);
-                if (ImGui::RadioButton("166/83", settings.cpu_speed == CPU_166_83)) { settings.cpu_speed = CPU_166_83; } ImGui::SameLine();
+                if (ImGui::RadioButton("200/100", settings.cpu_speed == CPU_200_100)) { settings.cpu_speed = CPU_200_100; } ImGui::SameLine();
                 ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("100/50", settings.cpu_speed == CPU_100_50)) { settings.cpu_speed = CPU_100_50; } ImGui::SameLine();
+                if (ImGui::RadioButton("166/83", settings.cpu_speed == CPU_166_83)) { settings.cpu_speed = CPU_166_83; } ImGui::SameLine();
                 ImGui::SetCursorPosX(posX + 320);
+                if (ImGui::RadioButton("100/50", settings.cpu_speed == CPU_100_50)) { settings.cpu_speed = CPU_100_50; }
+                ImGui::SetCursorPosX(posX + 110);
                 if (ImGui::RadioButton("133/66", settings.cpu_speed == CPU_133_66)) { settings.cpu_speed = CPU_133_66; } ImGui::SameLine();
+                ImGui::SetCursorPosX(posX + 220);
                 if (ImGui::RadioButton("50/25", settings.cpu_speed == CPU_50_25)) { settings.cpu_speed = CPU_50_25; }
             }
 
@@ -1329,6 +1345,7 @@ namespace Windows {
                     WriteIniFile(CONFIG_INI_FILE);
                     CloseIniFile();
                 }
+                DB::SavePspGameSettings(selected_game->rom_path, &settings);
                 paused = false;
                 handle_boot_game = false;
                 GAME::Launch(selected_game, &settings);
@@ -1377,12 +1394,20 @@ namespace Windows {
                 if (ImGui::Selectable(retro_cores[i].c_str()) &&
                     selected_game != nullptr)
                 {
+                    DB::SaveRomCoreSettings(selected_game->rom_path, retro_cores[i].c_str());
                     GAME::Launch(selected_game, nullptr, retro_cores[i].c_str());
+                }
+                if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
+                {
+                    if (strcmp(retro_core, retro_cores[i].c_str()) == 0)
+                    {
+                        SetNavFocusHere();
+                        sprintf(retro_core, "");
+                    }
                 }
                 ImGui::Separator();
             }
             ImGui::EndChild();
-            ImGui::SetItemDefaultFocus();
 
             ImGui::Separator();
             if (ImGui::Button("Cancel"))
@@ -1755,7 +1780,7 @@ namespace Windows {
 
         if (!game_moved)
         {
-            if (selected_game->type == TYPE_ROM)
+            if (selected_game->type == TYPE_ROM || selected_game->type == TYPE_SCUMMVM)
             {
                 sprintf(game_action_message, "Can't move ROM type games. Since they\nare dependent on RetroArch core of \nthe category.");
                 game_moved = true;

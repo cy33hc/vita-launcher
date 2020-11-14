@@ -135,7 +135,8 @@ namespace CONFIG {
         sprintf(pspemu_iso_path, "%s/ISO", pspemu_path);
         sprintf(pspemu_eboot_path, "%s/PSP/GAME", pspemu_path);
 
-        const char* style_value = ReadString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, CONFIG_DEFAULT_STYLE_NAME);
+        char* style_value = ReadString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, CONFIG_DEFAULT_STYLE_NAME);
+        sprintf(style_name, "%s", style_value);
         WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, style_name);
         Style::SetStylePath(style_name);
 
@@ -186,6 +187,7 @@ namespace CONFIG {
         SetupCategory(&game_categories[GAW_GAMES], GAW_GAMES, "gaw", "GAW", "RETROVITA", "app0:gw_libretro.self", GAW_TITLE_ID_PREFIXES, GAW_FILTERS, GAW_ALT_CORES, TYPE_ROM);
         SetupCategory(&game_categories[MAME_2000_GAMES], MAME_2000_GAMES, "mame2k", "MAME2000", "RETROVITA", "app0:mame2000_libretro.self", MAME_2000_TITLE_ID_PREFIXES, MAME_2000_FILTERS, MAME_2000_ALT_CORES, TYPE_ROM);
         SetupCategory(&game_categories[MAME_2003_GAMES], MAME_2003_GAMES, "mame2k3", "MAME2003", "RETROVITA", "app0:mame2003_plus_libretro.self", MAME_2003_TITLE_ID_PREFIXES, MAME_2003_FILTERS, MAME_2003_ALT_CORES, TYPE_ROM);
+        SetupCategory(&game_categories[SCUMMVM_GAMES], SCUMMVM_GAMES, "scummvm", "SCUMMVM", "VSCU00001", nullptr, nullptr, nullptr, nullptr, TYPE_SCUMMVM);
         SetupCategory(&game_categories[PORT_GAMES], PORT_GAMES, "ports", "Ports", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE);
         SetupCategory(&game_categories[ORIGINAL_GAMES], ORIGINAL_GAMES, "original", "Originals", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE);
         SetupCategory(&game_categories[UTILITIES], UTILITIES, "utilities", "Utilities", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE);
@@ -234,7 +236,7 @@ namespace CONFIG {
         category.rom_type = cat->rom_type;
         category.view_mode = ReadInt(cat->title, CONFIG_VIEW_MODE, VIEW_MODE_GRID);
         sprintf(category.alt_title, "%s", ReadString(cat->title, CONFIG_ALT_TITLE, ""));
-        const char* valid_title_prefixes = ReadString(cat->title, CONFIG_TITLE_ID_PREFIXES, "");
+        char* valid_title_prefixes = ReadString(cat->title, CONFIG_TITLE_ID_PREFIXES, "");
         ParseMultiValueString(valid_title_prefixes, category.valid_title_ids, false);
 
         if (cat->rom_type == TYPE_ROM || cat->id == PS1_GAMES)
@@ -243,9 +245,9 @@ namespace CONFIG {
             sprintf(category.rom_launcher_title_id, "%s", ReadString(cat->title, CONFIG_ROM_LAUNCHER_TITLE_ID, ""));
             sprintf(category.roms_path, "%s", ReadString(cat->title, CONFIG_ROMS_PATH, ""));
             sprintf(category.icon_path, "%s", ReadString(cat->title, CONFIG_ICON_PATH, ""));
-            const char* file_filters = ReadString(cat->title, CONFIG_ROM_EXTENSIONS, "");
+            char* file_filters = ReadString(cat->title, CONFIG_ROM_EXTENSIONS, "");
             ParseMultiValueString(file_filters, category.file_filters, true);
-            const char* alt_cores = ReadString(cat->title, CONFIG_ALT_CORES, "");
+            char* alt_cores = ReadString(cat->title, CONFIG_ALT_CORES, "");
             ParseMultiValueString(alt_cores, category.alt_cores, false);
         }
 
