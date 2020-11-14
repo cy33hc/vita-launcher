@@ -468,7 +468,7 @@ namespace Windows {
 
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
         {
-            if (io.NavInputs[ImGuiNavInput_DpadRight] == 1.0f)
+            if (io.NavInputs[ImGuiNavInput_DpadRight] == 1.0f && !paused)
             {
                 if (selected_game != nullptr)
                 {
@@ -480,7 +480,7 @@ namespace Windows {
                     }
                     scroll_direction = 1.0f;
                 }
-            } else if (io.NavInputs[ImGuiNavInput_DpadLeft] == 1.0f)
+            } else if (io.NavInputs[ImGuiNavInput_DpadLeft] == 1.0f && !paused)
             {
                 if (selected_game != nullptr)
                 {
