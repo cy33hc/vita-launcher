@@ -7,6 +7,7 @@
 #include "game.h"
 
 #define CONFIG_INI_FILE "ux0:data/SMLA00001/config.ini"
+#define THUMBNAIL_BASE_PATH "ux0:app/SMLA00001/thumbnails"
 
 #define VITADB_JSON_FILE "ux0:data/SMLA00001/vitadb.json"
 #define VITADB_URL "https://rinnegatamante.it/vitadb/list_hbs_json.php"
@@ -136,6 +137,33 @@
 #define SCUMMVM_GAME_TITLE "description"
 #define SCUMMVM_GAME_PATH "path"
 
+#define PS1_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Sony_-_PlayStation/raw/master/Named_Titles"
+#define NES_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Nintendo_-_Nintendo_Entertainment_System/raw/master/Named_Titles"
+#define SNES_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Nintendo_-_Super_Nintendo_Entertainment_System/raw/master/Named_Titles"
+#define GB_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Nintendo_-_Game_Boy/raw/master/Named_Titles"
+#define GBA_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Nintendo_-_Game_Boy_Advance/raw/master/Named_Titles"
+#define N64_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Nintendo_-_Nintendo_64/raw/master/Named_Titles"
+#define GBC_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Nintendo_-_Game_Boy_Color/raw/master/Named_Titles"
+#define NEOGEO_DOWNLOAD_URL "https://github.com/libretro-thumbnails/SNK_-_Neo_Geo/raw/master/Named_Titles"
+#define NEOGEO_PC_DOWNLOAD_URL "https://github.com/libretro-thumbnails/SNK_-_Neo_Geo_Pocket_Color/raw/master/Named_Titles"
+#define SEGA_SATURN_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Sega_-_Saturn/raw/master/Named_Titles"
+#define GAME_GEAR_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Sega_-_Game_Gear/raw/master/Named_Titles"
+#define MASTER_SYSTEM_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Sega_-_Master_System_-_Mark_III/raw/master/Named_Titles"
+#define MEGA_DRIVE_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Sega_-_Mega_Drive_-_Genesis/raw/master/Named_Titles"
+#define NEC_DOWNLOAD_URL "https://github.com/libretro-thumbnails/NEC_-_PC_Engine_CD_-_TurboGrafx-CD/raw/master/Named_Titles"
+#define ATARI_2600_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Atari_-_2600/raw/master/Named_Titles"
+#define ATARI_7800_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Atari_-_7800/raw/master/Named_Titles"
+#define ATARI_LYNX_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Atari_-_Lynx/raw/master/Named_Titles"
+#define BANDAI_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Bandai_-_WonderSwan/raw/master/Named_Titles"
+#define C64_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Commodore_-_64/raw/master/Named_Titles"
+#define MSX2_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Microsoft_-_MSX/raw/master/Named_Titles"
+#define T_GRAFX_DOWNLOAD_URL "https://github.com/libretro-thumbnails/NEC_-_PC_Engine_-_TurboGrafx_16/raw/master/Named_Titles"
+#define VECTREX_DOWNLOAD_URL "https://github.com/libretro-thumbnails/GCE_-_Vectrex/raw/master/Named_Titles"
+#define GAW_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Handheld_Electronic_Game/raw/master/Named_Snaps"
+#define MAME_2000_DOWNLOAD_URL "https://github.com/libretro-thumbnails/MAME/raw/master/Named_Titles"
+#define MAME_2003_DOWNLOAD_URL "https://github.com/libretro-thumbnails/MAME/raw/master/Named_Titles"
+#define SCUMMVM_DOWNLOAD_URL "https://github.com/cy33hc/scummvm_icons/raw/main/icons"
+
 extern bool show_all_categories;
 extern bool parental_control;
 
@@ -146,7 +174,7 @@ namespace CONFIG {
     std::string GetMultiValueString(std::vector<std::string> &multi_values);
     void SetupCategory(GameCategory *category, int category_id, const char* category_name, const char* core,
                        const char* title_id, const char* code, const char* default_prefixes, const char* default_file_filters,
-                       const char* alt_cores, int rom_type);
+                       const char* alt_cores, int rom_type, const char* download_url);
     GameCategory GetCategoryConfig(GameCategory *category);
     void SaveCategoryConfig(GameCategory *cat);
 
@@ -166,6 +194,16 @@ namespace CONFIG {
     static inline std::string& trim(std::string& str, std::string chars)
     {
         return ltrim(rtrim(str, chars), chars);
+    }
+
+    static inline void ReplaceAll(std::string & data, std::string toSearch, std::string replaceStr)
+    {
+        size_t pos = data.find(toSearch);
+        while( pos != std::string::npos)
+        {
+            data.replace(pos, toSearch.size(), replaceStr);
+            pos = data.find(toSearch, pos + replaceStr.size());
+        }
     }
 }
 #endif

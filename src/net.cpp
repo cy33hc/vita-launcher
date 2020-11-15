@@ -18,7 +18,7 @@
 #include <vitasdk.h>
 #include <cstdlib>
 #include "certs.h"
-//#include "debugnet.h"
+#include "debugnet.h"
 
 #define VITALAUNCHER_USER_AGENT "VitaLauncher/1.00 libhttp/1.1"
 #define NET_MEMORY_SIZE (4 * 1024 * 1024)
@@ -209,33 +209,33 @@ namespace Net
     int ret = 1;
 
     res = sceHttpCreateTemplate(VITALAUNCHER_USER_AGENT, SCE_HTTP_VERSION_1_1, SCE_TRUE);
-    //debugNetPrintf(DEBUG,"sceHttpCreateTemplate res 0x%08X\n", res);
+    debugNetPrintf(DEBUG,"sceHttpCreateTemplate res 0x%08X\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     tmplId = res;
 
     res = sceHttpCreateConnectionWithURL(tmplId, src, SCE_TRUE);
-    //debugNetPrintf(DEBUG,"sceHttpCreateConnectionWithURL res 0x%08X\n", res);
+    debugNetPrintf(DEBUG,"sceHttpCreateConnectionWithURL res 0x%08X\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     connId = res;
 
     res = sceHttpCreateRequestWithURL(connId, SCE_HTTP_METHOD_GET, src, 0);
-    //debugNetPrintf(DEBUG,"sceHttpCreateRequestWithURL res 0x%08X\n", res);
+    debugNetPrintf(DEBUG,"sceHttpCreateRequestWithURL res 0x%08X\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     reqId = res;
 
     res = sceHttpSendRequest(reqId, NULL, 0);
-    //debugNetPrintf(DEBUG,"sceHttpSendRequest res 0x%08X\n", res);
+    debugNetPrintf(DEBUG,"sceHttpSendRequest res 0x%08X\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     res = sceHttpGetStatusCode(reqId, &statusCode);
-    //debugNetPrintf(DEBUG,"sceHttpGetStatusCode res 0x%08X\n", res);
+    debugNetPrintf(DEBUG,"sceHttpGetStatusCode res 0x%08X\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
@@ -250,7 +250,7 @@ namespace Net
 
       while (1) {
         int read = sceHttpReadData(reqId, buf, sizeof(buf));
-        //debugNetPrintf(DEBUG,"sceHttpReadData res %d\n", read);
+        debugNetPrintf(DEBUG,"sceHttpReadData res %d\n", read);
         
         if (read < 0) {
           res = read;

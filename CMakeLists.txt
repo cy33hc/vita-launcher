@@ -48,6 +48,7 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
+  debugnet
   vita2d
   png
   imgui_vita2d
@@ -107,6 +108,7 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE thumbnails_db/snes.db thumbnails/snes.db
   FILE thumbnails_db/tgrafx.db thumbnails/tgrafx.db
   FILE thumbnails_db/vectrex.db thumbnails/vectrex.db
+  FILE thumbnails_db/scummvm.db thumbnails/scummvm.db
   FILE noicon.png noicon.png
   FILE favorite.png favorite.png
   FILE square.png square.png

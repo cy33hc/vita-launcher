@@ -5,7 +5,7 @@
 #include "db.h"
 #include "game.h"
 #include "textures.h"
-//#include "debugnet.h"
+#include "debugnet.h"
 
 namespace DB {
     bool TableExists(sqlite3 *database, char* table_name)
@@ -571,17 +571,18 @@ namespace DB {
         }
     }
 
-    void FindMatchingThumbnail(char* db_name, std::vector<std::string> &tokens, char* thumbnail)
+    bool FindMatchingThumbnail(char* db_name, std::vector<std::string> &tokens, char* thumbnail)
     {
         char db_path[64];
         sprintf(db_path, "ux0:app/SMLA00001/thumbnails/%s.db", db_name);
         sqlite3 *db;
         sqlite3_open(db_path, &db);
-        FindMatchingThumbnail(db, tokens, thumbnail);
+        bool found = FindMatchingThumbnail(db, tokens, thumbnail);
         sqlite3_close(db);
+        return found;
     }
 
-    void FindMatchingThumbnail(sqlite3 *database, std::vector<std::string> &tokens, char* thumbnail)
+    bool FindMatchingThumbnail(sqlite3 *database, std::vector<std::string> &tokens, char* thumbnail)
     {
         sqlite3 *db = database;
         bool found = false;
@@ -600,19 +601,25 @@ namespace DB {
                 sql += "filename like '%" + tokens[i] + "%'";
             }
             sql += " order by length(filename) asc";
+            debugNetPrintf(DEBUG,"sql = %s\n", sql.c_str());
             int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+            debugNetPrintf(DEBUG,"rc = %d\n", rc);
 
             if (rc == SQLITE_OK) {
                 int step = sqlite3_step(res);
+                debugNetPrintf(DEBUG,"step = %d\n", step);
                 if (step == SQLITE_ROW)
                 {
                     sprintf(thumbnail, "%s", sqlite3_column_text(res, 0));
+                    debugNetPrintf(DEBUG,"thumbnail = %s\n", thumbnail);
                     found = true;
                 }
                 sqlite3_finalize(res);
             }
             --tokens_to_try;
         }
+
+        return found;
     }
     
     void SetupPerGameSettingsDatabase()

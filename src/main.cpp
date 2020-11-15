@@ -17,7 +17,7 @@
 #include "style.h"
 #include "fs.h"
 #include "net.h"
-//#include "debugnet.h"
+#include "debugnet.h"
 
 namespace Services
 {
@@ -78,6 +78,10 @@ namespace Services
 
 	int Init(void)
 	{
+		// Allow writing to ux0:app/VITASHELL
+		sceAppMgrUmount("app0:");
+		sceAppMgrUmount("savedata0:");
+
 		vita2d_init();
 		vita2d_set_clear_color(RGBA8(0x00, 0x00, 0x00, 0xFF));
 
@@ -103,7 +107,7 @@ namespace Services
 
 int main(int, char **)
 {
-	//debugNetInit(ip_server,port_server,DEBUG);
+	debugNetInit(ip_server,port_server,DEBUG);
 	Net::Init();
 	Services::Init();
 	Services::InitImGui();

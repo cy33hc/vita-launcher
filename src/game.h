@@ -45,6 +45,7 @@ typedef struct {
     bool opened;
     int rom_type;
     int order;
+    char download_url[256];
 } GameCategory;
 
 enum DRIVERS {INFERNO=0, MARCH33=1, NP9660=2};
@@ -191,6 +192,9 @@ namespace GAME {
     bool IsMatchPrefixes(const char* id, std::vector<std::string> &prefixes);
     int IncrementCategory(int id, int num_of_ids);
     int DecrementCategory(int id, int num_of_ids);
+    void DownloadThumbnail(sqlite3 *database, Game *game);
+    void DownloadThumbnails(GameCategory *category);
+    void StartDownloadThumbnailsThread(GameCategory *category);
 }
 
 #endif
