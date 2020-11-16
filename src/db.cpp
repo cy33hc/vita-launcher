@@ -5,7 +5,7 @@
 #include "db.h"
 #include "game.h"
 #include "textures.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 
 namespace DB {
     bool TableExists(sqlite3 *database, char* table_name)
@@ -601,17 +601,17 @@ namespace DB {
                 sql += "filename like '%" + tokens[i] + "%'";
             }
             sql += " order by length(filename) asc";
-            debugNetPrintf(DEBUG,"sql = %s\n", sql.c_str());
+            //debugNetPrintf(DEBUG,"sql = %s\n", sql.c_str());
             int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
-            debugNetPrintf(DEBUG,"rc = %d\n", rc);
+            //debugNetPrintf(DEBUG,"rc = %d\n", rc);
 
             if (rc == SQLITE_OK) {
                 int step = sqlite3_step(res);
-                debugNetPrintf(DEBUG,"step = %d\n", step);
+                //debugNetPrintf(DEBUG,"step = %d\n", step);
                 if (step == SQLITE_ROW)
                 {
                     sprintf(thumbnail, "%s", sqlite3_column_text(res, 0));
-                    debugNetPrintf(DEBUG,"thumbnail = %s\n", thumbnail);
+                    //debugNetPrintf(DEBUG,"thumbnail = %s\n", thumbnail);
                     found = true;
                 }
                 sqlite3_finalize(res);

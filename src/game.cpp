@@ -20,7 +20,7 @@
 #include "cso.h"
 #include "net.h"
 
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
