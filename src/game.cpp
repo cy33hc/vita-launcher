@@ -1050,7 +1050,11 @@ namespace GAME {
             {
                 sprintf(path, "%s/icon0.png", game->rom_path);
             }
-            Net::DownloadFile(url_str.c_str(), path);
+
+            if (!FS::FileExists(path))
+            {
+                Net::DownloadFile(url_str.c_str(), path);
+            }
         }
 
         if (database == NULL)
