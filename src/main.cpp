@@ -33,6 +33,8 @@ namespace Services
 		ImGui::StyleColorsDark();
 		auto &style = ImGui::GetStyle();
 		style.AntiAliasedLinesUseTex = false;
+		style.AntiAliasedLines = true;
+		style.AntiAliasedFill = true;
 
 		Style::LoadStyle(style_path);
 
@@ -78,6 +80,10 @@ namespace Services
 
 	int Init(void)
 	{
+		// Allow writing to ux0:app/VITASHELL
+		sceAppMgrUmount("app0:");
+		sceAppMgrUmount("savedata0:");
+
 		vita2d_init();
 		vita2d_set_clear_color(RGBA8(0x00, 0x00, 0x00, 0xFF));
 

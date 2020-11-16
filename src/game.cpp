@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <vitasdk.h>
+#include <cstring>
 
 #include "game.h"
 #include "sfo.h"
@@ -17,6 +18,8 @@
 #include "eboot.h"
 #include "iso.h"
 #include "cso.h"
+#include "net.h"
+
 //#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
@@ -1001,6 +1004,129 @@ namespace GAME {
         }
 
         CloseIniFile();
+    }
+
+    void DownloadThumbnail(sqlite3 *database, Game *game)
+    {
+        std::string title = std::string(game->title);
+        title.erase(std::remove_if(title.begin(), title.end(),
+            [](char c) { return !std::isspace(c) && !std::isalnum(c) && c != '\''; } ),
+            title.end());
+        CONFIG::ReplaceAll(title, "'", "''");
+        std::vector<std::string> tokens;
+        char *token = std::strtok(title.c_str(), " ");
+        while (token != NULL) {
+            tokens.push_back(token);
+            token = std::strtok(NULL, " ");
+        }
+        sqlite3 *db = database;
+        if (database == NULL)
+        {
+            char db_name[64];
+            sprintf(db_name, "ux0:app/SMLA00001/thumbnails/%s.db", game->category);
+            int rc = sqlite3_open(db_name, &db);
+        }
+
+        char thumbnail[128];
+        bool found = DB::FindMatchingThumbnail(db, tokens, thumbnail);
+        if (found)
+        {
+            char url[512];
+            char path[512];
+            GameCategory *cat = categoryMap[game->category];
+            sprintf(url, "%s/%s", cat->download_url, thumbnail);
+            std::string url_str = std::string(url);
+            CONFIG::ReplaceAll(url_str, " ", "%20");
+
+            if (game->type == TYPE_ROM)
+            {
+                std::string rom_path = std::string(game->rom_path);
+                int slash_index = rom_path.find_last_of("/");
+                int dot_index = rom_path.find_last_of(".");
+                std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
+                sprintf(path, "%s/%s.png", cat->icon_path, rom_name.c_str());
+            }
+            else if (game->type == TYPE_SCUMMVM)
+            {
+                sprintf(path, "%s/icon0.png", game->rom_path);
+            }
+            Net::DownloadFile(url_str.c_str(), path);
+        }
+
+        if (database == NULL)
+        {
+            sqlite3_close(db);
+        }
+    }
+
+    void DownloadThumbnails(GameCategory *category)
+    {
+        gui_mode = GUI_MODE_SCAN;
+        games_to_scan = category->games.size();
+        games_scanned = 0;
+        sprintf(game_scan_inprogress.title, "%s", "");
+        sprintf(scan_message, "Downloading thumbnails for %s games", current_category->title);
+        StartDownloadThumbnailsThread(category);
+    }
+
+    int DownloadThumbnailsThread(SceSize args, ScanGamesParams *params)
+    {
+        GameCategory *cat = categoryMap[params->category];
+        char db_path[64];
+        sprintf(db_path, "%s/%s.db", THUMBNAIL_BASE_PATH, cat->category);
+        sqlite3 *db;
+        sqlite3_open(db_path, &db);
+        for (int i=0; i<cat->games.size(); i++)
+        {
+            if (cat->games[i].type == TYPE_ROM || cat->games[i].type == TYPE_SCUMMVM)
+            {
+                DownloadThumbnail(db, &cat->games[i]);
+                game_scan_inprogress = cat->games[i];
+            }
+            games_scanned++;
+        }
+        sqlite3_close(db);
+        gui_mode = GUI_MODE_LAUNCHER;
+        return sceKernelExitDeleteThread(0);
+    }
+
+    void StartDownloadThumbnailsThread(GameCategory *category)
+    {
+        ScanGamesParams params;
+        params.type = category->rom_type;
+        params.category = category->category;
+        download_images_thid = sceKernelCreateThread("download_thumbnails_thread", (SceKernelThreadEntry)GAME::DownloadThumbnailsThread, 0x10000100, 0x4000, 0, 0, NULL);
+		if (download_images_thid >= 0)
+			sceKernelStartThread(download_images_thid, sizeof(ScanGamesParams), &params);
+    }
+
+    int DeleteGamesImagesThread(SceSize args, ScanGamesParams *params)
+    {
+        sceKernelDelayThread(5000);
+        GameCategory *category = categoryMap[params->category];
+        for (int i=0; i < category->games.size(); i++)
+        {
+            Game *game = &category->games[i];
+            game->visible = 0;
+            game->thread_started = false;
+            if (game->tex.id != no_icon.id)
+            {
+                Tex tmp = game->tex;
+                game->tex = no_icon;
+                Textures::Free(&tmp);
+            }
+        }
+        return sceKernelExitDeleteThread(0);
+    }
+
+    void StartDeleteGameImagesThread(GameCategory *category)
+    {
+        ScanGamesParams params;
+        params.type = category->rom_type;
+        params.category = category->category;
+        delete_images_thid = sceKernelCreateThread("delete_images_thread", (SceKernelThreadEntry)GAME::DeleteGamesImagesThread, 0x10000100, 0x4000, 0, 0, NULL);
+		if (delete_images_thid >= 0)
+			sceKernelStartThread(delete_images_thid, sizeof(ScanGamesParams), &params);
     }
 
 }

@@ -51,6 +51,8 @@ namespace DB {
     void UpdateGameCategory(sqlite3 *database, Game *game);
     void UpdateGameTitle(sqlite3 *database, Game *game);
     void GetMaxTitleIdByType(sqlite3 *database, int type, char* max_title_id);
+    bool FindMatchingThumbnail(char* db_name, std::vector<std::string> &tokens, char* thumbnail);
+    bool FindMatchingThumbnail(sqlite3 *database, std::vector<std::string> &tokens, char* thumbnail);
     void SetupPerGameSettingsDatabase();
     void GetPspGameSettings(char* rom_path, BootSettings *settings);
     void GetRomCoreSettings(char* rom_path, char* core);

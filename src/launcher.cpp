@@ -524,6 +524,7 @@ namespace Windows {
                     handle_boot_rom_game = true;
                     sprintf(retro_core, "%s", cat->core);
                     DB::GetRomCoreSettings(game->rom_path, retro_core);
+                    
                 }
                 else
                 {
@@ -638,7 +639,7 @@ namespace Windows {
                             selected_game = nullptr;
                             category_selected = -1;
 
-                            GAME::DeleteGamesImages(previous_category);
+                            GAME::StartDeleteGameImagesThread(previous_category);
                             if(current_category->view_mode == VIEW_MODE_GRID)
                             {
                                 GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
@@ -686,6 +687,7 @@ namespace Windows {
             static bool rename_game = false;
             static bool add_psp_iso_game = false;
             static bool add_eboot_game = false;
+            static bool download_thumbnails = false;
 
             float posX = ImGui::GetCursorPosX();
 
@@ -1023,7 +1025,8 @@ namespace Windows {
                         if (selected_game != nullptr && current_category->id != FAVORITES)
                         {
                             if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache &&
-                                !move_game && !add_eboot_game && !add_psp_iso_game && selected_game->type != TYPE_BUBBLE)
+                                !move_game && !add_eboot_game && !add_psp_iso_game && selected_game->type != TYPE_BUBBLE
+                                && !download_thumbnails)
                             {
                                 ImGui::Checkbox("Rename selected game", &rename_game);
                                 ImGui::Separator();
@@ -1031,14 +1034,14 @@ namespace Windows {
 
                             if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache &&
                                 !rename_game && !add_eboot_game && !add_psp_iso_game && current_category->rom_type != TYPE_ROM &&
-                                current_category->rom_type != TYPE_SCUMMVM)
+                                current_category->rom_type != TYPE_SCUMMVM && !download_thumbnails)
                             {
                                 ImGui::Checkbox("Move selected game", &move_game);
                                 ImGui::Separator();
                             }
 
                             if (!refresh_games && !add_rom_game && !refresh_current_category && !move_game && !rename_game &&
-                                !add_eboot_game && !add_psp_iso_game)
+                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails)
                             {
                                 ImGui::Checkbox("Hide selected game", &remove_from_cache);
                                 ImGui::Separator();
@@ -1048,7 +1051,7 @@ namespace Windows {
                         if (current_category->rom_type == TYPE_PSP_ISO)
                         {
                             if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game &&
-                                !add_eboot_game && !add_rom_game && !rename_game)
+                                !add_eboot_game && !add_rom_game && !rename_game && !download_thumbnails)
                             {
                                 ImGui::Checkbox("Add new PSP ISO game", &add_psp_iso_game);
                                 ImGui::Separator();
@@ -1058,7 +1061,7 @@ namespace Windows {
                         if (current_category->rom_type == TYPE_EBOOT)
                         {
                             if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game &&
-                                !add_psp_iso_game && !add_rom_game && !rename_game)
+                                !add_psp_iso_game && !add_rom_game && !rename_game && !download_thumbnails)
                             {
                                 ImGui::Checkbox("Add new EBOOT game", &add_eboot_game);
                                 ImGui::Separator();
@@ -1068,7 +1071,7 @@ namespace Windows {
                         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
                         {
                             if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game &&
-                                !add_eboot_game && !add_psp_iso_game && !rename_game)
+                                !add_eboot_game && !add_psp_iso_game && !rename_game && !download_thumbnails)
                             {
                                 if (current_category->id == PS1_GAMES)
                                 {
@@ -1085,7 +1088,7 @@ namespace Windows {
                         if (current_category->rom_type != TYPE_BUBBLE)
                         {
                             if (!refresh_games && !remove_from_cache && !add_rom_game && !move_game && !rename_game &&
-                                !add_eboot_game && !add_psp_iso_game)
+                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails)
                             {
                                 char cb_text[64];
                                 sprintf(cb_text, "Rescan games in %s category only", current_category->title);
@@ -1094,8 +1097,21 @@ namespace Windows {
                             }
                         }
                         
+                        if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES
+                            || current_category->rom_type == TYPE_SCUMMVM)
+                        {
+                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game &&
+                                !add_eboot_game && !add_psp_iso_game && !rename_game && !add_rom_game)
+                            {
+                                char cb_text[64];
+                                sprintf(cb_text, "Download thumbnails in %s category", current_category->title);
+                                ImGui::Checkbox(cb_text, &download_thumbnails);
+                                ImGui::Separator();
+                            }
+                        }
+
                         if (!remove_from_cache && !add_rom_game && !refresh_current_category && !move_game && !rename_game &&
-                            !add_eboot_game && !add_psp_iso_game)
+                            !add_eboot_game && !add_psp_iso_game && !download_thumbnails)
                         {
                             ImGui::Checkbox("Rescan all game categories to rebuild cache", &refresh_games);
                             ImGui::Separator();
@@ -1169,6 +1185,11 @@ namespace Windows {
                     GAME::RefreshGames(false);
                 }
 
+                if (download_thumbnails)
+                {
+                    GAME::DownloadThumbnails(current_category);
+                }
+
                 if (remove_from_cache && selected_game != nullptr && selected_game->title != TYPE_BUBBLE)
                 {
                     Game *game = selected_game;
@@ -1210,6 +1231,7 @@ namespace Windows {
                 add_eboot_game = false;
                 add_rom_game = false;
                 rename_game = false;
+                download_thumbnails = false;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
