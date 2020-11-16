@@ -33,6 +33,8 @@ namespace Services
 		ImGui::StyleColorsDark();
 		auto &style = ImGui::GetStyle();
 		style.AntiAliasedLinesUseTex = false;
+		style.AntiAliasedLines = true;
+		style.AntiAliasedFill = true;
 
 		Style::LoadStyle(style_path);
 

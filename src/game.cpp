@@ -1095,8 +1095,38 @@ namespace GAME {
         ScanGamesParams params;
         params.type = category->rom_type;
         params.category = category->category;
-        scan_games_category_thid = sceKernelCreateThread("download_thumbnails_thread", (SceKernelThreadEntry)GAME::DownloadThumbnailsThread, 0x10000100, 0x4000, 0, 0, NULL);
-		if (scan_games_category_thid >= 0)
-			sceKernelStartThread(scan_games_category_thid, sizeof(ScanGamesParams), &params);
+        download_images_thid = sceKernelCreateThread("download_thumbnails_thread", (SceKernelThreadEntry)GAME::DownloadThumbnailsThread, 0x10000100, 0x4000, 0, 0, NULL);
+		if (download_images_thid >= 0)
+			sceKernelStartThread(download_images_thid, sizeof(ScanGamesParams), &params);
     }
+
+    int DeleteGamesImagesThread(SceSize args, ScanGamesParams *params)
+    {
+        sceKernelDelayThread(5000);
+        GameCategory *category = categoryMap[params->category];
+        for (int i=0; i < category->games.size(); i++)
+        {
+            Game *game = &category->games[i];
+            game->visible = 0;
+            game->thread_started = false;
+            if (game->tex.id != no_icon.id)
+            {
+                Tex tmp = game->tex;
+                game->tex = no_icon;
+                Textures::Free(&tmp);
+            }
+        }
+        return sceKernelExitDeleteThread(0);
+    }
+
+    void StartDeleteGameImagesThread(GameCategory *category)
+    {
+        ScanGamesParams params;
+        params.type = category->rom_type;
+        params.category = category->category;
+        delete_images_thid = sceKernelCreateThread("delete_images_thread", (SceKernelThreadEntry)GAME::DeleteGamesImagesThread, 0x10000100, 0x4000, 0, 0, NULL);
+		if (delete_images_thid >= 0)
+			sceKernelStartThread(delete_images_thid, sizeof(ScanGamesParams), &params);
+    }
+
 }

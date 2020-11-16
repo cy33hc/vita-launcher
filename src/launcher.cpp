@@ -639,7 +639,7 @@ namespace Windows {
                             selected_game = nullptr;
                             category_selected = -1;
 
-                            GAME::DeleteGamesImages(previous_category);
+                            GAME::StartDeleteGameImagesThread(previous_category);
                             if(current_category->view_mode == VIEW_MODE_GRID)
                             {
                                 GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
@@ -1101,7 +1101,7 @@ namespace Windows {
                             || current_category->rom_type == TYPE_SCUMMVM)
                         {
                             if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game &&
-                                !add_eboot_game && !add_psp_iso_game && !rename_game && !refresh_current_category)
+                                !add_eboot_game && !add_psp_iso_game && !rename_game && !add_rom_game)
                             {
                                 char cb_text[64];
                                 sprintf(cb_text, "Download thumbnails in %s category", current_category->title);
