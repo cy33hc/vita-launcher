@@ -422,13 +422,18 @@ namespace Windows {
                         }
                     }
                 }
-                game->visible++;
+                game->visible = 1;
             }
             else
             {
+                if (game->visible > 0)
+                {
+                    game->visible_time = sceKernelGetProcessTimeWide();
+                }
                 game->visible = 0;
                 game->thread_started = false;
-                if (game->tex.id != no_icon.id)
+                uint64_t current_time = sceKernelGetProcessTimeWide();
+                if (game->tex.id != no_icon.id && current_time - game->visible_time > 5000)
                 {
                     Tex tmp = game->tex;
                     game->tex = no_icon;
