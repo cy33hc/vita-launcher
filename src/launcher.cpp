@@ -1942,6 +1942,36 @@ namespace Windows {
     void HandleSearchGame()
     {
         paused = true;
+        static Game *search_selected_game = nullptr;
+        SceCtrlData pad;
+        sceCtrlPeekBufferNegative(0, &pad, 1);
+
+        if ((pad_prev.buttons & SCE_CTRL_SQUARE) && !(pad.buttons & SCE_CTRL_SQUARE))
+        {
+            if (search_selected_game != nullptr)
+            {
+                if (!search_selected_game->favorite)
+                {
+                    Game game = *search_selected_game;
+                    game.tex = no_icon;
+                    game.visible = false;
+                    game.thread_started = false;
+                    game_categories[FAVORITES].games.push_back(game);
+                    GAME::SortGames(&game_categories[FAVORITES]);
+                    GAME::SetMaxPage(&game_categories[FAVORITES]);
+                    search_selected_game->favorite = true;
+                    Game *cat_game = GAME::FindGame(categoryMap[search_selected_game->category], search_selected_game);
+                    cat_game->favorite = true;
+                    DB::InsertFavorite(nullptr, search_selected_game);
+                }
+                else {
+                    search_selected_game->favorite = false;
+                    DB::DeleteFavorite(nullptr, search_selected_game);
+                    GAME::RemoveGameFromCategory(&game_categories[FAVORITES], search_selected_game);
+                    GAME::SetMaxPage(&game_categories[FAVORITES]);
+                }
+            }
+        }
 
         ImGui::OpenPopup("Search Games");
         ImGui::SetNextWindowPos(ImVec2(180, 100));
@@ -2059,6 +2089,10 @@ namespace Windows {
                     handle_search_game = false;
                     ImGui::CloseCurrentPopup();
                 }
+                if (ImGui::IsItemHovered())
+                {
+                    search_selected_game = &games_selection[i];
+                }
                 ImGui::NextColumn();
                 ImGui::Text(categoryMap[games_selection[i].category]->alt_title);
                 ImGui::NextColumn();
@@ -2072,6 +2106,7 @@ namespace Windows {
             {
                 paused = false;
                 handle_search_game = false;
+                games_selection.clear();
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
