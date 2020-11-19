@@ -27,6 +27,7 @@ static bool tab_infocus = false;
 static int category_selected = -1;
 static char cb_style_name[64];
 static char cb_category_name[16] = "all";
+static int search_count = 0;
 static std::vector<std::string> styles;
 static ime_callback_t ime_callback = nullptr;
 static ime_callback_t ime_after_update = nullptr;
@@ -188,6 +189,7 @@ namespace Windows {
         if ((pad_prev.buttons & SCE_CTRL_START) && !(pad.buttons & SCE_CTRL_START) && !paused)
         {
             handle_search_game = true;
+            search_count++;
         }
 
         pad_prev = pad;
@@ -2058,7 +2060,7 @@ namespace Windows {
                     ImGui::SameLine();
                 }
                 char title[192];
-                sprintf(title, "%s##%s%d", games_selection[i].title, games_selection[i].category, i);
+                sprintf(title, "%s##%s%d%d", games_selection[i].title, games_selection[i].category, search_count, i);
                 if (ImGui::Selectable(title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_SpanAllColumns))
                 {
                     Game *game = &games_selection[i];
