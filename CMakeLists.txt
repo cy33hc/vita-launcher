@@ -13,7 +13,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "Launcher")
 set(VITA_TITLEID  "SMLA00001")
-set(VITA_VERSION  "02.10")
+set(VITA_VERSION  "02.20")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-psabi -Wunused-variable -Wwrite-strings -fpermissive -std=c++17 -Wimplicit-fallthrough")
@@ -84,6 +84,7 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE sce_sys/livearea/contents/template.xml sce_sys/livearea/contents/template.xml
   FILE thumbnails_db/a2600.db thumbnails/a2600.db
   FILE thumbnails_db/a5200.db thumbnails/a5200.db
+  FILE thumbnails_db/a7800.db thumbnails/a7800.db
   FILE thumbnails_db/aLynx.db thumbnails/aLynx.db
   FILE thumbnails_db/bandai.db thumbnails/bandai.db
   FILE thumbnails_db/c64.db thumbnails/c64.db
@@ -114,5 +115,6 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE triangle.png triangle.png
   FILE circle.png circle.png
   FILE cross.png cross.png
+  FILE start.png start.png
   FILE default_style.ini default_style.ini
 )

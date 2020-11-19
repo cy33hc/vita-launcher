@@ -16,6 +16,7 @@ extern "C" {
 }
 
 Game *selected_game;
+Game *game_to_boot;
 static SceCtrlData pad_prev;
 bool paused = false;
 int view_mode;
@@ -25,11 +26,14 @@ static int game_position = 0;
 static bool tab_infocus = false;
 static int category_selected = -1;
 static char cb_style_name[64];
+static char cb_category_name[16] = "all";
 static std::vector<std::string> styles;
 static ime_callback_t ime_callback = nullptr;
 static ime_callback_t ime_after_update = nullptr;
 static ime_callback_t ime_before_update = nullptr;
 static std::vector<std::string> retro_cores;
+static char search_text[32];
+static std::vector<Game> games_selection;
 static BootSettings settings;
 static char retro_core[128];
 
@@ -46,6 +50,8 @@ bool handle_boot_game = false;
 bool handle_boot_rom_game = false;
 bool handle_add_iso_game = false;
 bool handle_add_eboot_game = false;
+bool handle_search_game = false;
+
 char game_action_message[256];
 
 float previous_right = 0.0f;
@@ -178,6 +184,11 @@ namespace Windows {
             }
         }
 
+        if ((pad_prev.buttons & SCE_CTRL_START) && !(pad.buttons & SCE_CTRL_START) && !paused)
+        {
+            handle_search_game = true;
+        }
+
         pad_prev = pad;
         previous_right = io.NavInputs[ImGuiNavInput_DpadRight];
         previous_left = io.NavInputs[ImGuiNavInput_DpadLeft];
@@ -289,14 +300,16 @@ namespace Windows {
                                 GAME::Launch(game);
                             }
                             handle_boot_rom_game = true;
+                            game_to_boot = game;
                             sprintf(retro_core, "%s", cat->core);
-                            DB::GetRomCoreSettings(game->rom_path, retro_core);
+                            DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
                         }
                         else
                         {
                             handle_boot_game = true;
+                            game_to_boot = game;
                             settings = defaul_boot_settings;
-                            DB::GetPspGameSettings(selected_game->rom_path, &settings);
+                            DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
                         }
                     }
                     if (ImGui::IsWindowAppearing() && button_id == 0)
@@ -385,14 +398,16 @@ namespace Windows {
                         GAME::Launch(game);
                     }
                     handle_boot_rom_game = true;
+                    game_to_boot = game;
                     sprintf(retro_core, "%s", cat->core);
-                    DB::GetRomCoreSettings(game->rom_path, retro_core);
+                    DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
                 }
                 else
                 {
                     handle_boot_game = true;
+                    game_to_boot = selected_game;
                     settings = defaul_boot_settings;
-                    DB::GetPspGameSettings(selected_game->rom_path, &settings);
+                    DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
                 }
             }
             if (ImGui::IsItemFocused())
@@ -527,15 +542,17 @@ namespace Windows {
                         GAME::Launch(game);
                     }
                     handle_boot_rom_game = true;
+                    game_to_boot = game;
                     sprintf(retro_core, "%s", cat->core);
-                    DB::GetRomCoreSettings(game->rom_path, retro_core);
+                    DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
                     
                 }
                 else
                 {
                     handle_boot_game = true;
+                    game_to_boot = selected_game;
                     settings = defaul_boot_settings;
-                    DB::GetPspGameSettings(selected_game->rom_path, &settings);
+                    DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
                 }
             }
             ImGui::PopID();
@@ -569,7 +586,7 @@ namespace Windows {
 
     void ShowCommonSubWindow()
     {
-        ImGui::SetCursorPosX(350);
+        ImGui::SetCursorPosX(290);
         ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Un-Select"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
@@ -578,6 +595,8 @@ namespace Windows {
         ImGui::Text("Settings"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Select"); ImGui::SameLine();
+        ImGui::Image(reinterpret_cast<ImTextureID>(start_icon.id), ImVec2(16,16)); ImGui::SameLine();
+        ImGui::Text("Search"); ImGui::SameLine();
 
         if (handle_add_rom_game)
         {
@@ -607,6 +626,11 @@ namespace Windows {
         if (handle_move_game)
         {
             HandleMoveGame();
+        }
+
+        if (handle_search_game)
+        {
+            HandleSearchGame();
         }
 
         ShowSettingsDialog();
@@ -1246,10 +1270,11 @@ namespace Windows {
     void HandleAdrenalineGame()
     {
         paused = true;
+        GameCategory *category = categoryMap[game_to_boot->category];
         char popup_title[64];
-        sprintf(popup_title, "Boot %s Game", current_category->alt_title);
+        sprintf(popup_title, "Boot %s Game", category->alt_title);
         ImGui::OpenPopup(popup_title);
-        if (current_category->id == PS1_GAMES && strcmp(current_category->rom_launcher_title_id, RETROARCH_TITLE_ID) == 0)
+        if (category->id == PS1_GAMES && strcmp(category->rom_launcher_title_id, RETROARCH_TITLE_ID) == 0)
         {
             ImGui::SetNextWindowPos(ImVec2(300, 200));
             ImGui::SetNextWindowSize(ImVec2(400,100));
@@ -1262,18 +1287,18 @@ namespace Windows {
         if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
         {
             float posX = ImGui::GetCursorPosX();
-            if (current_category->id == PS1_GAMES)
+            if (category->id == PS1_GAMES)
             {
                 ImGui::Text("Boot with: "); ImGui::SameLine();
                 ImGui::SetCursorPosX(posX + 110);
-                if (ImGui::RadioButton("Adrenaline", strcmp(current_category->rom_launcher_title_id, DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID)==0))
+                if (ImGui::RadioButton("Adrenaline", strcmp(category->rom_launcher_title_id, DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID)==0))
                 { 
-                    sprintf(current_category->rom_launcher_title_id, "%s", DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID);
+                    sprintf(category->rom_launcher_title_id, "%s", DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID);
                 }
                 ImGui::SameLine();
-                if (ImGui::RadioButton("RetroArch", strcmp(current_category->rom_launcher_title_id, RETROARCH_TITLE_ID)==0))
+                if (ImGui::RadioButton("RetroArch", strcmp(category->rom_launcher_title_id, RETROARCH_TITLE_ID)==0))
                 { 
-                    sprintf(current_category->rom_launcher_title_id, "%s", RETROARCH_TITLE_ID);
+                    sprintf(category->rom_launcher_title_id, "%s", RETROARCH_TITLE_ID);
                 }
             }
             else
@@ -1281,7 +1306,7 @@ namespace Windows {
                 ImGui::Text("Boot Settings");
             }
 
-            if (current_category->id != PS1_GAMES || strcmp(current_category->rom_launcher_title_id, RETROARCH_TITLE_ID) != 0)
+            if (category->id != PS1_GAMES || strcmp(category->rom_launcher_title_id, RETROARCH_TITLE_ID) != 0)
             {
                 ImGui::Separator();
                 ImGui::Text("Driver:"); ImGui::SameLine();
@@ -1365,17 +1390,17 @@ namespace Windows {
             ImGui::Separator();
             if (ImGui::Button("OK"))
             {
-                if (current_category->id == PS1_GAMES)
+                if (category->id == PS1_GAMES)
                 {
                     OpenIniFile(CONFIG_INI_FILE);
-                    WriteString(current_category->title, CONFIG_ROM_LAUNCHER_TITLE_ID, current_category->rom_launcher_title_id);
+                    WriteString(category->title, CONFIG_ROM_LAUNCHER_TITLE_ID, category->rom_launcher_title_id);
                     WriteIniFile(CONFIG_INI_FILE);
                     CloseIniFile();
                 }
-                DB::SavePspGameSettings(selected_game->rom_path, &settings);
+                DB::SavePspGameSettings(game_to_boot->rom_path, &settings);
                 paused = false;
                 handle_boot_game = false;
-                GAME::Launch(selected_game, &settings);
+                GAME::Launch(game_to_boot, &settings);
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SetItemDefaultFocus();
@@ -1395,7 +1420,7 @@ namespace Windows {
     void HandleBootRomGame()
     {
         paused = true;
-        GameCategory *cat = categoryMap[selected_game->category];
+        GameCategory *cat = categoryMap[game_to_boot->category];
 
         if (retro_cores.size() == 0)
         {
@@ -1419,10 +1444,10 @@ namespace Windows {
             for (int i = 0; i < retro_cores.size(); i++)
             {
                 if (ImGui::Selectable(retro_cores[i].c_str()) &&
-                    selected_game != nullptr)
+                    game_to_boot != nullptr)
                 {
-                    DB::SaveRomCoreSettings(selected_game->rom_path, retro_cores[i].c_str());
-                    GAME::Launch(selected_game, nullptr, retro_cores[i].c_str());
+                    DB::SaveRomCoreSettings(game_to_boot->rom_path, retro_cores[i].c_str());
+                    GAME::Launch(game_to_boot, nullptr, retro_cores[i].c_str());
                 }
                 if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
                 {
@@ -1911,6 +1936,141 @@ namespace Windows {
             }
         }
         
+    }
+
+    void HandleSearchGame()
+    {
+        paused = true;
+
+        ImGui::OpenPopup("Search Games");
+        ImGui::SetNextWindowPos(ImVec2(180, 100));
+        ImGui::SetNextWindowSize(ImVec2(600,357));
+        if (ImGui::BeginPopupModal("Search Games", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+        {
+            ImGui::Text("Category:"); ImGui::SameLine();
+            if (ImGui::BeginCombo("##Category", cb_category_name, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular))
+            {
+                bool is_selected = strcmp("all", cb_category_name)==0;
+                if (ImGui::Selectable("all", is_selected))
+                {
+                    sprintf(cb_category_name, "all");
+                }
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+
+                for (int n = 1; n < TOTAL_CATEGORY; n++)
+                {
+                    const bool is_selected = strcmp(game_categories[n].category, cb_category_name)==0;
+                    if (ImGui::Selectable(game_categories[n].alt_title, is_selected))
+                        sprintf(cb_category_name, "%s", game_categories[n].category);
+
+                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::Separator();
+
+            ImGui::Text("Search:"); ImGui::SameLine();
+            if (ImGui::Selectable(search_text, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(300, 0)))
+            {
+                ime_single_field = search_text;
+                ime_before_update = nullptr;
+                ime_after_update = nullptr;
+                ime_callback = SingleValueImeCallback;
+                Dialog::initImeDialog("Search For", search_text, 32, SCE_IME_TYPE_DEFAULT, 0, 0);
+                gui_mode = GUI_MODE_IME;
+            };
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+            if (ImGui::SmallButton("Find"))
+            {
+                if (strlen(search_text) < 3)
+                {
+                    sprintf(search_text, "min 3 character required");
+                }
+                else
+                {
+                    std::vector<GameCategory*> cats;
+                    if (strcmp("all", cb_category_name) == 0)
+                    {
+                        for (int i=1; i<TOTAL_CATEGORY; i++)
+                        {
+                            cats.push_back(&game_categories[i]);
+                        }
+                    }
+                    else
+                    {
+                        cats.push_back(categoryMap[cb_category_name]);
+                    }
+                    
+                    games_selection.clear();
+                    GAME::FindGamesByPartialName(cats, search_text, games_selection);
+                }
+                
+            }
+            ImGui::Separator();
+            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(595,238));
+            ImGui::BeginChild("search games list");
+            ImGui::Columns(2, "search games list", true);
+            for (int i = 0; i < games_selection.size(); i++)
+            {
+                ImGui::SetColumnWidth(-1,450);
+                if (games_selection[i].favorite)
+                {
+                    ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
+                    ImGui::SameLine();
+                }
+                char title[192];
+                sprintf(title, "%s##%s%d", games_selection[i].title, games_selection[i].category, i);
+                if (ImGui::Selectable(title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_SpanAllColumns))
+                {
+                    Game *game = &games_selection[i];
+                    if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                    {
+                        GAME::Launch(game);
+                    }
+                    else if (game->type == TYPE_ROM)
+                    {
+                        GameCategory *cat = categoryMap[game->category];
+                        if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                        {
+                            GAME::Launch(game);
+                        }
+                        handle_boot_rom_game = true;
+                        game_to_boot = game;
+                        sprintf(retro_core, "%s", cat->core);
+                        DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
+                    }
+                    else
+                    {
+                        handle_boot_game = true;
+                        game_to_boot = game;
+                        settings = defaul_boot_settings;
+                        DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                    }
+                    paused = false;
+                    handle_search_game = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::NextColumn();
+                ImGui::Text(categoryMap[games_selection[i].category]->alt_title);
+                ImGui::NextColumn();
+                ImGui::Separator();
+            }
+            ImGui::Columns(1);
+            ImGui::EndChild();
+
+            ImGui::Separator();
+            if (ImGui::Button("Cancel"))
+            {
+                paused = false;
+                handle_search_game = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
     }
 
     void GameScanWindow()

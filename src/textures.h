@@ -16,6 +16,7 @@ extern Tex square_icon;
 extern Tex triangle_icon;
 extern Tex circle_icon;
 extern Tex cross_icon;
+extern Tex start_icon;
 
 namespace Textures {
     void LoadFonts(Tex *font_texture);

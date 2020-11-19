@@ -199,6 +199,7 @@ namespace GAME {
     void DownloadThumbnail(sqlite3 *database, Game *game);
     void DownloadThumbnails(GameCategory *category);
     void StartDownloadThumbnailsThread(GameCategory *category);
+    void FindGamesByPartialName(std::vector<GameCategory*> &categories, char* search_text, std::vector<Game> &games);
 }
 
 #endif

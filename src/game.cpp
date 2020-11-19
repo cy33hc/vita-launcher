@@ -1133,4 +1133,30 @@ namespace GAME {
 			sceKernelStartThread(delete_images_thid, sizeof(ScanGamesParams), &params);
     }
 
+    void FindGamesByPartialName(std::vector<GameCategory*> &categories, char* search_text, std::vector<Game> &games)
+    {
+        for (int i=0; i<categories.size(); i++)
+        {
+            GameCategory *category = categories[i];
+            for (int j=0; j<category->games.size(); j++)
+            {
+                std::string title = std::string(category->games[j].title);
+                std::string text = std::string(search_text);
+                std::transform(title.begin(), title.end(), title.begin(),
+                        [](unsigned char c){ return std::tolower(c); });
+                std::transform(text.begin(), text.end(), text.begin(),
+                        [](unsigned char c){ return std::tolower(c); });
+                if (title.find(text) != std::string::npos)
+                {
+                    Game game = category->games[j];
+                    game.tex = no_icon;
+                    games.push_back(game);
+                    if (games.size() >= 50)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+    }
 }
