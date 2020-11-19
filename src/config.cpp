@@ -14,6 +14,7 @@ extern "C" {
 
 bool show_all_categories;
 bool parental_control;
+char search_text[32];
 
 namespace CONFIG {
 
@@ -132,6 +133,9 @@ namespace CONFIG {
             FS::MkDirs(STYLES_FOLDER);
         }
 
+        sprintf(search_text, "%s", ReadString(CONFIG_GLOBAL, CONFIG_SEARCH_TEXT, ""));
+        WriteString(CONFIG_GLOBAL, CONFIG_SEARCH_TEXT, search_text);
+        
         sprintf(pspemu_path, "%s", ReadString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, DEFAULT_PSPEMU_PATH));
         WriteString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, pspemu_path);
         sprintf(pspemu_iso_path, "%s/ISO", pspemu_path);

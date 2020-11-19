@@ -32,7 +32,7 @@ static ime_callback_t ime_callback = nullptr;
 static ime_callback_t ime_after_update = nullptr;
 static ime_callback_t ime_before_update = nullptr;
 static std::vector<std::string> retro_cores;
-static char search_text[32];
+static char txt_search_text[32];
 static std::vector<Game> games_selection;
 static BootSettings settings;
 static char retro_core[128];
@@ -72,6 +72,7 @@ namespace Windows {
                 styles.push_back(style_files[i].substr(0, index));
             }
         }
+        sprintf(txt_search_text, search_text);
     }
 
     void HandleLauncherWindowInput()
@@ -1973,25 +1974,29 @@ namespace Windows {
             ImGui::Separator();
 
             ImGui::Text("Search:"); ImGui::SameLine();
-            if (ImGui::Selectable(search_text, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(300, 0)))
+            if (ImGui::Selectable(txt_search_text, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(300, 0)))
             {
-                ime_single_field = search_text;
+                ime_single_field = txt_search_text;
                 ime_before_update = nullptr;
                 ime_after_update = nullptr;
                 ime_callback = SingleValueImeCallback;
-                Dialog::initImeDialog("Search For", search_text, 32, SCE_IME_TYPE_DEFAULT, 0, 0);
+                Dialog::initImeDialog("Search For", txt_search_text, 32, SCE_IME_TYPE_DEFAULT, 0, 0);
                 gui_mode = GUI_MODE_IME;
             };
             ImGui::SetItemDefaultFocus();
             ImGui::SameLine();
             if (ImGui::SmallButton("Find"))
             {
-                if (strlen(search_text) < 3)
+                if (strlen(txt_search_text) < 3)
                 {
-                    sprintf(search_text, "min 3 character required");
+                    sprintf(txt_search_text, "min 3 character required");
                 }
                 else
                 {
+                    OpenIniFile(CONFIG_INI_FILE);
+                    WriteString(CONFIG_GLOBAL, CONFIG_SEARCH_TEXT, txt_search_text);
+                    WriteIniFile(CONFIG_INI_FILE);
+                    CloseIniFile();
                     std::vector<GameCategory*> cats;
                     if (strcmp("all", cb_category_name) == 0)
                     {
@@ -2006,7 +2011,7 @@ namespace Windows {
                     }
                     
                     games_selection.clear();
-                    GAME::FindGamesByPartialName(cats, search_text, games_selection);
+                    GAME::FindGamesByPartialName(cats, txt_search_text, games_selection);
                 }
                 
             }
