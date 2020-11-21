@@ -20,7 +20,7 @@ namespace CONFIG {
 
     void SetupCategory(GameCategory *category, int category_id, const char* category_name, const char* title,
                        const char* title_id, const char* core, const char* default_prefixes, const char* default_file_filters,
-                       const char* default_alt_cores, int rom_type, const char* download_url)
+                       const char* default_alt_cores, int rom_type, const char* download_url, int grid_rows)
     {
         const char* valid_title_prefixes;
         const char* file_filters;
@@ -37,6 +37,24 @@ namespace CONFIG {
         category->rom_type = rom_type;
         category->order = ReadInt(category->title, CONFIG_CATEGORY_ORDER, category_id);
         WriteInt(category->title, CONFIG_CATEGORY_ORDER, category->order);
+
+        category->rows = ReadInt(category->title, CONFIG_GRID_ROWS, 3);
+        if (category->rows <= 2)
+        {
+            category->rows = 2;
+            category->columns = 4;
+            category->button_size = ImVec2(230,233);
+            category->thumbnail_size = ImVec2(220,205);
+            category->games_per_page = 8;
+        }
+        else if (category->rows >= 3)
+        {
+            category->rows = 3;
+            category->columns = 6;
+            category->button_size = ImVec2(148,154);
+            category->thumbnail_size = ImVec2(138,127);
+        }
+        category->games_per_page = category->rows * category->columns;
 
         sprintf(category->alt_title, "%s", ReadString(category->title, CONFIG_ALT_TITLE, category->title));
         WriteString(category->title, CONFIG_ALT_TITLE, category->alt_title);
@@ -164,42 +182,42 @@ namespace CONFIG {
         WriteString(CONFIG_GLOBAL, CONFIG_ADERNALINE_LAUNCHER_TITLE_ID, adernaline_launcher_title_id);
         sprintf(adernaline_launcher_boot_bin_path, "ux0:app/%s/data/boot.bin", adernaline_launcher_title_id);
 
-        SetupCategory(&game_categories[VITA_GAMES], VITA_GAMES, "vita", "Vita", nullptr, nullptr, VITA_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_BUBBLE, nullptr);
-        SetupCategory(&game_categories[PSP_GAMES], PSP_GAMES, "psp", "PSP", nullptr, nullptr, PSP_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_PSP_ISO, nullptr);
-        SetupCategory(&game_categories[PS1_GAMES], PS1_GAMES, "ps1", "PSX", "RETROVITA", "app0:pcsx_rearmed_libretro.self", PS1_TITLE_ID_PREFIXES, PS1_FILTERS, PS1_ALT_CORES, TYPE_EBOOT, PS1_DOWNLOAD_URL);
-        SetupCategory(&game_categories[PS_MIMI_GAMES], PS_MIMI_GAMES, "psmini", "PSP Mini", nullptr, nullptr, PSP_MINI_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_EBOOT, nullptr);
-        SetupCategory(&game_categories[PS_MOBILE_GAMES], PS_MOBILE_GAMES, "psmobile", "PS Mobile", nullptr, nullptr, PS_MOBILE_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_BUBBLE, nullptr);
-        SetupCategory(&game_categories[NES_GAMES], NES_GAMES, "nes", "NES", "RETROVITA", "app0:nestopia_libretro.self", NES_TITLE_ID_PREFIXES, NES_FILTERS, NES_ALT_CORES, TYPE_ROM, NES_DOWNLOAD_URL);
-        SetupCategory(&game_categories[SNES_GAMES], SNES_GAMES, "snes", "SNES", "RETROVITA", "app0:snes9x2005_libretro.self", SNES_TITLE_ID_PREFIXES, SNES_FILTERS, SNES_ALT_CORES, TYPE_ROM, SNES_DOWNLOAD_URL);
-        SetupCategory(&game_categories[GB_GAMES], GB_GAMES, "gb", "GB", "RETROVITA", "app0:gearboy_libretro.self", GB_TITLE_ID_PREFIXES, GB_FILTERS, GB_ALT_CORES, TYPE_ROM, GB_DOWNLOAD_URL);
-        SetupCategory(&game_categories[GBA_GAMES], GBA_GAMES, "gba", "GBA", "RETROVITA", "app0:vba_next_libretro.self", GBA_TITLE_ID_PREFIXES, GBA_FILTERS, GBA_ALT_CORES, TYPE_ROM, GBA_DOWNLOAD_URL);
-        SetupCategory(&game_categories[N64_GAMES], N64_GAMES, "n64", "N64", "DEDALOX64", nullptr, N64_TITLE_ID_PREFIXES, N64_FILTERS, N64_ALT_CORES, TYPE_ROM, N64_DOWNLOAD_URL);
-        SetupCategory(&game_categories[GBC_GAMES], GBC_GAMES, "gbc", "GBC", "RETROVITA", "app0:gambatte_libretro.self", GBC_TITLE_ID_PREFIXES, GBC_FILTERS, GBC_ALT_CORES, TYPE_ROM, GBC_DOWNLOAD_URL);
-        SetupCategory(&game_categories[NEOGEO_GAMES], NEOGEO_GAMES, "neogeo", "NeoGeo", "RETROVITA", "app0:cap32_libretro.self", NEOGEO_TITLE_ID_PREFIXES, NEOGEO_FILTERS, NEOGEO_ALT_CORES, TYPE_ROM, NEOGEO_DOWNLOAD_URL);
-        SetupCategory(&game_categories[NEOGEO_PC_GAMES], NEOGEO_PC_GAMES, "neogeopc", "NeoGeoPC", "RETROVITA", "app0:mednafen_ngp_libretro.self", NEOGEO_PC_TITLE_ID_PREFIXES, NEOGEO_PC_FILTERS, NEOGEO_PC_ALT_CORES, TYPE_ROM, NEOGEO_PC_DOWNLOAD_URL);
-        SetupCategory(&game_categories[SEGA_SATURN_GAMES], SEGA_SATURN_GAMES, "saturn", "S-Saturn", "RETROVITA", "app0:yabause_libretro.self", SEGA_SATURN_TITLE_ID_PREFIXES, SEGA_SATURN_FILTERS, SEGA_SATURN_ALT_CORES, TYPE_ROM, SEGA_SATURN_DOWNLOAD_URL);
-        SetupCategory(&game_categories[GAME_GEAR_GAMES], GAME_GEAR_GAMES, "ggear", "G-Gear", "RETROVITA", "app0:smsplus_libretro.self", GAME_GEAR_TITLE_ID_PREFIXES, GAME_GEAR_FILTERS, GAME_GEAR_ALT_CORES, TYPE_ROM, GAME_GEAR_DOWNLOAD_URL);
-        SetupCategory(&game_categories[MASTER_SYSTEM_GAMES], MASTER_SYSTEM_GAMES, "msystem", "M-System", "RETROVITA", "app0:genesis_plus_gx_libretro.self", MASTER_SYSTEM_TITLE_ID_PREFIXES, MASTER_SYSTEM_FILTERS, MASTER_SYSTEM_ALT_CORES, TYPE_ROM, MASTER_SYSTEM_DOWNLOAD_URL);
-        SetupCategory(&game_categories[MEGA_DRIVE_GAMES], MEGA_DRIVE_GAMES, "mdrive", "M-Drive", "RETROVITA", "app0:picodrive_libretro.self", MEGA_DRIVE_TITLE_ID_PREFIXES, MEGA_DRIVE_FILTERS, MEGA_DRIVE_ALT_CORES, TYPE_ROM, MEGA_DRIVE_DOWNLOAD_URL);
-        SetupCategory(&game_categories[NEC_GAMES], NEC_GAMES, "nec", "NEC", "RETROVITA", "app0:mednafen_pce_fast_libretro.self", NEC_TITLE_ID_PREFIXES, NEC_FILTERS, NEC_ALT_CORES, TYPE_ROM, NEC_DOWNLOAD_URL);
-        SetupCategory(&game_categories[ATARI_2600_GAMES], ATARI_2600_GAMES, "a2600", "A-2600", "RETROVITA", "app0:stella2014_libretro.self", ATARI_2600_TITLE_ID_PREFIXES, ATARI_2600_FILTERS, ATARI_2600_ALT_CORES, TYPE_ROM, ATARI_2600_DOWNLOAD_URL);
-        SetupCategory(&game_categories[ATARI_7800_GAMES], ATARI_7800_GAMES, "a7800", "A-7800", "RETROVITA", "app0:prosystem_libretro.self", ATARI_7800_TITLE_ID_PREFIXES, ATARI_7800_FILTERS, ATARI_7800_ALT_CORES, TYPE_ROM, ATARI_7800_DOWNLOAD_URL);
-        SetupCategory(&game_categories[ATARI_LYNX_GAMES], ATARI_LYNX_GAMES, "aLynx", "A-Lynx", "RETROVITA", "app0:handy_libretro.self", ATARI_LYNX_TITLE_ID_PREFIXES, ATARI_LYNX_FILTERS, ATARI_LYNX_ALT_CORES, TYPE_ROM, ATARI_LYNX_DOWNLOAD_URL);
-        SetupCategory(&game_categories[BANDAI_GAMES], BANDAI_GAMES, "bandai", "Bandai", "RETROVITA", "app0:mednafen_wswan_libretro.self", BANDAI_TITLE_ID_PREFIXES, BANDAI_FILTERS, BANDAI_ALT_CORES, TYPE_ROM, BANDAI_DOWNLOAD_URL);
-        SetupCategory(&game_categories[C64_GAMES], C64_GAMES, "c64", "C64", "RETROVITA", "app0:vice_x64_libretro.self", C64_TITLE_ID_PREFIXES, C64_FILTERS, C64_ALT_CORES, TYPE_ROM, C64_DOWNLOAD_URL);
-        SetupCategory(&game_categories[MSX2_GAMES], MSX2_GAMES, "msx2", "MSX2", "RETROVITA", "app0:fmsx_libretro.self", MSX2_TITLE_ID_PREFIXES, MSX2_FILTERS, MSX2_ALT_CORES, TYPE_ROM, MSX2_DOWNLOAD_URL);
-        SetupCategory(&game_categories[T_GRAFX_GAMES], T_GRAFX_GAMES, "tgrafx", "T-Grafx", "RETROVITA", "app0:mednafen_pce_fast_libretro.self", T_GRAFX_TITLE_ID_PREFIXES, T_GRAFX_FILTERS, T_GRAFX_ALT_CORES, TYPE_ROM, T_GRAFX_DOWNLOAD_URL);
-        SetupCategory(&game_categories[VECTREX_GAMES], VECTREX_GAMES, "vectrex", "Vectrex", "RETROVITA", "app0:vecx_libretro.self", VECTREX_TITLE_ID_PREFIXES, VECTREX_FILTERS, VECTREX_ALT_CORES, TYPE_ROM, VECTREX_DOWNLOAD_URL);
-        SetupCategory(&game_categories[GAW_GAMES], GAW_GAMES, "gaw", "GAW", "RETROVITA", "app0:gw_libretro.self", GAW_TITLE_ID_PREFIXES, GAW_FILTERS, GAW_ALT_CORES, TYPE_ROM, GAW_DOWNLOAD_URL);
-        SetupCategory(&game_categories[MAME_2000_GAMES], MAME_2000_GAMES, "mame2k", "MAME2000", "RETROVITA", "app0:mame2000_libretro.self", MAME_2000_TITLE_ID_PREFIXES, MAME_2000_FILTERS, MAME_2000_ALT_CORES, TYPE_ROM, MAME_2000_DOWNLOAD_URL);
-        SetupCategory(&game_categories[MAME_2003_GAMES], MAME_2003_GAMES, "mame2k3", "MAME2003", "RETROVITA", "app0:mame2003_plus_libretro.self", MAME_2003_TITLE_ID_PREFIXES, MAME_2003_FILTERS, MAME_2003_ALT_CORES, TYPE_ROM, MAME_2003_DOWNLOAD_URL);
-        SetupCategory(&game_categories[SCUMMVM_GAMES], SCUMMVM_GAMES, "scummvm", "SCUMMVM", "VSCU00001", nullptr, nullptr, nullptr, nullptr, TYPE_SCUMMVM, SCUMMVM_DOWNLOAD_URL);
-        SetupCategory(&game_categories[PORT_GAMES], PORT_GAMES, "ports", "Ports", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr);
-        SetupCategory(&game_categories[ORIGINAL_GAMES], ORIGINAL_GAMES, "original", "Originals", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr);
-        SetupCategory(&game_categories[UTILITIES], UTILITIES, "utilities", "Utilities", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr);
-        SetupCategory(&game_categories[EMULATORS], EMULATORS, "emulator", "Emulators", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr);
-        SetupCategory(&game_categories[HOMEBREWS], HOMEBREWS, "homebrew", "Homebrews", nullptr, nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE, nullptr);
-        SetupCategory(&game_categories[FAVORITES], FAVORITES, "favorites", "Favorites", nullptr, nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE, nullptr);
+        SetupCategory(&game_categories[VITA_GAMES], VITA_GAMES, "vita", "Vita", nullptr, nullptr, VITA_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
+        SetupCategory(&game_categories[PSP_GAMES], PSP_GAMES, "psp", "PSP", nullptr, nullptr, PSP_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_PSP_ISO, nullptr, 3);
+        SetupCategory(&game_categories[PS1_GAMES], PS1_GAMES, "ps1", "PSX", "RETROVITA", "app0:pcsx_rearmed_libretro.self", PS1_TITLE_ID_PREFIXES, PS1_FILTERS, PS1_ALT_CORES, TYPE_EBOOT, PS1_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[PS_MIMI_GAMES], PS_MIMI_GAMES, "psmini", "PSP Mini", nullptr, nullptr, PSP_MINI_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_EBOOT, nullptr, 3);
+        SetupCategory(&game_categories[PS_MOBILE_GAMES], PS_MOBILE_GAMES, "psmobile", "PS Mobile", nullptr, nullptr, PS_MOBILE_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
+        SetupCategory(&game_categories[NES_GAMES], NES_GAMES, "nes", "NES", "RETROVITA", "app0:nestopia_libretro.self", NES_TITLE_ID_PREFIXES, NES_FILTERS, NES_ALT_CORES, TYPE_ROM, NES_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[SNES_GAMES], SNES_GAMES, "snes", "SNES", "RETROVITA", "app0:snes9x2005_libretro.self", SNES_TITLE_ID_PREFIXES, SNES_FILTERS, SNES_ALT_CORES, TYPE_ROM, SNES_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[GB_GAMES], GB_GAMES, "gb", "GB", "RETROVITA", "app0:gearboy_libretro.self", GB_TITLE_ID_PREFIXES, GB_FILTERS, GB_ALT_CORES, TYPE_ROM, GB_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[GBA_GAMES], GBA_GAMES, "gba", "GBA", "RETROVITA", "app0:vba_next_libretro.self", GBA_TITLE_ID_PREFIXES, GBA_FILTERS, GBA_ALT_CORES, TYPE_ROM, GBA_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[N64_GAMES], N64_GAMES, "n64", "N64", "DEDALOX64", nullptr, N64_TITLE_ID_PREFIXES, N64_FILTERS, N64_ALT_CORES, TYPE_ROM, N64_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[GBC_GAMES], GBC_GAMES, "gbc", "GBC", "RETROVITA", "app0:gambatte_libretro.self", GBC_TITLE_ID_PREFIXES, GBC_FILTERS, GBC_ALT_CORES, TYPE_ROM, GBC_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[NEOGEO_GAMES], NEOGEO_GAMES, "neogeo", "NeoGeo", "RETROVITA", "app0:cap32_libretro.self", NEOGEO_TITLE_ID_PREFIXES, NEOGEO_FILTERS, NEOGEO_ALT_CORES, TYPE_ROM, NEOGEO_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[NEOGEO_PC_GAMES], NEOGEO_PC_GAMES, "neogeopc", "NeoGeoPC", "RETROVITA", "app0:mednafen_ngp_libretro.self", NEOGEO_PC_TITLE_ID_PREFIXES, NEOGEO_PC_FILTERS, NEOGEO_PC_ALT_CORES, TYPE_ROM, NEOGEO_PC_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[SEGA_SATURN_GAMES], SEGA_SATURN_GAMES, "saturn", "S-Saturn", "RETROVITA", "app0:yabause_libretro.self", SEGA_SATURN_TITLE_ID_PREFIXES, SEGA_SATURN_FILTERS, SEGA_SATURN_ALT_CORES, TYPE_ROM, SEGA_SATURN_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[GAME_GEAR_GAMES], GAME_GEAR_GAMES, "ggear", "G-Gear", "RETROVITA", "app0:smsplus_libretro.self", GAME_GEAR_TITLE_ID_PREFIXES, GAME_GEAR_FILTERS, GAME_GEAR_ALT_CORES, TYPE_ROM, GAME_GEAR_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[MASTER_SYSTEM_GAMES], MASTER_SYSTEM_GAMES, "msystem", "M-System", "RETROVITA", "app0:genesis_plus_gx_libretro.self", MASTER_SYSTEM_TITLE_ID_PREFIXES, MASTER_SYSTEM_FILTERS, MASTER_SYSTEM_ALT_CORES, TYPE_ROM, MASTER_SYSTEM_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[MEGA_DRIVE_GAMES], MEGA_DRIVE_GAMES, "mdrive", "M-Drive", "RETROVITA", "app0:picodrive_libretro.self", MEGA_DRIVE_TITLE_ID_PREFIXES, MEGA_DRIVE_FILTERS, MEGA_DRIVE_ALT_CORES, TYPE_ROM, MEGA_DRIVE_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[NEC_GAMES], NEC_GAMES, "nec", "NEC", "RETROVITA", "app0:mednafen_pce_fast_libretro.self", NEC_TITLE_ID_PREFIXES, NEC_FILTERS, NEC_ALT_CORES, TYPE_ROM, NEC_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[ATARI_2600_GAMES], ATARI_2600_GAMES, "a2600", "A-2600", "RETROVITA", "app0:stella2014_libretro.self", ATARI_2600_TITLE_ID_PREFIXES, ATARI_2600_FILTERS, ATARI_2600_ALT_CORES, TYPE_ROM, ATARI_2600_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[ATARI_7800_GAMES], ATARI_7800_GAMES, "a7800", "A-7800", "RETROVITA", "app0:prosystem_libretro.self", ATARI_7800_TITLE_ID_PREFIXES, ATARI_7800_FILTERS, ATARI_7800_ALT_CORES, TYPE_ROM, ATARI_7800_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[ATARI_LYNX_GAMES], ATARI_LYNX_GAMES, "aLynx", "A-Lynx", "RETROVITA", "app0:handy_libretro.self", ATARI_LYNX_TITLE_ID_PREFIXES, ATARI_LYNX_FILTERS, ATARI_LYNX_ALT_CORES, TYPE_ROM, ATARI_LYNX_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[BANDAI_GAMES], BANDAI_GAMES, "bandai", "Bandai", "RETROVITA", "app0:mednafen_wswan_libretro.self", BANDAI_TITLE_ID_PREFIXES, BANDAI_FILTERS, BANDAI_ALT_CORES, TYPE_ROM, BANDAI_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[C64_GAMES], C64_GAMES, "c64", "C64", "RETROVITA", "app0:vice_x64_libretro.self", C64_TITLE_ID_PREFIXES, C64_FILTERS, C64_ALT_CORES, TYPE_ROM, C64_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[MSX2_GAMES], MSX2_GAMES, "msx2", "MSX2", "RETROVITA", "app0:fmsx_libretro.self", MSX2_TITLE_ID_PREFIXES, MSX2_FILTERS, MSX2_ALT_CORES, TYPE_ROM, MSX2_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[T_GRAFX_GAMES], T_GRAFX_GAMES, "tgrafx", "T-Grafx", "RETROVITA", "app0:mednafen_pce_fast_libretro.self", T_GRAFX_TITLE_ID_PREFIXES, T_GRAFX_FILTERS, T_GRAFX_ALT_CORES, TYPE_ROM, T_GRAFX_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[VECTREX_GAMES], VECTREX_GAMES, "vectrex", "Vectrex", "RETROVITA", "app0:vecx_libretro.self", VECTREX_TITLE_ID_PREFIXES, VECTREX_FILTERS, VECTREX_ALT_CORES, TYPE_ROM, VECTREX_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[GAW_GAMES], GAW_GAMES, "gaw", "GAW", "RETROVITA", "app0:gw_libretro.self", GAW_TITLE_ID_PREFIXES, GAW_FILTERS, GAW_ALT_CORES, TYPE_ROM, GAW_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[MAME_2000_GAMES], MAME_2000_GAMES, "mame2k", "MAME2000", "RETROVITA", "app0:mame2000_libretro.self", MAME_2000_TITLE_ID_PREFIXES, MAME_2000_FILTERS, MAME_2000_ALT_CORES, TYPE_ROM, MAME_2000_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[MAME_2003_GAMES], MAME_2003_GAMES, "mame2k3", "MAME2003", "RETROVITA", "app0:mame2003_plus_libretro.self", MAME_2003_TITLE_ID_PREFIXES, MAME_2003_FILTERS, MAME_2003_ALT_CORES, TYPE_ROM, MAME_2003_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[SCUMMVM_GAMES], SCUMMVM_GAMES, "scummvm", "SCUMMVM", "VSCU00001", nullptr, nullptr, nullptr, nullptr, TYPE_SCUMMVM, SCUMMVM_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[PORT_GAMES], PORT_GAMES, "ports", "Ports", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
+        SetupCategory(&game_categories[ORIGINAL_GAMES], ORIGINAL_GAMES, "original", "Originals", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
+        SetupCategory(&game_categories[UTILITIES], UTILITIES, "utilities", "Utilities", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
+        SetupCategory(&game_categories[EMULATORS], EMULATORS, "emulator", "Emulators", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
+        SetupCategory(&game_categories[HOMEBREWS], HOMEBREWS, "homebrew", "Homebrews", nullptr, nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
+        SetupCategory(&game_categories[FAVORITES], FAVORITES, "favorites", "Favorites", nullptr, nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
 
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();
@@ -281,6 +299,7 @@ namespace CONFIG {
 
         WriteInt(cat->title, CONFIG_VIEW_MODE, cat->view_mode);
         WriteString(cat->title, CONFIG_ALT_TITLE, cat->alt_title);
+        WriteInt(cat->title, CONFIG_GRID_ROWS, cat->rows);
         if (cat->id != FAVORITES && cat->id != HOMEBREWS)
         {
             WriteString(cat->title, CONFIG_TITLE_ID_PREFIXES, GetMultiValueString(cat->valid_title_ids).c_str());

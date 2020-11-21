@@ -5,6 +5,7 @@
 #include <imgui_vita2d/imgui_internal.h>
 
 extern int view_mode;
+extern int grid_rows;
 
 namespace Windows {
     inline void SetupWindow(void) {

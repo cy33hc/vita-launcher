@@ -2,7 +2,7 @@
 #define LAUNCHER_GAME_H
 
 #pragma once
-
+#include <imgui_vita2d/imgui_vita.h>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -46,6 +46,11 @@ typedef struct {
     int rom_type;
     int order;
     char download_url[256];
+    int rows;
+    int columns;
+    int games_per_page;
+    ImVec2 button_size;
+    ImVec2 thumbnail_size;
 } GameCategory;
 
 enum DRIVERS {INFERNO=0, MARCH33=1, NP9660=2};
@@ -145,6 +150,7 @@ typedef struct LoadImagesParams {
   int category;
   int prev_page_num;
   int page_num;
+  int games_per_page;
 } LoadImagesParams;
 
 typedef struct ScanGamesParams {
@@ -166,15 +172,15 @@ namespace GAME {
     bool GetGameDetails(const char *id, Game *game);
     bool Launch(Game *game, BootSettings *settings = nullptr, char* retro_core = nullptr);
     void LoadGamesCache();
-    void LoadGameImages(int category, int prev_page, int page_num);
+    void LoadGameImages(int category, int prev_page, int page_num, int games_per_page);
     void LoadGameImage(Game *game);
-    void StartLoadGameImageThread(int category, int game_num);
+    void StartLoadGameImageThread(int category, int game_num, int games_per_page);
     int LoadGameImageThread(SceSize args, LoadImagesParams *params);
     void Exit();
     int LoadImagesThread(SceSize args, LoadImagesParams *argp);
     int IncrementPage(int page, int num_of_pages);
     int DecrementPage(int page, int num_of_pages);
-    void StartLoadImagesThread(int category, int prev_page_num, int page);
+    void StartLoadImagesThread(int category, int prev_page_num, int page, int games_per_page);
     int ScanGamesThread(SceSize args, void *argp);
     void StartScanGamesThread();
     void DeleteGamesImages(GameCategory *category);

@@ -33,6 +33,7 @@
 #define CONFIG_CATEGORY_ORDER "category_order"
 #define CONFIG_BOOT_WITH_ALT_CORE "boot_with_alt_core"
 #define CONFIG_SEARCH_TEXT "search_text"
+#define CONFIG_GRID_ROWS "grid_rows"
 
 #define DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID "ADRLANCHR"
 #define RETROARCH_TITLE_ID "RETROVITA"
@@ -176,7 +177,7 @@ namespace CONFIG {
     std::string GetMultiValueString(std::vector<std::string> &multi_values);
     void SetupCategory(GameCategory *category, int category_id, const char* category_name, const char* core,
                        const char* title_id, const char* code, const char* default_prefixes, const char* default_file_filters,
-                       const char* alt_cores, int rom_type, const char* download_url);
+                       const char* alt_cores, int rom_type, const char* download_url, int grid_rows);
     GameCategory GetCategoryConfig(GameCategory *category);
     void SaveCategoryConfig(GameCategory *cat);
 

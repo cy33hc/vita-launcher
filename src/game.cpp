@@ -110,6 +110,11 @@ namespace GAME {
             SetMaxPage(&game_categories[i]);
         }
 
+        if (game_categories[FAVORITES].games.size() > 0)
+        {
+            current_category = &game_categories[FAVORITES];
+            grid_rows = current_category->rows;
+        }
     }
 
     std::string str_tolower(std::string s) {
@@ -342,7 +347,7 @@ namespace GAME {
 
     void SetMaxPage(GameCategory *category)
     {
-        category->max_page = (category->games.size() + 18 - 1) / 18;
+        category->max_page = (category->games.size() + category->games_per_page - 1) / category->games_per_page;
         if (category->max_page == 0)
         {
             category->max_page = 1;
@@ -488,7 +493,7 @@ namespace GAME {
         sqlite3_close(db);
     };
 
-    void LoadGameImages(int category, int prev_page, int page) {
+    void LoadGameImages(int category, int prev_page, int page, int games_per_page) {
         int high = 0;
         int low = 0;
 
@@ -504,8 +509,8 @@ namespace GAME {
                 del_page = IncrementPage(page, NUM_CACHED_PAGES);
             }
 
-            int high = del_page * 18;
-            int low = high - 18;
+            int high = del_page * games_per_page;
+            int low = high - games_per_page;
             if (del_page > 0)
             {
                 for (int i=low; (i<high && i < game_categories[category].games.size()); i++)
@@ -521,8 +526,8 @@ namespace GAME {
             }
         }
 
-        high = page * 18;
-        low = high - 18;
+        high = page * games_per_page;
+        low = high - games_per_page;
         for(std::size_t i = low; (i < high && i < game_categories[category].games.size()); i++) {
             Game *game = &game_categories[category].games[i];
             if (page == current_category->page_num && category == current_category->id)
@@ -628,7 +633,7 @@ namespace GAME {
 
     int LoadGameImageThread(SceSize args, LoadImagesParams *params)
     {
-        int end = params->page_num+6;
+        int end = params->page_num+params->games_per_page;
         GameCategory *category = &game_categories[params->category];
         if (end > category->games.size())
         {
@@ -651,7 +656,7 @@ namespace GAME {
         return sceKernelExitDeleteThread(0);
     }
 
-    void StartLoadGameImageThread(int category, int game_num)
+    void StartLoadGameImageThread(int category, int game_num, int games_per_page)
     {
         SceUID load_image_thid = sceKernelCreateThread("load_image_thread", (SceKernelThreadEntry)GAME::LoadGameImageThread, 0x10000100, 0x4000, 0, 0, NULL);
         if (load_image_thid >= 0)
@@ -659,6 +664,7 @@ namespace GAME {
             LoadImagesParams params;
             params.category = category;
             params.page_num = game_num;
+            params.games_per_page = games_per_page;
             sceKernelStartThread(load_image_thid, sizeof(LoadImagesParams), &params);
         }
         
@@ -667,12 +673,13 @@ namespace GAME {
     void Exit() {
     }
 
-	void StartLoadImagesThread(int category, int prev_page_num, int page)
+	void StartLoadImagesThread(int category, int prev_page_num, int page, int games_per_page)
 	{
 		LoadImagesParams page_param;
         page_param.category = category;
 		page_param.prev_page_num = prev_page_num;
 		page_param.page_num = page;
+        page_param.games_per_page = games_per_page;
 		load_images_thid = sceKernelCreateThread("load_images_thread", (SceKernelThreadEntry)GAME::LoadImagesThread, 0x10000100, 0x4000, 0, 0, NULL);
 		if (load_images_thid >= 0)
 			sceKernelStartThread(load_images_thid, sizeof(LoadImagesParams), &page_param);
@@ -680,7 +687,7 @@ namespace GAME {
 
     int LoadImagesThread(SceSize args, LoadImagesParams *params) {
         sceKernelDelayThread(300000);
-        GAME::LoadGameImages(params->category, params->prev_page_num, params->page_num);
+        GAME::LoadGameImages(params->category, params->prev_page_num, params->page_num, params->games_per_page);
         return sceKernelExitDeleteThread(0);
     }
 
@@ -709,7 +716,10 @@ namespace GAME {
         current_category->page_num = 1;
         view_mode = current_category->view_mode;
         gui_mode  = GUI_MODE_LAUNCHER;
-        GAME::StartLoadImagesThread(current_category->id, 1, 1);
+        if (view_mode == VIEW_MODE_GRID)
+        {
+            GAME::StartLoadImagesThread(current_category->id, 1, 1, current_category->games_per_page);
+        }
         return sceKernelExitDeleteThread(0);
     }
 
@@ -817,7 +827,7 @@ namespace GAME {
 
         if (current_category->view_mode == VIEW_MODE_GRID)
         {
-            GAME::StartLoadImagesThread(current_category->id, 1, 1);
+            GAME::StartLoadImagesThread(current_category->id, 1, 1, current_category->games_per_page);
         }
         gui_mode = GUI_MODE_LAUNCHER;
         return sceKernelExitDeleteThread(0);

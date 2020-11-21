@@ -20,6 +20,7 @@ Game *game_to_boot;
 static SceCtrlData pad_prev;
 bool paused = false;
 int view_mode;
+int grid_rows;
 static std::vector<std::string> games_on_filesystem;
 static float scroll_direction = 0.0f;
 static int game_position = 0;
@@ -74,6 +75,7 @@ namespace Windows {
             }
         }
         sprintf(txt_search_text, search_text);
+        grid_rows = current_category->rows;
     }
 
     void HandleLauncherWindowInput()
@@ -163,13 +165,14 @@ namespace Windows {
             current_category->view_mode == VIEW_MODE_GRID &&
             current_category->max_page > 1 && !paused && !tab_infocus)
         {
-            if (game_position == 5 || game_position == 11 || game_position == 17 ||
+            if (((game_position == 5 || game_position == 11 || game_position == 17) && current_category->rows == 3) ||
+                ((game_position == 3 || game_position == 7) && current_category->rows == 2) ||
                 (current_category->page_num == current_category->max_page && 
-                game_position == current_category->games.size() - (current_category->page_num*18-18) -1))
+                game_position == current_category->games.size() - (current_category->page_num*current_category->games_per_page-current_category->games_per_page) -1))
             {
                 int prev_page = current_category->page_num;
                 current_category->page_num = GAME::IncrementPage(current_category->page_num, 1);
-                GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num);
+                GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num, current_category->games_per_page);
                 selected_game = nullptr;
             }
         } else if (previous_left == 0.0f &&
@@ -177,11 +180,12 @@ namespace Windows {
             current_category->view_mode == VIEW_MODE_GRID &&
             current_category->max_page > 1 && !paused && !tab_infocus)
         {
-            if (game_position == 0 || game_position == 6 || game_position == 12)
+            if (((game_position == 0 || game_position == 6 || game_position == 12) && current_category->rows == 3) ||
+                ((game_position == 0 || game_position == 4) && current_category->rows == 2))
             {
                 int prev_page = current_category->page_num;
                 current_category->page_num = GAME::DecrementPage(current_category->page_num, 1);
-                GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num);
+                GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num, current_category->games_per_page);
                 selected_game = nullptr;
             }
         }
@@ -224,12 +228,12 @@ namespace Windows {
 
     int GetGamePositionOnPage(Game *game)
     {
-        for (int i=current_category->page_num*18-18; i < current_category->page_num*18; i++)
+        for (int i=current_category->page_num*current_category->games_per_page-current_category->games_per_page; i < current_category->page_num*current_category->games_per_page; i++)
         {
             if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, current_category->games[i].id) == 0) ||
                 ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, current_category->games[i].rom_path) == 0))
             {
-                return i % 18;
+                return i % current_category->games_per_page;
             }
         }
     }
@@ -271,26 +275,30 @@ namespace Windows {
         io.KeyRepeatRate = 0.05f;
         ImGui_ImplVita2D_SetAnalogRepeatDelay(100000);
 
-        int game_start_index = (current_category->page_num * 18) - 18;
-
+        int game_start_index = (current_category->page_num * current_category->games_per_page) - current_category->games_per_page;
+        int grid_size = 160;
+        if (current_category->rows == 2)
+        {
+            grid_size = 240;
+        }
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-3);
         ShowDisplayTitle();
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
         ImGui::Separator();
         ImVec2 pos = ImGui::GetCursorPos();
         ImGuiStyle* style = &ImGui::GetStyle();
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < current_category->rows; i++)
         {
-            for (int j=0; j < 6; j++)
+            for (int j=0; j < current_category->columns; j++)
             {
-                ImGui::SetCursorPos(ImVec2(pos.x+(j*160),pos.y+(i*160)));
-                int button_id = (i*6)+j;
+                ImGui::SetCursorPos(ImVec2(pos.x+(j*grid_size),pos.y+(i*grid_size)));
+                int button_id = (i*current_category->columns)+j;
                 if (game_start_index+button_id < current_category->games.size())
                 {
                     char id[32];
                     sprintf(id, "%d#image", button_id);
                     Game *game = &current_category->games[game_start_index+button_id];
-                    if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127), ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1))) {
+                    if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), current_category->thumbnail_size, ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1))) {
                         if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                         {
                             GAME::Launch(game);
@@ -330,17 +338,17 @@ namespace Windows {
                     }
 
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
-                    ImGui::SetCursorPosX(pos.x+(j*160));
+                    ImGui::SetCursorPosX(pos.x+(j*grid_size));
                     if (game->favorite)
                     {
                         ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
                         ImGui::SameLine();
-                        ImGui::SetCursorPosX(pos.x+(j*160)+14);
+                        ImGui::SetCursorPosX(pos.x+(j*grid_size)+14);
                         ImGui::Text("%.14s", game->title);
                     }
                     else
                     {
-                        ImGui::SetCursorPosX(pos.x+(j*160));
+                        ImGui::SetCursorPosX(pos.x+(j*grid_size));
                         ImGui::Text("%.15s", game->title);
                     }
                 }
@@ -374,9 +382,7 @@ namespace Windows {
             ImGui::SetWindowFocus();
         }
         ImVec2 pos = ImGui::GetCursorPos();
-        int col = 0;
-        int row = 0;
-        ImGui::Columns(6, current_category->title, false);
+        ImGui::Columns(current_category->columns, current_category->title, false);
         for (int button_id=0; button_id<current_category->games.size(); button_id++)
         {
             char id[32];
@@ -387,7 +393,7 @@ namespace Windows {
             ImGui::BeginGroup();
             ImVec2 pos = ImGui::GetCursorPos();
             ImGui::SetCursorPos(ImVec2(pos.x-5, pos.y));
-            if (ImGui::Button(sel_id, ImVec2(148,154)))
+            if (ImGui::Button(sel_id, current_category->button_size))
             {
                 if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                 {
@@ -420,7 +426,7 @@ namespace Windows {
             }
 
             ImGui::SetCursorPos(ImVec2(pos.x, pos.y+4));
-            ImGui::Image(reinterpret_cast<ImTextureID>(game->tex.id), ImVec2(138,127));
+            ImGui::Image(reinterpret_cast<ImTextureID>(game->tex.id), current_category->thumbnail_size);
             if (ImGui::IsItemVisible())
             {
                 if (game->tex.id == no_icon.id)
@@ -429,13 +435,13 @@ namespace Windows {
                     {
                         game->visible_time = sceKernelGetProcessTimeWide();
                     }
-                    else if (button_id % 6 == 0)
+                    else if (button_id % current_category->columns == 0)
                     {
                         uint64_t current_time = sceKernelGetProcessTimeWide();
                         if (current_time - game->visible_time > 200000 && !game->thread_started)
                         {
                             //debugNetPrintf(DEBUG,"StartLoadGameImageThread %d\n",button_id);
-                            GAME::StartLoadGameImageThread(current_category->id, button_id);
+                            GAME::StartLoadGameImageThread(current_category->id, button_id, current_category->columns);
                             game->thread_started = true;
                         }
                     }
@@ -670,11 +676,12 @@ namespace Windows {
                             view_mode = current_category->view_mode;
                             selected_game = nullptr;
                             category_selected = -1;
+                            grid_rows = current_category->rows;
 
                             GAME::StartDeleteGameImagesThread(previous_category);
                             if(current_category->view_mode == VIEW_MODE_GRID)
                             {
-                                GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
+                                GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num, current_category->games_per_page);
                             }
                         }
                         ImGui::EndTabItem();
@@ -700,8 +707,8 @@ namespace Windows {
 
         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
         {
-            ImGui::SetNextWindowPos(ImVec2(200, 100));
-            ImGui::SetNextWindowSizeConstraints(ImVec2(500,130), ImVec2(500,400), NULL, NULL);
+            ImGui::SetNextWindowPos(ImVec2(200, 80));
+            ImGui::SetNextWindowSizeConstraints(ImVec2(500,130), ImVec2(500,420), NULL, NULL);
         }
         else
         {
@@ -751,6 +758,10 @@ namespace Windows {
                     ImGui::RadioButton("Page Grid", &view_mode, 0); ImGui::SameLine();
                     ImGui::RadioButton("Scroll Grid", &view_mode, 2); ImGui::SameLine();
                     ImGui::RadioButton("List", &view_mode, 1);
+                    ImGui::Separator();
+                    ImGui::Text("Grid Rows:"); ImGui::SameLine();
+                    ImGui::RadioButton("2", &grid_rows, 2); ImGui::SameLine();
+                    ImGui::RadioButton("3", &grid_rows, 3);
                     ImGui::Separator();
 
                     if (current_category->id != FAVORITES && current_category->id != HOMEBREWS)
@@ -1193,11 +1204,30 @@ namespace Windows {
 
                     if (view_mode == VIEW_MODE_GRID)
                     {
-                        GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num);
+                        GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num, current_category->games_per_page);
                     }
                 }
                 WriteIniFile(CONFIG_INI_FILE);
                 CloseIniFile();
+                if (grid_rows == 2)
+                {
+                    current_category->rows = 2;
+                    current_category->columns = 4;
+                    current_category->games_per_page = 8;
+                    current_category->button_size = ImVec2(230,233);
+                    current_category->thumbnail_size = ImVec2(220,205);
+                    current_category->games_per_page = current_category->rows * current_category->columns;
+                }
+                else if (grid_rows = 3)
+                {
+                    current_category->rows = 3;
+                    current_category->columns = 6;
+                    current_category->games_per_page = 18;
+                    current_category->button_size = ImVec2(148,154);
+                    current_category->thumbnail_size = ImVec2(138,127);
+                    current_category->games_per_page = current_category->rows * current_category->columns;
+                }
+                GAME::SetMaxPage(current_category);
                 CONFIG::SaveCategoryConfig(current_category);
 
                 if (strcmp(cb_style_name, style_name) != 0)
