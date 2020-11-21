@@ -344,12 +344,27 @@ namespace Windows {
                         ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
                         ImGui::SameLine();
                         ImGui::SetCursorPosX(pos.x+(j*grid_size)+14);
-                        ImGui::Text("%.14s", game->title);
+                        if (current_category->rows ==3)
+                        {
+                            ImGui::Text("%.14s", game->title);
+                        }
+                        else
+                        {
+                            ImGui::Text("%.20s", game->title);
+                        }
+                        
                     }
                     else
                     {
                         ImGui::SetCursorPosX(pos.x+(j*grid_size));
-                        ImGui::Text("%.15s", game->title);
+                        if (current_category->rows ==3)
+                        {
+                            ImGui::Text("%.15s", game->title);
+                        }
+                        else
+                        {
+                            ImGui::Text("%.21s", game->title);
+                        }
                     }
                 }
             }
@@ -471,12 +486,26 @@ namespace Windows {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
                 ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
                 ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
-                ImGui::Text("%.14s", game->title);
+                if (current_category->rows == 3)
+                {
+                    ImGui::Text("%.14s", game->title);
+                }
+                else
+                {
+                    ImGui::Text("%.20s", game->title);
+                }
             }
             else
             {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-2);
-                ImGui::Text("%.15s", game->title);
+                if (current_category->rows ==3)
+                {
+                    ImGui::Text("%.15s", game->title);
+                }
+                else
+                {
+                    ImGui::Text("%.21s", game->title);
+                }
             }
             ImGui::EndGroup();
             ImGui::NextColumn();
