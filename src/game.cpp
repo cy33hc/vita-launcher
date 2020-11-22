@@ -302,36 +302,38 @@ namespace GAME {
     void ScanRetroCategory(sqlite3 *db, GameCategory *category)
     {
         sprintf(scan_message, "Scanning for %s games in the %s folder", category->title, category->roms_path);
-        std::vector<std::string> files = FS::ListDir(category->roms_path);
+        std::vector<std::string> files = FS::ListFiles(category->roms_path);
         games_to_scan = files.size();
         games_scanned = 0;
         int rom_path_length = strlen(category->roms_path);
 
         int rom_length = 0;
-        for(std::size_t j = 0; j < files.size(); ++j)
+        for(std::size_t j = 0; j < files.size(); j++)
         {
-            int index = files[j].find_last_of(".");
+            int dot_index = files[j].find_last_of(".");
+            int slash_index = files[j].find_last_of("/");
             rom_length = rom_path_length + files[j].length() + 1;
-            if (rom_length < 192 && index != std::string::npos && IsRomExtension(files[j].substr(index), category->file_filters))
+            if (rom_length < 192 && dot_index != std::string::npos && IsRomExtension(files[j].substr(dot_index), category->file_filters))
             {
                 Game game;
                 game.type = TYPE_ROM;
                 sprintf(game.id, "%s", category->title);
                 sprintf(game.category, "%s", category->category);
                 sprintf(game.rom_path, "%s/%s", category->roms_path, files[j].c_str());
-                if (index > 126) index = 126;
-                sprintf(game.title, "%s", files[j].substr(0, index).c_str());
+                if (slash_index != std::string::npos)
+                {
+                    strlcpy(game.title, files[j].substr(slash_index+1, dot_index-slash_index-1).c_str(), 128);
+                }
+                else
+                {
+                    strlcpy(game.title, files[j].substr(0, dot_index).c_str(), 128);
+                }
                 game.tex = no_icon;
                 category->games.push_back(game);
                 DB::InsertGame(db, &game);
                 game_scan_inprogress = game;
-                games_scanned++;
             }
-            else
-            {
-                games_to_scan--;
-            }
-            
+            games_scanned++;
         }
     }
 
@@ -590,7 +592,7 @@ namespace GAME {
         Tex tex;
         tex = no_icon;
 
-        char icon_path[256];
+        char icon_path[320];
         if (game->type == TYPE_BUBBLE && strcmp(game->category, game_categories[PS_MOBILE_GAMES].category) == 0)
         {
             sprintf(icon_path, "ur0:appmeta/%s/pic0.png", game->id);
@@ -611,10 +613,17 @@ namespace GAME {
         {
             GameCategory* category = categoryMap[game->category];
             std::string rom_path = std::string(game->rom_path);
-            int slash_index = rom_path.find_last_of("/");
             int dot_index = rom_path.find_last_of(".");
-            std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
-            sprintf(icon_path, "%s/%s.png", category->icon_path, rom_name.c_str());
+            if (new_icon_method)
+            {
+                sprintf(icon_path, "%s.png", rom_path.substr(0, dot_index).c_str());
+            }
+            else
+            {
+                int slash_index = rom_path.find_last_of("/");
+                std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
+                sprintf(icon_path, "%s/%s.png", category->icon_path, rom_name.c_str());
+            }
         }
         
         if (game->tex.id == no_icon.id)
@@ -1051,10 +1060,18 @@ namespace GAME {
             if (game->type == TYPE_ROM)
             {
                 std::string rom_path = std::string(game->rom_path);
-                int slash_index = rom_path.find_last_of("/");
                 int dot_index = rom_path.find_last_of(".");
-                std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
-                sprintf(path, "%s/%s.png", cat->icon_path, rom_name.c_str());
+                if (new_icon_method)
+                {
+                    sprintf(path, "%s.png", rom_path.substr(0, dot_index).c_str());
+                }
+                else
+                {
+                    int slash_index = rom_path.find_last_of("/");
+                    std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
+                    sprintf(path, "%s/%s.png", cat->icon_path, rom_name.c_str());
+                }
+                
             }
             else if (game->type == TYPE_SCUMMVM)
             {
@@ -1161,7 +1178,7 @@ namespace GAME {
                     Game game = category->games[j];
                     game.tex = no_icon;
                     games.push_back(game);
-                    if (games.size() >= 50)
+                    if (games.size() >= 200)
                     {
                         return;
                     }
