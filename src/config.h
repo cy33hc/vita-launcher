@@ -34,7 +34,6 @@
 #define CONFIG_BOOT_WITH_ALT_CORE "boot_with_alt_core"
 #define CONFIG_SEARCH_TEXT "search_text"
 #define CONFIG_GRID_ROWS "grid_rows"
-#define CONFIG_NEW_ICON_METHOD "new_icon_method"
 
 #define DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID "ADRLANCHR"
 #define RETROARCH_TITLE_ID "RETROVITA"
@@ -194,7 +193,6 @@
 extern bool show_all_categories;
 extern bool parental_control;
 extern char search_text[];
-extern bool new_icon_method;
 
 namespace CONFIG {
     void LoadConfig();

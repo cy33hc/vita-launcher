@@ -15,7 +15,6 @@ extern "C" {
 bool show_all_categories;
 bool parental_control;
 char search_text[32];
-bool new_icon_method;
 
 namespace CONFIG {
 
@@ -168,9 +167,6 @@ namespace CONFIG {
         // Load global config
         show_all_categories = ReadBool(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, true);
         WriteBool(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
-
-        new_icon_method = ReadBool(CONFIG_GLOBAL, CONFIG_NEW_ICON_METHOD, false);
-        WriteBool(CONFIG_GLOBAL, CONFIG_NEW_ICON_METHOD, new_icon_method);
 
         // Load parental control config
         parental_control = ReadBool(CONFIG_GLOBAL, CONFIG_PARENT_CONTROL, false);
