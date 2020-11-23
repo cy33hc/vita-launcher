@@ -65,6 +65,7 @@
 #define MEGA_DRIVE_FILTERS ".zip"
 #define NEC_FILTERS ".zip"
 #define ATARI_2600_FILTERS ".zip,.a26"
+#define ATARI_5200_FILTERS ".zip,.a52"
 #define ATARI_7800_FILTERS ".zip,.a78"
 #define ATARI_LYNX_FILTERS ".zip,.lnx"
 #define BANDAI_FILTERS ".zip,.wsc"
@@ -76,6 +77,11 @@
 #define MAME_2000_FILTERS ".zip"
 #define MAME_2003_FILTERS ".zip"
 #define SCUMMVM_FILTERS ""
+#define NEOGEO_CD_FILTERS ".cue,.chd,.iso"
+#define SEGA_32X_FILTERS ".32x,.7z,.bin,.md,.smd,.zip"
+#define SEGA_CD_FILTERS ".bin,.chd,.cue,.iso"
+#define AMIGA_FILTERS ".hdf"
+#define MSX1_FILTERS ".zip,.bin"
 
 // Filters for title prefixes
 #define VITA_TITLE_ID_PREFIXES "PCSA,PCSB,PCSC,PCSD,PCSE,PCSF,PCSG,PCSH,PCSI"
@@ -108,6 +114,12 @@
 #define MAME_2000_TITLE_ID_PREFIXES "M2000"
 #define MAME_2003_TITLE_ID_PREFIXES "M2003"
 #define SCUMMVM_TITLE_ID_PREFIXES "SCMVM"
+#define NEOGEO_CD_TITLE_ID_PREFIXES "NEOGCD"
+#define SEGA_32X_TITLE_ID_PREFIXES "SEG32"
+#define SEGA_CD_TITLE_ID_PREFIXES "SEGCD"
+#define ATARI_5200_TITLE_ID_PREFIXES "AT5200"
+#define AMIGA_TITLE_ID_PREFIXES "AMIGA"
+#define MSX1_TITLE_ID_PREFIXES "MSX1"
 
 // Alt retroarch cores
 #define PS1_ALT_CORES ""
@@ -135,6 +147,12 @@
 #define GAW_ALT_CORES ""
 #define MAME_2000_ALT_CORES ""
 #define MAME_2003_ALT_CORES "app0:mame2003_libretro.self"
+#define NEOGEO_CD_ALT_CORES ""
+#define SEGA_32X_ALT_CORES ""
+#define SEGA_CD_ALT_CORES "app0:picodrive_libretro.self"
+#define ATARI_5200_ALT_CORES ""
+#define AMIGA_ALT_CORES ""
+#define MSX1_ALT_CORES ""
 
 #define SCUMMVM_GAME_ID "gameid"
 #define SCUMMVM_GAME_TITLE "description"
@@ -159,13 +177,19 @@
 #define ATARI_LYNX_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Atari_-_Lynx/raw/master/Named_Titles"
 #define BANDAI_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Bandai_-_WonderSwan/raw/master/Named_Titles"
 #define C64_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Commodore_-_64/raw/master/Named_Titles"
-#define MSX2_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Microsoft_-_MSX/raw/master/Named_Titles"
+#define MSX2_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Microsoft_-_MSX2/raw/master/Named_Titles"
 #define T_GRAFX_DOWNLOAD_URL "https://github.com/libretro-thumbnails/NEC_-_PC_Engine_-_TurboGrafx_16/raw/master/Named_Titles"
 #define VECTREX_DOWNLOAD_URL "https://github.com/libretro-thumbnails/GCE_-_Vectrex/raw/master/Named_Titles"
 #define GAW_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Handheld_Electronic_Game/raw/master/Named_Snaps"
 #define MAME_2000_DOWNLOAD_URL "https://github.com/libretro-thumbnails/MAME/raw/master/Named_Titles"
 #define MAME_2003_DOWNLOAD_URL "https://github.com/libretro-thumbnails/MAME/raw/master/Named_Titles"
 #define SCUMMVM_DOWNLOAD_URL "https://github.com/cy33hc/scummvm_icons/raw/main/icons"
+#define NEOGEO_CD_DOWNLOAD_URL "https://github.com/libretro-thumbnails/SNK_-_Neo_Geo_CD/raw/master/Named_Titles"
+#define SEGA_32X_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Sega_-_32X/raw/master/Named_Titles"
+#define SEGA_CD_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Sega_-_Mega-CD_-_Sega_CD/raw/master/Named_Titles"
+#define ATARI_5200_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Atari_-_5200/raw/master/Named_Titles"
+#define AMIGA_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Commodore_-_Amiga/raw/master/Named_Titles"
+#define MSX1_DOWNLOAD_URL "https://github.com/libretro-thumbnails/Microsoft_-_MSX/raw/master/Named_Titles"
 
 extern bool show_all_categories;
 extern bool parental_control;

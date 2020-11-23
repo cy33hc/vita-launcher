@@ -108,6 +108,11 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE thumbnails_db/snes.db thumbnails/snes.db
   FILE thumbnails_db/tgrafx.db thumbnails/tgrafx.db
   FILE thumbnails_db/vectrex.db thumbnails/vectrex.db
+  FILE thumbnails_db/amiga.db thumbnails/amiga.db
+  FILE thumbnails_db/sega32x.db thumbnails/sega32x.db
+  FILE thumbnails_db/segacd.db thumbnails/segacd.db
+  FILE thumbnails_db/msx1.db thumbnails/msx1.db
+  FILE thumbnails_db/neogeocd.db thumbnails/neogeocd.db
   FILE thumbnails_db/scummvm.db thumbnails/scummvm.db
   FILE noicon.png noicon.png
   FILE favorite.png favorite.png
