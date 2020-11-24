@@ -1551,7 +1551,7 @@ namespace Windows {
             {
                 if (games_on_filesystem.size() == 0)
                 {
-                    games_on_filesystem = FS::ListDir(current_category->roms_path);
+                    games_on_filesystem = FS::ListFiles(current_category->roms_path);
                     for (std::vector<std::string>::iterator it=games_on_filesystem.begin(); 
                         it!=games_on_filesystem.end(); )
                     {
@@ -1584,9 +1584,16 @@ namespace Windows {
                             game.type = TYPE_ROM;
                             sprintf(game.category, "%s", current_category->category);
                             sprintf(game.rom_path, "%s/%s", current_category->roms_path, games_on_filesystem[i].c_str());
-                            int index = games_on_filesystem[i].find_last_of(".");
-                            if (index > 126) index = 126;
-                            sprintf(game.title, "%s", games_on_filesystem[i].substr(0, index).c_str());
+                            int dot_index = games_on_filesystem[i].find_last_of(".");
+                            int slash_index = games_on_filesystem[i].find_last_of("/");
+                            if (slash_index != std::string::npos)
+                            {
+                                strlcpy(game.title, games_on_filesystem[i].substr(slash_index+1, dot_index-slash_index-1).c_str(), 128);
+                            }
+                            else
+                            {
+                                strlcpy(game.title, games_on_filesystem[i].substr(0, dot_index).c_str(), 128);
+                            }
                             game.tex = no_icon;
 
                             sprintf(game_action_message, "The game already exists in the cache.");
