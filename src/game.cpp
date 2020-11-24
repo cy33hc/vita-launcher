@@ -615,9 +615,16 @@ namespace GAME {
             GameCategory* category = categoryMap[game->category];
             std::string rom_path = std::string(game->rom_path);
             int dot_index = rom_path.find_last_of(".");
-            int slash_index = rom_path.find_last_of("/");
-            std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
-            sprintf(icon_path, "%s/%s.png", category->icon_path, rom_name.c_str());
+            if (new_icon_method)
+            {
+                sprintf(icon_path, "%s.png", rom_path.substr(0, dot_index).c_str());
+            }
+            else
+            {
+                int slash_index = rom_path.find_last_of("/");
+                std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
+                sprintf(icon_path, "%s/%s.png", category->icon_path, rom_name.c_str());
+            }
         }
         
         if (game->tex.id == no_icon.id)
@@ -1055,9 +1062,17 @@ namespace GAME {
             {
                 std::string rom_path = std::string(game->rom_path);
                 int dot_index = rom_path.find_last_of(".");
-                int slash_index = rom_path.find_last_of("/");
-                std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
-                sprintf(path, "%s/%s.png", cat->icon_path, rom_name.c_str());
+                if (new_icon_method)
+                {
+                    sprintf(path, "%s.png", rom_path.substr(0, dot_index).c_str());
+                }
+                else
+                {
+                    int slash_index = rom_path.find_last_of("/");
+                    std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
+                    sprintf(path, "%s/%s.png", cat->icon_path, rom_name.c_str());
+                }
+                
             }
             else if (game->type == TYPE_SCUMMVM)
             {
