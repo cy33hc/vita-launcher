@@ -93,15 +93,16 @@ namespace Style {
         return ImVec4(rgba[0],rgba[1],rgba[2],rgba[3]);
     }
 
-    void SetStylePath(const char* style_name)
+    void SetStylePath(const char* style_name_p)
     {
-        if (strcmp(style_name, CONFIG_DEFAULT_STYLE_NAME) == 0)
+        
+        if (strcmp(style_name_p, CONFIG_DEFAULT_STYLE_NAME) == 0)
         {
             sprintf(style_path, "%s", DEFAULT_STYLE_PATH);
         }
         else
         {
-            sprintf(style_path, "%s/%s.ini", STYLES_FOLDER, style_name);
+            sprintf(style_path, "%s/%s.ini", STYLES_FOLDER, style_name_p);
             if (!FS::FileExists(style_path))
             {
                 sprintf(style_path, "%s", DEFAULT_STYLE_PATH);

@@ -36,8 +36,12 @@ namespace CONFIG {
 		category->view_mode = ReadInt(category->title, CONFIG_VIEW_MODE, -1);
         category->opened = false;
         category->rom_type = rom_type;
+
         category->order = ReadInt(category->title, CONFIG_CATEGORY_ORDER, category_id);
         WriteInt(category->title, CONFIG_CATEGORY_ORDER, category->order);
+
+        category->new_icon_method = ReadBool(category->title, CONFIG_NEW_ICON_METHOD, false);
+        WriteBool(category->title, CONFIG_NEW_ICON_METHOD, category->new_icon_method);
 
         category->rows = ReadInt(category->title, CONFIG_GRID_ROWS, 3);
         if (category->rows <= 2)
@@ -324,6 +328,7 @@ namespace CONFIG {
             WriteString(cat->title, CONFIG_ROM_EXTENSIONS, GetMultiValueString(cat->file_filters).c_str());
             WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores).c_str());
             WriteBool(cat->title, CONFIG_BOOT_WITH_ALT_CORE, cat->boot_with_alt_core);
+            WriteBool(cat->title, CONFIG_NEW_ICON_METHOD, cat->new_icon_method);
         }
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();

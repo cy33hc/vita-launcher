@@ -307,6 +307,12 @@ namespace GAME {
         games_to_scan = files.size();
         games_scanned = 0;
         int rom_path_length = strlen(category->roms_path);
+        sqlite3 *mame_mappings_db = nullptr;
+
+        if (category->id == MAME_2000_GAMES || category->id == MAME_2003_GAMES)
+        {
+            mame_mappings_db = sqlite3_open(MAME_ROM_NAME_MAPPINGS_FILE, &mame_mappings_db);
+        }
 
         int rom_length = 0;
         for(std::size_t j = 0; j < files.size(); j++)
@@ -329,12 +335,20 @@ namespace GAME {
                 {
                     strlcpy(game.title, files[j].substr(0, dot_index).c_str(), 128);
                 }
+                if (category->id == MAME_2000_GAMES || category->id == MAME_2003_GAMES)
+                {
+                    DB::GetMameRomName(mame_mappings_db, game.title, game.title);
+                }
                 game.tex = no_icon;
                 category->games.push_back(game);
                 DB::InsertGame(db, &game);
                 game_scan_inprogress = game;
             }
             games_scanned++;
+        }
+        if (category->id == MAME_2000_GAMES || category->id == MAME_2003_GAMES)
+        {
+            sqlite3_close(mame_mappings_db);
         }
     }
 
@@ -615,7 +629,7 @@ namespace GAME {
             GameCategory* category = categoryMap[game->category];
             std::string rom_path = std::string(game->rom_path);
             int dot_index = rom_path.find_last_of(".");
-            if (new_icon_method)
+            if (category->new_icon_method)
             {
                 sprintf(icon_path, "%s.png", rom_path.substr(0, dot_index).c_str());
             }
@@ -1062,7 +1076,7 @@ namespace GAME {
             {
                 std::string rom_path = std::string(game->rom_path);
                 int dot_index = rom_path.find_last_of(".");
-                if (new_icon_method)
+                if (cat->new_icon_method)
                 {
                     sprintf(path, "%s.png", rom_path.substr(0, dot_index).c_str());
                 }

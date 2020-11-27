@@ -736,8 +736,8 @@ namespace Windows {
 
         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
         {
-            ImGui::SetNextWindowPos(ImVec2(200, 80));
-            ImGui::SetNextWindowSizeConstraints(ImVec2(500,130), ImVec2(500,420), NULL, NULL);
+            ImGui::SetNextWindowPos(ImVec2(200, 60));
+            ImGui::SetNextWindowSizeConstraints(ImVec2(500,130), ImVec2(500,440), NULL, NULL);
         }
         else
         {
@@ -876,6 +876,8 @@ namespace Windows {
                         };
                         ImGui::PopID();
                         ImGui::Separator();
+                        ImGui::Checkbox("Use Icons from Roms Path", &current_category->new_icon_method);
+                        ImGui::Separator();
 
                         if (strcmp(current_category->rom_launcher_title_id, "DEDALOX64") != 0)
                         {
@@ -1005,9 +1007,6 @@ namespace Windows {
                     {
                         SetNavFocusHere();
                     }
-                    ImGui::Separator();
-
-                    ImGui::Checkbox("Use New Icon Method", &new_icon_method);
                     ImGui::Separator();
 
                     ImGui::Text("Style:"); ImGui::SameLine();
@@ -1217,7 +1216,6 @@ namespace Windows {
             {
                 OpenIniFile (CONFIG_INI_FILE);
                 WriteInt(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
-                WriteBool(CONFIG_GLOBAL, CONFIG_NEW_ICON_METHOD, new_icon_method);
                 WriteString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, pspemu_path);
                 WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, cb_style_name);
 
@@ -1597,6 +1595,10 @@ namespace Windows {
                             else
                             {
                                 strlcpy(game.title, games_on_filesystem[i].substr(0, dot_index).c_str(), 128);
+                            }
+                            if (current_category->id == MAME_2000_GAMES || current_category->id == MAME_2003_GAMES)
+                            {
+                                DB::GetMameRomName(nullptr, game.title, game.title);
                             }
                             game.tex = no_icon;
 

@@ -813,4 +813,36 @@ namespace DB {
         sqlite3_close(db);
     }
 
+    bool GetMameRomName(sqlite3 *database, char* rom_name, char* name)
+    {
+        sqlite3 *db = database;
+        if (database == nullptr)
+        {
+            sqlite3_open(MAME_ROM_NAME_MAPPINGS_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("SELECT name FROM mappings WHERE rom_name=?");
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        bool found = false;
+        if (rc == SQLITE_OK)
+        {
+            sqlite3_bind_text(res, 1, rom_name, strlen(rom_name), NULL);
+            int step = sqlite3_step(res);
+            if (step == SQLITE_ROW)
+            {
+                strlcpy(name, sqlite3_column_text(res, 0), 128);
+                found = true;
+            }
+            sqlite3_finalize(res);
+        }
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+
+        return found;
+    }
 }

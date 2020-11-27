@@ -7,6 +7,7 @@
 #define CACHE_DB_FILE "ux0:data/SMLA00001/cache.db"
 #define PER_GAME_SETTINGS_DB_FILE "ux0:data/SMLA00001/game_settings.db"
 #define VITA_APP_DB_FILE "ur0:shell/db/app.db"
+#define MAME_ROM_NAME_MAPPINGS_FILE "ux0:app/SMLA00001/thumbnails/mame_mapping.db"
 
 #define GAMES_TABLE "games"
 #define FAVORITES_TABLE "favorites"
@@ -58,6 +59,7 @@ namespace DB {
     void GetRomCoreSettings(char* rom_path, char* core);
     void SavePspGameSettings(char* rom_path, BootSettings *settings);
     void SaveRomCoreSettings(char* rom_path, char* core);
+    bool GetMameRomName(sqlite3 *database, char* rom_name, char* name);
 }
 
 #endif
