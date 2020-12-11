@@ -1083,7 +1083,7 @@ namespace GAME {
             }
             
             sprintf(url, "%s/%s", base_url, thumbnail);
-            sprintf(alternate_url, "%s/%s", alternate_url, thumbnail);
+            sprintf(alternate_url, "%s/%s", alternate_base_url, thumbnail);
             std::string url_str = std::string(url);
             CONFIG::ReplaceAll(url_str, " ", "%20");
             std::string alternate_url_str = std::string(alternate_url);
