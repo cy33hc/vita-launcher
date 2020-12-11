@@ -268,6 +268,11 @@ namespace Net
         }
       }
     }
+    else
+    {
+      res = -1;
+    }
+    
 
   ERROR_EXIT:
     if (fd >= 0)
