@@ -1065,12 +1065,29 @@ namespace GAME {
         bool found = DB::FindMatchingThumbnail(db, tokens, thumbnail);
         if (found)
         {
-            char url[512];
-            char path[512];
+            char url[384];
+            char alternate_url[384];
+            char path[384];
+            char base_url[132];
+            char alternate_base_url[132];
             GameCategory *cat = categoryMap[game->category];
-            sprintf(url, "%s/%s", cat->download_url, thumbnail);
+            if (cat->icon_type == 1)
+            {
+                sprintf(base_url, cat->download_url, ICON_TYPE_BOXARTS);
+                sprintf(alternate_base_url, cat->download_url, ICON_TYPE_TITLES);
+            }
+            else
+            {
+                sprintf(base_url, cat->download_url, ICON_TYPE_TITLES);
+                sprintf(alternate_base_url, cat->download_url, ICON_TYPE_BOXARTS);
+            }
+            
+            sprintf(url, "%s/%s", base_url, thumbnail);
+            sprintf(alternate_url, "%s/%s", alternate_url, thumbnail);
             std::string url_str = std::string(url);
             CONFIG::ReplaceAll(url_str, " ", "%20");
+            std::string alternate_url_str = std::string(alternate_url);
+            CONFIG::ReplaceAll(alternate_url_str, " ", "%20");
 
             if (game->type == TYPE_ROM)
             {
@@ -1095,7 +1112,11 @@ namespace GAME {
 
             if (!FS::FileExists(path))
             {
-                Net::DownloadFile(url_str.c_str(), path);
+                int res = Net::DownloadFile(url_str.c_str(), path);
+                if (res < 0)
+                {
+                    Net::DownloadFile(alternate_url_str.c_str(), path);
+                }
             }
         }
 

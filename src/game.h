@@ -52,6 +52,7 @@ typedef struct {
     ImVec2 button_size;
     ImVec2 thumbnail_size;
     bool new_icon_method;
+    int icon_type;
 } GameCategory;
 
 enum DRIVERS {INFERNO=0, MARCH33=1, NP9660=2};

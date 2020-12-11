@@ -64,6 +64,9 @@ namespace CONFIG {
         sprintf(category->alt_title, "%s", ReadString(category->title, CONFIG_ALT_TITLE, category->title));
         WriteString(category->title, CONFIG_ALT_TITLE, category->alt_title);
 
+        category->icon_type = ReadInt(category->title, CONFIG_ICON_TYPE, 1);
+        WriteInt(category->title, CONFIG_ICON_TYPE, category->icon_type);
+
         if (download_url != nullptr)
         {
             sprintf(category->download_url, "%s", download_url);
@@ -329,6 +332,7 @@ namespace CONFIG {
             WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores).c_str());
             WriteBool(cat->title, CONFIG_BOOT_WITH_ALT_CORE, cat->boot_with_alt_core);
             WriteBool(cat->title, CONFIG_NEW_ICON_METHOD, cat->new_icon_method);
+            WriteInt(cat->title, CONFIG_ICON_TYPE, cat->icon_type);
         }
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();

@@ -876,7 +876,9 @@ namespace Windows {
                         };
                         ImGui::PopID();
                         ImGui::Separator();
-                        ImGui::Checkbox("Use Icons from Roms Path", &current_category->new_icon_method);
+                        ImGui::Text("Icon Preference:"); ImGui::SameLine();
+                        ImGui::RadioButton("Boxart", &current_category->icon_type, 1); ImGui::SameLine();
+                        ImGui::RadioButton("Screenshot", &current_category->icon_type, 2);
                         ImGui::Separator();
 
                         if (strcmp(current_category->rom_launcher_title_id, "DEDALOX64") != 0)
