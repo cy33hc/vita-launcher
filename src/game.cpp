@@ -1043,9 +1043,8 @@ namespace GAME {
     void DownloadThumbnail(sqlite3 *database, Game *game)
     {
         std::string title = std::string(game->title);
-        title.erase(std::remove_if(title.begin(), title.end(),
-            [](char c) { return !std::isspace(c) && !std::isalnum(c) && c != '\''; } ),
-            title.end());
+        std::replace_if(title.begin(), title.end(),
+            [](char c) { return !std::isspace(c) && !std::isalnum(c) && c != '\''; }, ' ');
         CONFIG::ReplaceAll(title, "'", "''");
         std::vector<std::string> tokens;
         char *token = std::strtok(title.c_str(), " ");
