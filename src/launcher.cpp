@@ -1609,6 +1609,7 @@ namespace Windows {
                             {
                                 current_category->games.push_back(game);
                                 DB::InsertGame(nullptr, &game);
+                                GAME::DownloadThumbnail(nullptr, &game);
                                 GAME::SortGames(current_category);
                                 GAME::SetMaxPage(current_category);
                                 sprintf(game_action_message, "The game has being added to the cache.");
