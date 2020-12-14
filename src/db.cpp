@@ -598,7 +598,40 @@ namespace DB {
                 {
                     sql += " and ";
                 }
-                sql += "filename like '%" + tokens[i] + "%'";
+                if (tokens[i].compare("1") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%I%')";
+                else if (tokens[i].compare("2") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%II%')";
+                else if (tokens[i].compare("3") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%III%')";
+                else if (tokens[i].compare("4") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%IV%')";
+                else if (tokens[i].compare("5") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%V%')";
+                else if (tokens[i].compare("6") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%VI%')";
+                else if (tokens[i].compare("7") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%VII%')";
+                else if (tokens[i].compare("8") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%VIII%')";
+                else if (tokens[i].compare("I") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%1%')";
+                else if (tokens[i].compare("II") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%2%')";
+                else if (tokens[i].compare("III") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%3%')";
+                else if (tokens[i].compare("IV") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%4%')";
+                else if (tokens[i].compare("V") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%5%')";
+                else if (tokens[i].compare("VI") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%6%')";
+                else if (tokens[i].compare("VII") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%7%')";
+                else if (tokens[i].compare("VIII") == 0)
+                    sql += "(filename like '%" + tokens[i] + "%' or filename like '%8%')";
+                else
+                    sql += "filename like '%" + tokens[i] + "%'";
             }
             sql += " order by length(filename) asc";
             //debugNetPrintf(DEBUG,"sql = %s\n", sql.c_str());

@@ -51,7 +51,6 @@ typedef struct {
     int games_per_page;
     ImVec2 button_size;
     ImVec2 thumbnail_size;
-    bool new_icon_method;
     int icon_type;
 } GameCategory;
 

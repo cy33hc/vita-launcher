@@ -607,7 +607,7 @@ namespace GAME {
         Tex tex;
         tex = no_icon;
 
-        char icon_path[320];
+        char icon_path[384];
         if (game->type == TYPE_BUBBLE && strcmp(game->category, game_categories[PS_MOBILE_GAMES].category) == 0)
         {
             sprintf(icon_path, "ur0:appmeta/%s/pic0.png", game->id);
@@ -629,7 +629,7 @@ namespace GAME {
             GameCategory* category = categoryMap[game->category];
             std::string rom_path = std::string(game->rom_path);
             int dot_index = rom_path.find_last_of(".");
-            if (category->new_icon_method)
+            if (new_icon_method)
             {
                 sprintf(icon_path, "%s.png", rom_path.substr(0, dot_index).c_str());
             }
@@ -1044,7 +1044,7 @@ namespace GAME {
     {
         std::string title = std::string(game->title);
         std::replace_if(title.begin(), title.end(),
-            [](char c) { return !std::isspace(c) && !std::isalnum(c) && c != '\''; }, ' ');
+            [](char c) { return !std::isspace(c) && !std::isalnum(c); }, ' ');
         CONFIG::ReplaceAll(title, "'", "''");
         std::vector<std::string> tokens;
         char *token = std::strtok(title.c_str(), " ");
@@ -1092,7 +1092,7 @@ namespace GAME {
             {
                 std::string rom_path = std::string(game->rom_path);
                 int dot_index = rom_path.find_last_of(".");
-                if (cat->new_icon_method)
+                if (new_icon_method)
                 {
                     sprintf(path, "%s.png", rom_path.substr(0, dot_index).c_str());
                 }

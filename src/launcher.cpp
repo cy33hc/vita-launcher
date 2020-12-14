@@ -1011,6 +1011,9 @@ namespace Windows {
                     }
                     ImGui::Separator();
 
+                    ImGui::Checkbox("Use New Icon Method", &new_icon_method);
+                    ImGui::Separator();
+
                     ImGui::Text("Style:"); ImGui::SameLine();
                     if (ImGui::BeginCombo("##Style", cb_style_name, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular))
                     {
@@ -1218,6 +1221,7 @@ namespace Windows {
             {
                 OpenIniFile (CONFIG_INI_FILE);
                 WriteInt(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
+                WriteBool(CONFIG_GLOBAL, CONFIG_NEW_ICON_METHOD, new_icon_method);
                 WriteString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, pspemu_path);
                 WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, cb_style_name);
 
