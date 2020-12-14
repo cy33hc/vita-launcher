@@ -1069,6 +1069,7 @@ namespace GAME {
             char path[384];
             char base_url[132];
             char alternate_base_url[132];
+            game->icon_missing = false;
             GameCategory *cat = categoryMap[game->category];
             if (cat->icon_type == 1)
             {
