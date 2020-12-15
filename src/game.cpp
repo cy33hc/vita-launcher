@@ -335,7 +335,7 @@ namespace GAME {
                 {
                     strlcpy(game.title, files[j].substr(0, dot_index).c_str(), 128);
                 }
-                if (category->id == MAME_2000_GAMES || category->id == MAME_2003_GAMES)
+                if (category->id == MAME_2000_GAMES || category->id == MAME_2003_GAMES || category->id == NEOGEO_GAMES)
                 {
                     DB::GetMameRomName(mame_mappings_db, game.title, game.title);
                 }
