@@ -1602,7 +1602,7 @@ namespace Windows {
                             {
                                 strlcpy(game.title, games_on_filesystem[i].substr(0, dot_index).c_str(), 128);
                             }
-                            if (current_category->id == MAME_2000_GAMES || current_category->id == MAME_2003_GAMES)
+                            if (current_category->id == MAME_2000_GAMES || current_category->id == MAME_2003_GAMES || current_category->id == NEOGEO_GAMES)
                             {
                                 DB::GetMameRomName(nullptr, game.title, game.title);
                             }

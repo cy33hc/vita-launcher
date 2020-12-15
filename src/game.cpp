@@ -309,7 +309,7 @@ namespace GAME {
         int rom_path_length = strlen(category->roms_path);
         sqlite3 *mame_mappings_db = nullptr;
 
-        if (category->id == MAME_2000_GAMES || category->id == MAME_2003_GAMES)
+        if (category->id == MAME_2000_GAMES || category->id == MAME_2003_GAMES || category->id == NEOGEO_GAMES)
         {
             mame_mappings_db = sqlite3_open(MAME_ROM_NAME_MAPPINGS_FILE, &mame_mappings_db);
         }
