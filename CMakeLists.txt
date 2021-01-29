@@ -114,6 +114,7 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE thumbnails_db/msx1.db thumbnails/msx1.db
   FILE thumbnails_db/neogeocd.db thumbnails/neogeocd.db
   FILE thumbnails_db/scummvm.db thumbnails/scummvm.db
+  FILE thumbnails_db/dreamcast.db thumbnails/dreamcast.db
   FILE thumbnails_db/mame_mapping.db thumbnails/mame_mapping.db
   FILE noicon.png noicon.png
   FILE favorite.png favorite.png

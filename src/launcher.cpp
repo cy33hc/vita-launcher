@@ -82,7 +82,8 @@ namespace Windows {
     {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         SceCtrlData pad;
-        sceCtrlPeekBufferNegative(0, &pad, 1);
+        //sceCtrlPeekBufferNegative(0, &pad, 1);
+        sceCtrlReadBufferPositiveExt2(0, &pad, 1);
 
         if ((pad_prev.buttons & SCE_CTRL_SQUARE) && !(pad.buttons & SCE_CTRL_SQUARE) && !paused)
         {
@@ -132,8 +133,8 @@ namespace Windows {
             }
         }
 
-        if ((pad_prev.buttons & SCE_CTRL_LTRIGGER) &&
-            !(pad.buttons & SCE_CTRL_LTRIGGER) && !paused)
+        if ((pad_prev.buttons & SCE_CTRL_L1) &&
+            !(pad.buttons & SCE_CTRL_L1) && !paused)
         {
             GameCategory *next_category = current_category;
             next_category = &game_categories[GAME::DecrementCategory(next_category->id, 1)];
@@ -145,8 +146,8 @@ namespace Windows {
                 }
             }
             category_selected = next_category->id;
-        } else if ((pad_prev.buttons & SCE_CTRL_RTRIGGER) &&
-                   !(pad.buttons & SCE_CTRL_RTRIGGER) && !paused)
+        } else if ((pad_prev.buttons & SCE_CTRL_R1) &&
+                   !(pad.buttons & SCE_CTRL_R1) && !paused)
         {
             GameCategory *next_category = current_category;
             next_category = &game_categories[GAME::IncrementCategory(next_category->id, 1)];
@@ -160,6 +161,24 @@ namespace Windows {
             category_selected = next_category->id;
         }
 
+        if ((pad_prev.buttons & SCE_CTRL_R2) &&
+            !(pad.buttons & SCE_CTRL_R2) &&
+            current_category->view_mode == VIEW_MODE_GRID && !paused)
+        {
+			int prev_page = current_category->page_num;
+			current_category->page_num = GAME::IncrementPage(current_category->page_num, 1);
+			GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num, current_category->games_per_page);
+			selected_game = nullptr;
+        } else if ((pad_prev.buttons & SCE_CTRL_L2) &&
+                   !(pad.buttons & SCE_CTRL_L2) &&
+                   current_category->view_mode == VIEW_MODE_GRID && !paused)
+        {
+			int prev_page = current_category->page_num;
+			current_category->page_num = GAME::DecrementPage(current_category->page_num, 1);
+			GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num, current_category->games_per_page);
+			selected_game = nullptr;
+		}
+		
         if (previous_right == 0.0f &&
             io.NavInputs[ImGuiNavInput_DpadRight] == 1.0f &&
             current_category->view_mode == VIEW_MODE_GRID &&
