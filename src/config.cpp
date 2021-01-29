@@ -16,6 +16,7 @@ bool show_all_categories;
 bool parental_control;
 char search_text[32];
 bool new_icon_method;
+bool swap_xo;
 
 namespace CONFIG {
 
@@ -175,6 +176,9 @@ namespace CONFIG {
 
         new_icon_method = ReadBool(CONFIG_GLOBAL, CONFIG_NEW_ICON_METHOD, false);
         WriteBool(CONFIG_GLOBAL, CONFIG_NEW_ICON_METHOD, new_icon_method);
+
+        swap_xo = ReadBool(CONFIG_GLOBAL, CONFIG_SWAP_XO, false);
+        WriteBool(CONFIG_GLOBAL, CONFIG_SWAP_XO, swap_xo);
 
         // Load parental control config
         parental_control = ReadBool(CONFIG_GLOBAL, CONFIG_PARENT_CONTROL, false);

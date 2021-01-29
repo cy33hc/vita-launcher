@@ -49,6 +49,7 @@
 #define CONFIG_PARENT_CONTROL "parental_control"
 #define CONFIG_STYLE_NAME "style"
 #define CONFIG_DEFAULT_STYLE_NAME "Default"
+#define CONFIG_SWAP_XO "swap_xo"
 
 #define ICON_TYPE_BOXARTS "Boxarts"
 #define ICON_TYPE_TITLES "Titles"
@@ -199,6 +200,7 @@ extern bool show_all_categories;
 extern bool parental_control;
 extern char search_text[];
 extern bool new_icon_method;
+extern bool swap_xo;
 
 namespace CONFIG {
     void LoadConfig();
