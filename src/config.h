@@ -87,6 +87,7 @@
 #define SEGA_CD_FILTERS ".bin,.chd,.cue,.iso"
 #define AMIGA_FILTERS ".hdf"
 #define MSX1_FILTERS ".zip,.bin"
+#define DREAMCAST_FILTERS ".chd,.cue,.iso"
 
 // Filters for title prefixes
 #define VITA_TITLE_ID_PREFIXES "PCSA,PCSB,PCSC,PCSD,PCSE,PCSF,PCSG,PCSH,PCSI"
@@ -125,6 +126,7 @@
 #define ATARI_5200_TITLE_ID_PREFIXES "AT5200"
 #define AMIGA_TITLE_ID_PREFIXES "AMIGA"
 #define MSX1_TITLE_ID_PREFIXES "MSX1"
+#define DREAMCAST_TITLE_ID_PREFIXES "DCAST"
 
 // Alt retroarch cores
 #define PS1_ALT_CORES ""
@@ -158,6 +160,7 @@
 #define ATARI_5200_ALT_CORES ""
 #define AMIGA_ALT_CORES ""
 #define MSX1_ALT_CORES ""
+#define DREAMCAST_ALT_CORES ""
 
 #define SCUMMVM_GAME_ID "gameid"
 #define SCUMMVM_GAME_TITLE "description"
@@ -195,6 +198,7 @@
 #define ATARI_5200_DOWNLOAD_URL "https://github.com/cy33hc/Atari_-_5200/raw/master/Named_%s"
 #define AMIGA_DOWNLOAD_URL "https://github.com/cy33hc/Commodore_-_Amiga/raw/master/Named_%s"
 #define MSX1_DOWNLOAD_URL "https://github.com/cy33hc/Microsoft_-_MSX/raw/master/Named_%s"
+#define DREAMCAST_DOWNLOAD_URL "https://github.com/cy33hc/Sega_-_Dreamcast/raw/master/Named_%s"
 
 extern bool show_all_categories;
 extern bool parental_control;
