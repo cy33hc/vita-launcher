@@ -646,13 +646,27 @@ namespace Windows {
     {
         ImGui::SetCursorPosX(290);
         ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Un-Select"); ImGui::SameLine();
+	if (!swap_xo)
+	{
+            ImGui::Text("Un-Select"); ImGui::SameLine();
+	}
+	else
+	{
+	    ImGui::Text("Select"); ImGui::SameLine();
+	}
         ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Favorite"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Settings"); ImGui::SameLine();
         ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
-        ImGui::Text("Select"); ImGui::SameLine();
+	if (!swap_xo)
+	{
+            ImGui::Text("Select"); ImGui::SameLine();
+	}
+	else
+        {
+	    ImGui::Text("Un-Select"); ImGui::SameLine();
+	}
         ImGui::Image(reinterpret_cast<ImTextureID>(start_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Search"); ImGui::SameLine();
 
