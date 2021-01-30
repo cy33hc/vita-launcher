@@ -35,6 +35,7 @@ std::vector<std::string> hidden_title_ids;
 char pspemu_path[16];
 char pspemu_iso_path[32];
 char pspemu_eboot_path[32];
+char game_uninstalled = 0;
 
 GameCategory *current_category;
 
@@ -1222,4 +1223,92 @@ namespace GAME {
             }
         }
     }
+
+	static int LoadScePaf() {
+		static int argp[] = { 0x180000, -1, -1, 1, -1, -1 };
+
+		int result = -1;
+
+		uint32_t buf[4];
+		buf[0] = sizeof(buf);
+		buf[1] = (uint32_t)&result;
+		buf[2] = -1;
+		buf[3] = -1;
+
+		return sceSysmoduleLoadModuleInternalWithArg(SCE_SYSMODULE_INTERNAL_PAF, sizeof(argp), argp, buf);
+	}
+
+	static int UnloadScePaf() {
+		uint32_t buf = 0;
+		return sceSysmoduleUnloadModuleInternalWithArg(SCE_SYSMODULE_INTERNAL_PAF, 0, NULL, &buf);
+	}
+
+	int DeleteApp(const char *titleid)
+	{
+		int res;
+		sceShellUtilLock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN);
+		
+		sceAppMgrDestroyOtherApp();
+
+		res = LoadScePaf();
+		if (res < 0)
+			goto exit;
+
+		res = sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_PROMOTER_UTIL);
+		if (res < 0)
+			goto exit;
+
+		res = scePromoterUtilityInit();
+		if (res < 0)
+			goto exit;
+
+		res = scePromoterUtilityDeletePkg(titleid);
+		if (res < 0)
+			goto exit;
+
+		res = scePromoterUtilityExit();
+		if (res < 0)
+			goto exit;
+
+		res = sceSysmoduleUnloadModuleInternal(SCE_SYSMODULE_INTERNAL_PROMOTER_UTIL);
+		if (res < 0)
+			goto exit;
+
+exit:
+		sceShellUtilUnlock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN);
+		res = UnloadScePaf();
+
+		return res;
+	}
+
+    void UninstallGame(Game *game)
+    {
+		int ret = DeleteApp(game->id);
+		if (ret >= 0)
+		{
+			GameCategory *cat = categoryMap[game->category];
+			GAME::RemoveGameFromCategory(cat, game);
+			GAME::RemoveGameFromCategory(&game_categories[FAVORITES], game);
+			GAME::SetMaxPage(cat);
+			GAME::SetMaxPage(&game_categories[FAVORITES]);
+			game_uninstalled = 2;
+		}
+		else
+		{
+			game_uninstalled = 3;
+		}
+	}
+
+	void StartUninstallGameThread(Game *game)
+    {
+        uninstall_game_thid = sceKernelCreateThread("download_thumbnails_thread", (SceKernelThreadEntry)GAME::UninstallGameThread, 0x10000100, 0x4000, 0, 0, NULL);
+		if (uninstall_game_thid >= 0)
+			sceKernelStartThread(uninstall_game_thid, sizeof(Game), game);
+    }
+
+	int UninstallGameThread(SceSize args, Game *game)
+	{
+		UninstallGame(game);
+		return sceKernelExitDeleteThread(0);
+	}
 }

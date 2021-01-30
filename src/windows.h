@@ -47,6 +47,7 @@ namespace Windows {
     void HandleImeInput();
     void HandleMoveGame();
     void HandleSearchGame();
+    void HandleUninstallGame();
     void MultiValueImeCallback(int ime_result);
     void SingleValueImeCallback(int ime_result);
     void NullCallback(int ime_result);

@@ -146,6 +146,7 @@ extern std::vector<std::string> hidden_title_ids;
 extern char pspemu_path[];
 extern char pspemu_iso_path[];
 extern char pspemu_eboot_path[];
+extern char game_uninstalled;
 
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;
@@ -153,6 +154,7 @@ static SceUID scan_games_category_thid = -1;
 static SceUID load_image_thid = -1;
 static SceUID delete_images_thid = -1;
 static SceUID download_images_thid = -1;
+static SceUID uninstall_game_thid = -1;
 
 typedef struct LoadImagesParams {
   int category;
@@ -214,6 +216,13 @@ namespace GAME {
     void DownloadThumbnails(GameCategory *category);
     void StartDownloadThumbnailsThread(GameCategory *category);
     void FindGamesByPartialName(std::vector<GameCategory*> &categories, char* search_text, std::vector<Game> &games);
+    void UninstallGame(Game *game);
+    int UninstallGameThread(SceSize args, Game *game);
+    void StartUninstallGameThread(Game *game);
+    int DeleteApp(const char *titleid);
+
+    static int LoadScePaf();
+    static int UnloadScePaf();
 }
 
 #endif

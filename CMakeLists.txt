@@ -68,6 +68,8 @@ target_link_libraries(${PROJECT_NAME}
   SceHttp_stub
   SceSsl_stub
   ScePspnetAdhoc_stub
+  ScePromoterUtil_stub
+  SceShellSvc_stub
   m
   SceAppMgr_stub
   SceAppUtil_stub
