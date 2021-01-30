@@ -1377,6 +1377,8 @@ namespace Windows {
                 add_rom_game = false;
                 rename_game = false;
                 download_thumbnails = false;
+                uninstall_game = false;
+                
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
