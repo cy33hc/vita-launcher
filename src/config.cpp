@@ -31,12 +31,20 @@ namespace CONFIG {
 		category->id = category_id;
         sprintf(category->category, "%s", category_name);
 		sprintf(category->title, "%s", title);
-		category->page_num = 1;
-		category->max_page = 1;
         category->list_view_position = -1;
 		category->view_mode = ReadInt(category->title, CONFIG_VIEW_MODE, -1);
         category->opened = false;
         category->rom_type = rom_type;
+
+        Folder root_folder;
+        sprintf(root_folder.category, category->category);
+        sprintf(root_folder.id, FOLDER_ROOT_ID);
+        root_folder.type = FOLDER_TYPE_ROOT;
+        sprintf(root_folder.title, "/");
+        root_folder.page_num = 1;
+        root_folder.max_page = 1;
+        category->folders.push_back(root_folder);
+        category->current_folder = &category->folders[0];
 
         category->order = ReadInt(category->title, CONFIG_CATEGORY_ORDER, category_id);
         WriteInt(category->title, CONFIG_CATEGORY_ORDER, category->order);

@@ -98,7 +98,7 @@ namespace Windows {
                         game.tex = no_icon;
                         game.visible = false;
                         game.thread_started = false;
-                        game_categories[FAVORITES].games.push_back(game);
+                        game_categories[FAVORITES].current_folder->games.push_back(game);
                         GAME::SortGames(&game_categories[FAVORITES]);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
                         selected_game->favorite = true;
@@ -141,7 +141,7 @@ namespace Windows {
             next_category = &game_categories[GAME::DecrementCategory(next_category->id, 1)];
             if (!show_all_categories)
             {
-                while (next_category->games.size() == 0)
+                while (next_category->current_folder->games.size() == 0)
                 {
                     next_category = &game_categories[GAME::DecrementCategory(next_category->id, 1)];
                 }
@@ -154,7 +154,7 @@ namespace Windows {
             next_category = &game_categories[GAME::IncrementCategory(next_category->id, 1)];
             if (!show_all_categories)
             {
-                while (next_category->games.size() == 0)
+                while (next_category->current_folder->games.size() == 0)
                 {
                     next_category = &game_categories[GAME::IncrementCategory(next_category->id, 1)];
                 }
@@ -166,46 +166,46 @@ namespace Windows {
             !(pad.buttons & SCE_CTRL_R2) &&
             current_category->view_mode == VIEW_MODE_GRID && !paused)
         {
-			int prev_page = current_category->page_num;
-			current_category->page_num = GAME::IncrementPage(current_category->page_num, 1);
-			GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num, current_category->games_per_page);
+			int prev_page = current_category->current_folder->page_num;
+			current_category->current_folder->page_num = GAME::IncrementPage(current_category->current_folder->page_num, 1);
+			GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->current_folder->page_num, current_category->games_per_page);
 			selected_game = nullptr;
         } else if ((pad_prev.buttons & SCE_CTRL_L2) &&
                    !(pad.buttons & SCE_CTRL_L2) &&
                    current_category->view_mode == VIEW_MODE_GRID && !paused)
         {
-			int prev_page = current_category->page_num;
-			current_category->page_num = GAME::DecrementPage(current_category->page_num, 1);
-			GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num, current_category->games_per_page);
+			int prev_page = current_category->current_folder->page_num;
+			current_category->current_folder->page_num = GAME::DecrementPage(current_category->current_folder->page_num, 1);
+			GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->current_folder->page_num, current_category->games_per_page);
 			selected_game = nullptr;
 		}
 		
         if (previous_right == 0.0f &&
             io.NavInputs[ImGuiNavInput_DpadRight] == 1.0f &&
             current_category->view_mode == VIEW_MODE_GRID &&
-            current_category->max_page > 1 && !paused && !tab_infocus)
+            current_category->current_folder->max_page > 1 && !paused && !tab_infocus)
         {
             if (((game_position == 5 || game_position == 11 || game_position == 17) && current_category->rows == 3) ||
                 ((game_position == 3 || game_position == 7) && current_category->rows == 2) ||
-                (current_category->page_num == current_category->max_page && 
-                game_position == current_category->games.size() - (current_category->page_num*current_category->games_per_page-current_category->games_per_page) -1))
+                (current_category->current_folder->page_num == current_category->current_folder->max_page && 
+                game_position == current_category->current_folder->games.size() - (current_category->current_folder->page_num*current_category->games_per_page-current_category->games_per_page) -1))
             {
-                int prev_page = current_category->page_num;
-                current_category->page_num = GAME::IncrementPage(current_category->page_num, 1);
-                GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num, current_category->games_per_page);
+                int prev_page = current_category->current_folder->page_num;
+                current_category->current_folder->page_num = GAME::IncrementPage(current_category->current_folder->page_num, 1);
+                GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->current_folder->page_num, current_category->games_per_page);
                 selected_game = nullptr;
             }
         } else if (previous_left == 0.0f &&
             io.NavInputs[ImGuiNavInput_DpadLeft] == 1.0f &&
             current_category->view_mode == VIEW_MODE_GRID &&
-            current_category->max_page > 1 && !paused && !tab_infocus)
+            current_category->current_folder->max_page > 1 && !paused && !tab_infocus)
         {
             if (((game_position == 0 || game_position == 6 || game_position == 12) && current_category->rows == 3) ||
                 ((game_position == 0 || game_position == 4) && current_category->rows == 2))
             {
-                int prev_page = current_category->page_num;
-                current_category->page_num = GAME::DecrementPage(current_category->page_num, 1);
-                GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->page_num, current_category->games_per_page);
+                int prev_page = current_category->current_folder->page_num;
+                current_category->current_folder->page_num = GAME::DecrementPage(current_category->current_folder->page_num, 1);
+                GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->current_folder->page_num, current_category->games_per_page);
                 selected_game = nullptr;
             }
         }
@@ -248,10 +248,10 @@ namespace Windows {
 
     int GetGamePositionOnPage(Game *game)
     {
-        for (int i=current_category->page_num*current_category->games_per_page-current_category->games_per_page; i < current_category->page_num*current_category->games_per_page; i++)
+        for (int i=current_category->current_folder->page_num*current_category->games_per_page-current_category->games_per_page; i < current_category->current_folder->page_num*current_category->games_per_page; i++)
         {
-            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, current_category->games[i].id) == 0) ||
-                ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, current_category->games[i].rom_path) == 0))
+            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, current_category->current_folder->games[i].id) == 0) ||
+                ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, current_category->current_folder->games[i].rom_path) == 0))
             {
                 return i % current_category->games_per_page;
             }
@@ -295,7 +295,7 @@ namespace Windows {
         io.KeyRepeatRate = 0.05f;
         ImGui_ImplVita2D_SetAnalogRepeatDelay(100000);
 
-        int game_start_index = (current_category->page_num * current_category->games_per_page) - current_category->games_per_page;
+        int game_start_index = (current_category->current_folder->page_num * current_category->games_per_page) - current_category->games_per_page;
         int grid_size = 160;
         if (current_category->rows == 2)
         {
@@ -313,11 +313,11 @@ namespace Windows {
             {
                 ImGui::SetCursorPos(ImVec2(pos.x+(j*grid_size),pos.y+(i*grid_size)));
                 int button_id = (i*current_category->columns)+j;
-                if (game_start_index+button_id < current_category->games.size())
+                if (game_start_index+button_id < current_category->current_folder->games.size())
                 {
                     char id[32];
                     sprintf(id, "%d#image", button_id);
-                    Game *game = &current_category->games[game_start_index+button_id];
+                    Game *game = &current_category->current_folder->games[game_start_index+button_id];
                     if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), current_category->thumbnail_size, ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1))) {
                         if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                         {
@@ -392,7 +392,7 @@ namespace Windows {
         ImGui::SetCursorPos(ImVec2(pos.x, 521));
         ImGui::Separator();
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
-        ImGui::Text("Page: %d/%d", current_category->page_num, current_category->max_page); ImGui::SameLine();
+        ImGui::Text("Page: %d/%d", current_category->current_folder->page_num, current_category->current_folder->max_page); ImGui::SameLine();
 
         ShowCommonSubWindow();
     }
@@ -418,13 +418,13 @@ namespace Windows {
         }
         ImVec2 pos = ImGui::GetCursorPos();
         ImGui::Columns(current_category->columns, current_category->title, false);
-        for (int button_id=0; button_id<current_category->games.size(); button_id++)
+        for (int button_id=0; button_id<current_category->current_folder->games.size(); button_id++)
         {
             char id[32];
             char sel_id[32];
             sprintf(id, "%d#image", button_id);
             sprintf(sel_id, "##%d", button_id);
-            Game *game = &current_category->games[button_id];
+            Game *game = &current_category->current_folder->games[button_id];
             ImGui::BeginGroup();
             ImVec2 pos = ImGui::GetCursorPos();
             ImGui::SetCursorPos(ImVec2(pos.x-5, pos.y));
@@ -552,9 +552,9 @@ namespace Windows {
                 {
                     current_category->list_view_position = GAME::FindGamePosition(current_category, selected_game);
                     current_category->list_view_position += 5;
-                    if (current_category->list_view_position > current_category->games.size()-1)
+                    if (current_category->list_view_position > current_category->current_folder->games.size()-1)
                     {
-                        current_category->list_view_position = current_category->games.size()-1;
+                        current_category->list_view_position = current_category->current_folder->games.size()-1;
                     }
                     scroll_direction = 1.0f;
                 }
@@ -581,9 +581,9 @@ namespace Windows {
         }
         ImGui::Separator();
         ImGui::Columns(2, current_category->title, true);
-        for (int i = 0; i < current_category->games.size(); i++)
+        for (int i = 0; i < current_category->current_folder->games.size(); i++)
         {
-            Game *game = &current_category->games[i];
+            Game *game = &current_category->current_folder->games[i];
             ImGui::SetColumnWidth(-1, 760);
             ImGui::PushID(i);
             if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
@@ -720,7 +720,7 @@ namespace Windows {
         {
             for (int i=0; i<TOTAL_CATEGORY; i++)
             {
-                if (game_categories[i].games.size() > 0 || show_all_categories)
+                if (game_categories[i].current_folder->games.size() > 0 || show_all_categories)
                 {
                     // Add some padding for title so tabs are consistent width
                     std::string title = std::string(game_categories[i].alt_title);
@@ -749,7 +749,7 @@ namespace Windows {
                             GAME::StartDeleteGameImagesThread(previous_category);
                             if(current_category->view_mode == VIEW_MODE_GRID)
                             {
-                                GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num, current_category->games_per_page);
+                                GAME::StartLoadImagesThread(current_category->id, current_category->current_folder->page_num, current_category->current_folder->page_num, current_category->games_per_page);
                             }
                         }
                         ImGui::EndTabItem();
@@ -1295,7 +1295,7 @@ namespace Windows {
 
                     if (view_mode == VIEW_MODE_GRID)
                     {
-                        GAME::StartLoadImagesThread(current_category->id, current_category->page_num, current_category->page_num, current_category->games_per_page);
+                        GAME::StartLoadImagesThread(current_category->id, current_category->current_folder->page_num, current_category->current_folder->page_num, current_category->games_per_page);
                     }
                 }
                 WriteIniFile(CONFIG_INI_FILE);
@@ -1673,7 +1673,7 @@ namespace Windows {
                             sprintf(game_action_message, "The game already exists in the cache.");
                             if (!DB::GameExists(nullptr, &game))
                             {
-                                current_category->games.push_back(game);
+                                current_category->current_folder->games.push_back(game);
                                 DB::InsertGame(nullptr, &game);
                                 GAME::DownloadThumbnail(nullptr, &game);
                                 GAME::SortGames(current_category);
@@ -1789,7 +1789,7 @@ namespace Windows {
                                     std::string str = std::string(title_id);
                                     int game_id = std::stoi(str.substr(5))+1;
                                     GAME::PopulateIsoGameInfo(&game, games_on_filesystem[i], game_id);
-                                    categoryMap[game.category]->games.push_back(game);
+                                    categoryMap[game.category]->current_folder->games.push_back(game);
                                     DB::InsertGame(db, &game);
                                     GAME::SortGames(categoryMap[game.category]);
                                     GAME::SetMaxPage(categoryMap[game.category]);
@@ -2008,7 +2008,7 @@ namespace Windows {
                                     sprintf(tmp.category, "%s", game_categories[i].category);
                                     tmp.visible = false;
                                     tmp.thread_started = false;
-                                    game_categories[i].games.push_back(tmp);
+                                    game_categories[i].current_folder->games.push_back(tmp);
                                     DB::UpdateGameCategory(nullptr, &tmp);
                                     DB::UpdateFavoritesGameCategoryByRomPath(nullptr, &tmp);
                                     GAME::SortGames(&game_categories[i]);
@@ -2031,7 +2031,7 @@ namespace Windows {
                                     tmp.tex = no_icon;
                                     tmp.visible = false;
                                     tmp.thread_started = false;
-                                    game_categories[i].games.push_back(tmp);
+                                    game_categories[i].current_folder->games.push_back(tmp);
                                     GAME::SortGames(&game_categories[i]);
                                     GAME::SetMaxPage(&game_categories[i]);
                                     GAME::RemoveGameFromCategory(current_category, selected_game);
@@ -2099,7 +2099,7 @@ namespace Windows {
                     game.tex = no_icon;
                     game.visible = false;
                     game.thread_started = false;
-                    game_categories[FAVORITES].games.push_back(game);
+                    game_categories[FAVORITES].current_folder->games.push_back(game);
                     GAME::SortGames(&game_categories[FAVORITES]);
                     GAME::SetMaxPage(&game_categories[FAVORITES]);
                     search_selected_game->favorite = true;
@@ -2309,7 +2309,7 @@ namespace Windows {
 
         if (ImGui::Begin("Game Launcher", nullptr, ImGuiWindowFlags_NoDecoration)) {
             static float progress = 0.0f;
-            if (current_category->games.size() > 0 && games_to_scan > 0)
+            if (current_category->current_folder->games.size() > 0 && games_to_scan > 0)
             {
                 progress = (float)games_scanned / (float)games_to_scan;
             }

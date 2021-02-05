@@ -93,8 +93,8 @@ namespace GAME {
 
         DB::GetFavorites(nullptr, &game_categories[FAVORITES]);
 
-        for (std::vector<Game>::iterator it=game_categories[FAVORITES].games.begin(); 
-             it!=game_categories[FAVORITES].games.end(); )
+        for (std::vector<Game>::iterator it=game_categories[FAVORITES].current_folder->games.begin(); 
+             it!=game_categories[FAVORITES].current_folder->games.end(); )
         {
             GameCategory *category = categoryMap[it->category];
             Game* game = FindGame(category, &*it);
@@ -108,11 +108,11 @@ namespace GAME {
         for (int i=0; i < TOTAL_CATEGORY; i++)
         {
             SortGames(&game_categories[i]);
-            game_categories[i].page_num = 1;
+            game_categories[i].current_folder->page_num = 1;
             SetMaxPage(&game_categories[i]);
         }
 
-        if (game_categories[FAVORITES].games.size() > 0)
+        if (game_categories[FAVORITES].current_folder->games.size() > 0)
         {
             current_category = &game_categories[FAVORITES];
             grid_rows = current_category->rows;
@@ -213,7 +213,7 @@ namespace GAME {
                 try
                 {
                     PopulateIsoGameInfo(&game, files[j], games_scanned);
-                    categoryMap[game.category]->games.push_back(game);
+                    categoryMap[game.category]->current_folder->games.push_back(game);
                     DB::InsertGame(db, &game);
                     game_scan_inprogress = game;
                     games_scanned++;
@@ -253,17 +253,17 @@ namespace GAME {
         if (strcmp(cat, "ME") ==0)
         {
             sprintf(game->category, "%s", game_categories[PS1_GAMES].category);
-            game_categories[PS1_GAMES].games.push_back(*game);
+            game_categories[PS1_GAMES].current_folder->games.push_back(*game);
         }
         else if (strcmp(cat, "UG") ==0 || (disc_id != NULL && IsMatchPrefixes(disc_id, game_categories[PSP_GAMES].valid_title_ids)))
         {
             sprintf(game->category, "%s", game_categories[PSP_GAMES].category);
-            game_categories[PSP_GAMES].games.push_back(*game);
+            game_categories[PSP_GAMES].current_folder->games.push_back(*game);
         }
         else
         {
             sprintf(game->category, "%s", game_categories[PS_MIMI_GAMES].category);
-            game_categories[PS_MIMI_GAMES].games.push_back(*game);
+            game_categories[PS_MIMI_GAMES].current_folder->games.push_back(*game);
         }
     }
 
@@ -341,7 +341,7 @@ namespace GAME {
                     DB::GetMameRomName(mame_mappings_db, game.title, game.title);
                 }
                 game.tex = no_icon;
-                category->games.push_back(game);
+                category->current_folder->games.push_back(game);
                 DB::InsertGame(db, &game);
                 game_scan_inprogress = game;
             }
@@ -365,10 +365,10 @@ namespace GAME {
 
     void SetMaxPage(GameCategory *category)
     {
-        category->max_page = (category->games.size() + category->games_per_page - 1) / category->games_per_page;
-        if (category->max_page == 0)
+        category->current_folder->max_page = (category->current_folder->games.size() + category->games_per_page - 1) / category->games_per_page;
+        if (category->current_folder->max_page == 0)
         {
-            category->max_page = 1;
+            category->current_folder->max_page = 1;
         }
     }
 
@@ -515,14 +515,14 @@ namespace GAME {
         int high = 0;
         int low = 0;
 
-        if (game_categories[category].max_page > NUM_CACHED_PAGES + 5)
+        if (game_categories[category].current_folder->max_page > NUM_CACHED_PAGES + 5)
         {
             int del_page = 0;
 
-            if ((page > prev_page) or (prev_page == game_categories[category].max_page && page == 1))
+            if ((page > prev_page) or (prev_page == game_categories[category].current_folder->max_page && page == 1))
             {
                 del_page = DecrementPage(page, NUM_CACHED_PAGES);
-            } else if ((page < prev_page) or (prev_page == 1 && page == game_categories[category].max_page))
+            } else if ((page < prev_page) or (prev_page == 1 && page == game_categories[category].current_folder->max_page))
             {
                 del_page = IncrementPage(page, NUM_CACHED_PAGES);
             }
@@ -531,9 +531,9 @@ namespace GAME {
             int low = high - games_per_page;
             if (del_page > 0)
             {
-                for (int i=low; (i<high && i < game_categories[category].games.size()); i++)
+                for (int i=low; (i<high && i < game_categories[category].current_folder->games.size()); i++)
                 {
-                    Game *game = &game_categories[category].games[i];
+                    Game *game = &game_categories[category].current_folder->games[i];
                     if (game->tex.id != no_icon.id)
                     {
                         Tex tmp = game->tex;
@@ -546,9 +546,9 @@ namespace GAME {
 
         high = page * games_per_page;
         low = high - games_per_page;
-        for(std::size_t i = low; (i < high && i < game_categories[category].games.size()); i++) {
-            Game *game = &game_categories[category].games[i];
-            if (page == current_category->page_num && category == current_category->id)
+        for(std::size_t i = low; (i < high && i < game_categories[category].current_folder->games.size()); i++) {
+            Game *game = &game_categories[category].current_folder->games[i];
+            if (page == current_category->current_folder->page_num && category == current_category->id)
             {
                 if (game->tex.id == no_icon.id)
                 {
@@ -587,9 +587,9 @@ namespace GAME {
     int IncrementPage(int page, int num_of_pages)
     {
         int new_page = page + num_of_pages;
-        if (new_page > current_category->max_page)
+        if (new_page > current_category->current_folder->max_page)
         {
-            new_page = new_page % current_category->max_page;
+            new_page = new_page % current_category->current_folder->max_page;
         }
         return new_page;
     }
@@ -601,7 +601,7 @@ namespace GAME {
         {
             return new_page;
         }
-        return new_page + current_category->max_page;
+        return new_page + current_category->current_folder->max_page;
     }
 
     void LoadGameImage(Game *game) {
@@ -660,20 +660,20 @@ namespace GAME {
     {
         int end = params->page_num+params->games_per_page;
         GameCategory *category = &game_categories[params->category];
-        if (end > category->games.size())
+        if (end > category->current_folder->games.size())
         {
-            end = category->games.size();
+            end = category->current_folder->games.size();
         }
         for (int i=params->page_num; i<end; i++)
         {
-            if (category->games[i].visible>0 && !category->games[i].icon_missing)
+            if (category->current_folder->games[i].visible>0 && !category->current_folder->games[i].icon_missing)
             {
-                GAME::LoadGameImage(&category->games[i]);
+                GAME::LoadGameImage(&category->current_folder->games[i]);
                 // For concurrency, game might be invisible after being visible.
-                if (category->games[i].visible == 0 && category->games[i].tex.id != no_icon.id)
+                if (category->current_folder->games[i].visible == 0 && category->current_folder->games[i].tex.id != no_icon.id)
                 {
-                    Tex tmp = category->games[i].tex;
-                    category->games[i].tex = no_icon;
+                    Tex tmp = category->current_folder->games[i].tex;
+                    category->current_folder->games[i].tex = no_icon;
                     Textures::Free(&tmp);
                 }
             }
@@ -729,16 +729,16 @@ namespace GAME {
         sceKernelDelayThread(10000);
         for (int i=0; i < TOTAL_CATEGORY; i++)
         {
-            game_categories[i].games.clear();
+            game_categories[i].current_folder->games.clear();
         }
 
         GAME::Scan();
 
-        if (game_categories[FAVORITES].games.size() > 0)
+        if (game_categories[FAVORITES].current_folder->games.size() > 0)
         {
             current_category = &game_categories[FAVORITES];
         }
-        current_category->page_num = 1;
+        current_category->current_folder->page_num = 1;
         view_mode = current_category->view_mode;
         gui_mode  = GUI_MODE_LAUNCHER;
         if (view_mode == VIEW_MODE_GRID)
@@ -761,11 +761,11 @@ namespace GAME {
     void RemoveGamesFromCategoryByType(sqlite3 *db, GameCategory *category, int rom_type)
     {
         DB::DeleteGamesByCategoryAndType(db, category->category, rom_type);
-        for (std::vector<Game>::iterator it=category->games.begin(); it!=category->games.end(); )
+        for (std::vector<Game>::iterator it=category->current_folder->games.begin(); it!=category->current_folder->games.end(); )
         {
             if (it->type == rom_type)
             {
-                category->games.erase(it);
+                category->current_folder->games.erase(it);
             }
             else
             {
@@ -791,11 +791,11 @@ namespace GAME {
             DB::DeleteGamesByType(db, params->type);
             for (int i=0; i<TOTAL_CATEGORY; i++)
             {
-                for (std::vector<Game>::iterator it=game_categories[i].games.begin(); it!=game_categories[i].games.end(); )
+                for (std::vector<Game>::iterator it=game_categories[i].current_folder->games.begin(); it!=game_categories[i].current_folder->games.end(); )
                 {
                     if (it->type == params->type)
                     {
-                        game_categories[i].games.erase(it);
+                        game_categories[i].current_folder->games.erase(it);
                     }
                     else
                     {
@@ -830,7 +830,7 @@ namespace GAME {
         if (params->type == TYPE_ROM || strcmp(params->category, "ps1") == 0 || params->type == TYPE_SCUMMVM)
         {
             GameCategory *category = categoryMap[params->category];
-            category->page_num = 1;
+            category->current_folder->page_num = 1;
             SetMaxPage(category);
             SortGames(category);
             current_category = category;
@@ -838,13 +838,13 @@ namespace GAME {
         
         if (params->type == TYPE_EBOOT || params->type == TYPE_PSP_ISO)
         {
-            game_categories[PSP_GAMES].page_num = 1;
+            game_categories[PSP_GAMES].current_folder->page_num = 1;
             SetMaxPage(&game_categories[PSP_GAMES]);
             SortGames(&game_categories[PSP_GAMES]);
-            game_categories[PS1_GAMES].page_num = 1;
+            game_categories[PS1_GAMES].current_folder->page_num = 1;
             SetMaxPage(&game_categories[PS1_GAMES]);
             SortGames(&game_categories[PS1_GAMES]);
-            game_categories[PS_MIMI_GAMES].page_num = 1;
+            game_categories[PS_MIMI_GAMES].current_folder->page_num = 1;
             SetMaxPage(&game_categories[PS_MIMI_GAMES]);
             SortGames(&game_categories[PS_MIMI_GAMES]);
         }
@@ -872,9 +872,9 @@ namespace GAME {
 
     void DeleteGamesImages(GameCategory *category)
     {
-        for (int i=0; i < category->games.size(); i++)
+        for (int i=0; i < category->current_folder->games.size(); i++)
         {
-            Game *game = &category->games[i];
+            Game *game = &category->current_folder->games[i];
             game->visible = 0;
             game->thread_started = false;
             if (game->tex.id != no_icon.id)
@@ -888,12 +888,16 @@ namespace GAME {
 
     Game* FindGame(GameCategory *category, Game *game)
     {
-        for (int i=0; i < category->games.size(); i++)
+        for (int j=0; j < category->folders.size(); j++)
         {
-            if ((game->type != TYPE_ROM && strcmp(game->id, category->games[i].id) == 0) ||
-                (game->type == TYPE_ROM && strcmp(game->rom_path, category->games[i].rom_path) == 0))
+            Folder* current_folder = &category->folders[j];
+            for (int i=0; i < current_folder->games.size(); i++)
             {
-                return &category->games[i];
+                if ((game->type != TYPE_ROM && strcmp(game->id, current_folder->games[i].id) == 0) ||
+                    (game->type == TYPE_ROM && strcmp(game->rom_path, current_folder->games[i].rom_path) == 0))
+                {
+                    return &current_folder->games[i];
+                }
             }
         }
         return nullptr;
@@ -901,10 +905,10 @@ namespace GAME {
 
     int FindGamePosition(GameCategory *category, Game *game)
     {
-        for (int i=0; i < category->games.size(); i++)
+        for (int i=0; i < category->current_folder->games.size(); i++)
         {
-            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, category->games[i].id) == 0) ||
-                ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, category->games[i].rom_path) == 0))
+            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, category->current_folder->games[i].id) == 0) ||
+                ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, category->current_folder->games[i].rom_path) == 0))
             {
                 return i;
             }
@@ -914,13 +918,17 @@ namespace GAME {
 
     int RemoveGameFromCategory(GameCategory *category, Game *game)
     {
-        for (int i=0; i < category->games.size(); i++)
+        for (int j=0; j < category->folders.size(); j++)
         {
-            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, category->games[i].id) == 0) ||
-                ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, category->games[i].rom_path) == 0))
+            Folder* current_folder = &category->folders[j];
+            for (int i=0; i < current_folder->games.size(); i++)
             {
-                category->games.erase(category->games.begin()+i);
-                return i;
+                if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, current_folder->games[i].id) == 0) ||
+                    ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, current_folder->games[i].rom_path) == 0))
+                {
+                    current_folder->games.erase(current_folder->games.begin()+i);
+                    return i;
+                }
             }
         }
         return -1;
@@ -928,7 +936,11 @@ namespace GAME {
 
     void SortGames(GameCategory *category)
     {
-        qsort(&category->games[0], category->games.size(), sizeof(Game), GameComparator);
+        for (int j=0; j < category->folders.size(); j++)
+        {
+            Folder* current_folder = &category->folders[j];
+            qsort(&current_folder->games[0], current_folder->games.size(), sizeof(Game), GameComparator);
+        }
     }
 
     void RefreshGames(bool all_categories)
@@ -1026,7 +1038,7 @@ namespace GAME {
                 sprintf(game.id, ReadString(section, SCUMMVM_GAME_ID, ""));
                 sprintf(game.title, ReadString(section, SCUMMVM_GAME_TITLE, ""));
                 game.tex = no_icon;
-                game_categories[SCUMMVM_GAMES].games.push_back(game);
+                game_categories[SCUMMVM_GAMES].current_folder->games.push_back(game);
                 DB::InsertGame(db, &game);
                 game_scan_inprogress = game;
             }
@@ -1130,7 +1142,7 @@ namespace GAME {
     void DownloadThumbnails(GameCategory *category)
     {
         gui_mode = GUI_MODE_SCAN;
-        games_to_scan = category->games.size();
+        games_to_scan = category->current_folder->games.size();
         games_scanned = 0;
         sprintf(game_scan_inprogress.title, "%s", "");
         sprintf(scan_message, "Downloading thumbnails for %s games", current_category->title);
@@ -1144,12 +1156,12 @@ namespace GAME {
         sprintf(db_path, "%s/%s.db", THUMBNAIL_BASE_PATH, cat->category);
         sqlite3 *db;
         sqlite3_open(db_path, &db);
-        for (int i=0; i<cat->games.size(); i++)
+        for (int i=0; i<cat->current_folder->games.size(); i++)
         {
-            if (cat->games[i].type == TYPE_ROM || cat->games[i].type == TYPE_SCUMMVM)
+            if (cat->current_folder->games[i].type == TYPE_ROM || cat->current_folder->games[i].type == TYPE_SCUMMVM)
             {
-                DownloadThumbnail(db, &cat->games[i]);
-                game_scan_inprogress = cat->games[i];
+                DownloadThumbnail(db, &cat->current_folder->games[i]);
+                game_scan_inprogress = cat->current_folder->games[i];
             }
             games_scanned++;
         }
@@ -1172,9 +1184,9 @@ namespace GAME {
     {
         sceKernelDelayThread(5000);
         GameCategory *category = categoryMap[params->category];
-        for (int i=0; i < category->games.size(); i++)
+        for (int i=0; i < category->current_folder->games.size(); i++)
         {
-            Game *game = &category->games[i];
+            Game *game = &category->current_folder->games[i];
             game->visible = 0;
             game->thread_started = false;
             if (game->tex.id != no_icon.id)
@@ -1202,22 +1214,26 @@ namespace GAME {
         for (int i=0; i<categories.size(); i++)
         {
             GameCategory *category = categories[i];
-            for (int j=0; j<category->games.size(); j++)
+            for (int j=0; j < category->folders.size(); j++)
             {
-                std::string title = std::string(category->games[j].title);
-                std::string text = std::string(search_text);
-                std::transform(title.begin(), title.end(), title.begin(),
-                        [](unsigned char c){ return std::tolower(c); });
-                std::transform(text.begin(), text.end(), text.begin(),
-                        [](unsigned char c){ return std::tolower(c); });
-                if (title.find(text) != std::string::npos)
+                Folder* current_folder = &category->folders[j];
+                for (int k=0; k<current_folder->games.size(); k++)
                 {
-                    Game game = category->games[j];
-                    game.tex = no_icon;
-                    games.push_back(game);
-                    if (games.size() >= 300)
+                    std::string title = std::string(current_folder->games[k].title);
+                    std::string text = std::string(search_text);
+                    std::transform(title.begin(), title.end(), title.begin(),
+                            [](unsigned char c){ return std::tolower(c); });
+                    std::transform(text.begin(), text.end(), text.begin(),
+                            [](unsigned char c){ return std::tolower(c); });
+                    if (title.find(text) != std::string::npos)
                     {
-                        return;
+                        Game game = current_folder->games[k];
+                        game.tex = no_icon;
+                        games.push_back(game);
+                        if (games.size() >= 300)
+                        {
+                            return;
+                        }
                     }
                 }
             }

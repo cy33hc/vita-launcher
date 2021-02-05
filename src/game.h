@@ -25,10 +25,22 @@ typedef struct {
 } Game;
 
 typedef struct {
+    char id[20];
+    char title[128];
+    char category[10];
+    char icon_path[192];
+    char type;
+    int max_page;
+    int page_num;
+    std::vector<Game> games;
+} Folder;
+
+typedef struct {
     char id;
     char title[16];
     char alt_title[32];
-    std::vector<Game> games;
+    std::vector<Folder> folders;
+    Folder *current_folder;
     std::vector<std::string> valid_title_ids;
     std::vector<std::string> file_filters;
     char category[10];
@@ -36,8 +48,6 @@ typedef struct {
     char icon_path[96];
     char core[64];
     char rom_launcher_title_id[12];
-    int max_page;
-    int page_num;
     int view_mode;
     std::vector<std::string> alt_cores;
     bool boot_with_alt_core;
@@ -128,6 +138,10 @@ typedef struct {
 #define TYPE_PSP_ISO 2
 #define TYPE_EBOOT 3
 #define TYPE_SCUMMVM 4
+
+#define FOLDER_TYPE_ROOT 1
+#define FOLDER_TYPE_SUBFOLDER 2
+#define FOLDER_ROOT_ID "root"
 
 extern GameCategory game_categories[];
 extern std::map<std::string, GameCategory*> categoryMap;
