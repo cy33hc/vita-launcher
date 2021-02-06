@@ -19,13 +19,14 @@ typedef struct {
     char type;
     bool icon_missing = false;
     int visible = 0;
+    int folder_id;
     uint64_t visible_time = 0;
     bool thread_started = false;
     Tex tex;
 } Game;
 
 typedef struct {
-    char id[20];
+    int id = -1;
     char title[128];
     char category[10];
     char icon_path[192];
@@ -86,6 +87,7 @@ typedef struct {
     CPU_SPEED cpu_speed;
 } BootSettings;
 
+#define FOLDER -1
 #define FAVORITES 0
 #define VITA_GAMES 1
 #define PSP_GAMES 2
@@ -141,7 +143,7 @@ typedef struct {
 
 #define FOLDER_TYPE_ROOT 1
 #define FOLDER_TYPE_SUBFOLDER 2
-#define FOLDER_ROOT_ID "root"
+#define FOLDER_ROOT_ID 0
 
 extern GameCategory game_categories[];
 extern std::map<std::string, GameCategory*> categoryMap;
@@ -195,7 +197,7 @@ namespace GAME {
     void ScanScummVMGames(sqlite3 *db);
     bool GetGameDetails(const char *id, Game *game);
     bool Launch(Game *game, BootSettings *settings = nullptr, char* retro_core = nullptr);
-    void LoadGamesCache();
+    void LoadGamesCache(sqlite3 *db);
     void LoadGameImages(int category, int prev_page, int page_num, int games_per_page);
     void LoadGameImage(Game *game);
     void StartLoadGameImageThread(int category, int game_num, int games_per_page);
@@ -234,6 +236,7 @@ namespace GAME {
     int UninstallGameThread(SceSize args, Game *game);
     void StartUninstallGameThread(Game *game);
     int DeleteApp(const char *titleid);
+    Folder* FindFolder(GameCategory *category, int folder_id);
 
     static int LoadScePaf();
     static int UnloadScePaf();

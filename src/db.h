@@ -11,6 +11,7 @@
 
 #define GAMES_TABLE "games"
 #define FAVORITES_TABLE "favorites"
+#define FOLDERS_TABLE "folders"
 #define PSP_GAME_SETTINGS_TABLE "psp_settings"
 #define RETROROM_GAME_SETTINGS_TABLE "retrorom_settings"
 
@@ -19,6 +20,9 @@
 #define COL_TITLE "title"
 #define COL_CATEGORY "category"
 #define COL_ROM_PATH "rom_path"
+#define COL_ID "id"
+#define COL_FOLDER_ID "folder_id"
+#define COL_ICON_PATH "icon_path"
 
 #define COL_DRIVERS                   "drivers"
 #define COL_EXECUTE                   "execute"
@@ -34,14 +38,19 @@
 
 namespace DB {
     bool TableExists(sqlite3 *db, char* table_name);
+    bool TableColumnExists(sqlite3 *db, char* table_name, char* column_name);
     void GetVitaDbGames(GameCategory *category);
     int GetVitaDbGamesCount();
     void SetupDatabase(sqlite3 *database);
+    void UpdateDatabase(sqlite3 *database);
     void InsertGame(sqlite3 *database, Game *game);
+    void InsertFolder(sqlite3 *database, Folder *folder);
+    void GetFolders(sqlite3 *database, GameCategory *category);
     bool GameExists(sqlite3 *database, Game *game);
     int GetCachedGamesCount(sqlite3 *database);
     void GetCachedGames(sqlite3 *database);
     void DeleteGame(sqlite3 *database, Game *game);
+    void DeleteFolder(sqlite3 *database, Folder *folder);
     void DeleteFavorite(sqlite3 *database, Game *game);
     void InsertFavorite(sqlite3 *database, Game *game);
     void GetFavorites(sqlite3 *database, GameCategory *category);

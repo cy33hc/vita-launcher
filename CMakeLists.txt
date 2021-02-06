@@ -48,6 +48,7 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
+  debugnet
   vita2d
   png
   imgui_vita2d
@@ -125,5 +126,6 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE circle.png circle.png
   FILE cross.png cross.png
   FILE start.png start.png
+  FILE folder.png folder.png
   FILE default_style.ini default_style.ini
 )

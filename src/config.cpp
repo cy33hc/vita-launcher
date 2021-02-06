@@ -7,7 +7,7 @@
 #include "game.h"
 #include "fs.h"
 #include "style.h"
-//#include "debugnet.h"
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -38,13 +38,14 @@ namespace CONFIG {
 
         Folder root_folder;
         sprintf(root_folder.category, category->category);
-        sprintf(root_folder.id, FOLDER_ROOT_ID);
+        root_folder.id = FOLDER_ROOT_ID;
         root_folder.type = FOLDER_TYPE_ROOT;
         sprintf(root_folder.title, "/");
         root_folder.page_num = 1;
         root_folder.max_page = 1;
         category->folders.push_back(root_folder);
         category->current_folder = &category->folders[0];
+        debugNetPrintf(DEBUG,"setup cat=%s, folder size=%d\n", category->category, category->folders.size());
 
         category->order = ReadInt(category->title, CONFIG_CATEGORY_ORDER, category_id);
         WriteInt(category->title, CONFIG_CATEGORY_ORDER, category->order);

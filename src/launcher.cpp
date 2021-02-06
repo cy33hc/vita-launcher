@@ -260,6 +260,26 @@ namespace Windows {
 
     void ShowDisplayTitle()
     {
+        ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
+        ImGui::SameLine();
+        if (current_category->current_folder->type == FOLDER_TYPE_ROOT)
+        {
+            ImGui::Text(current_category->current_folder->title);
+            ImGui::SameLine();
+        }
+        else
+        {
+            char id[32];
+            sprintf(id, "../#%d%s", 0, current_category->category);
+            if (ImGui::Selectable(id, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(10, 0)))
+            {
+                current_category->current_folder = &current_category->folders[0];
+            }
+            ImGui::SameLine();
+            ImGui::Text(current_category->current_folder->title);
+            ImGui::SameLine();
+        }
+        
         char title_text[192];
         if (selected_game != nullptr)
         {
@@ -318,7 +338,8 @@ namespace Windows {
                     char id[32];
                     sprintf(id, "%d#image", button_id);
                     Game *game = &current_category->current_folder->games[game_start_index+button_id];
-                    if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), current_category->thumbnail_size, ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1))) {
+                    if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), current_category->thumbnail_size, ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+                    {
                         if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                         {
                             GAME::Launch(game);

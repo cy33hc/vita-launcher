@@ -20,7 +20,7 @@
 #include "cso.h"
 #include "net.h"
 
-//#include "debugnet.h"
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -79,16 +79,23 @@ namespace GAME {
             sqlite3 *db;
             sqlite3_open(CACHE_DB_FILE, &db);
             DB::SetupDatabase(db);
-
             ScanRetroGames(db);
             ScanAdrenalineIsoGames(db);
             ScanAdrenalineEbootGames(db);
             ScanScummVMGames(db);
-
             sqlite3_close(db);
         }
         else {
-            LoadGamesCache();
+            sqlite3 *db;
+            sqlite3_open(CACHE_DB_FILE, &db);
+            DB::UpdateDatabase(db);
+            for (int i=0; i < TOTAL_CATEGORY; i++)
+            {
+                DB::GetFolders(db, &game_categories[i]);
+            }
+            debugNetPrintf(DEBUG,"Finished gettings folders\n");
+            LoadGamesCache(db);
+            sqlite3_close(db);
         }
 
         DB::GetFavorites(nullptr, &game_categories[FAVORITES]);
@@ -365,10 +372,14 @@ namespace GAME {
 
     void SetMaxPage(GameCategory *category)
     {
-        category->current_folder->max_page = (category->current_folder->games.size() + category->games_per_page - 1) / category->games_per_page;
-        if (category->current_folder->max_page == 0)
+        for (int i=0; i<category->folders.size(); i++)
         {
-            category->current_folder->max_page = 1;
+            Folder *folder = &category->folders[i];
+            folder->max_page = (folder->games.size() + category->games_per_page - 1) / category->games_per_page;
+            if (folder->max_page == 0)
+            {
+                folder->max_page = 1;
+            }
         }
     }
 
@@ -501,14 +512,11 @@ namespace GAME {
         return token;
     }
 
-    void LoadGamesCache() {
-        sqlite3 *db;
-        sqlite3_open(CACHE_DB_FILE, &db);
+    void LoadGamesCache(sqlite3 *db) {
         games_to_scan = DB::GetCachedGamesCount(db);
         games_scanned = 0;
         sprintf(scan_message, "%s", "Loading game info from cache");
         DB::GetCachedGames(db);
-        sqlite3_close(db);
     };
 
     void LoadGameImages(int category, int prev_page, int page, int games_per_page) {
@@ -1327,4 +1335,15 @@ exit:
 		UninstallGame(game);
 		return sceKernelExitDeleteThread(0);
 	}
+
+    Folder* FindFolder(GameCategory *category, int folder_id)
+    {
+        for (int i=0; i < category->folders.size(); i++)
+        {
+            if (category->folders[i].id == folder_id)
+            {
+                return &category->folders[i];
+            }
+        }
+    }
 }
