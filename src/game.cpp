@@ -1359,12 +1359,12 @@ exit:
         }
     }
 
-    void ClearSelection()
+    void ClearSelection(GameCategory *category)
     {
-        for (int i=0; i<selected_games.size(); i++)
+        for (int i=0; i<category->current_folder->games.size(); i++)
         {
-            selected_games[i]->selected = false;
+            category->current_folder->games[i].selected = false;
         }
-        selected_games.clear();
     }
+
 }

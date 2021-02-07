@@ -12,6 +12,7 @@ Tex circle_icon;
 Tex cross_icon;
 Tex start_icon;
 Tex folder_icon;
+Tex selected_icon;
 
 namespace Textures {
 	
@@ -54,6 +55,7 @@ namespace Textures {
 		Textures::LoadImageFile("ux0:app/SMLA00001/cross.png", &cross_icon);
 		Textures::LoadImageFile("ux0:app/SMLA00001/start.png", &start_icon);
 		Textures::LoadImageFile("ux0:app/SMLA00001/folder.png", &folder_icon);
+		Textures::LoadImageFile("ux0:app/SMLA00001/selected.png", &selected_icon);
 	}
 
 	void Exit(void) {
@@ -65,6 +67,7 @@ namespace Textures {
 		vita2d_free_texture(cross_icon.id);
 		vita2d_free_texture(start_icon.id);
 		vita2d_free_texture(folder_icon.id);
+		vita2d_free_texture(selected_icon.id);
 	}
 
 	void Free(Tex *texture) {

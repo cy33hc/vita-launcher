@@ -127,5 +127,6 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE cross.png cross.png
   FILE start.png start.png
   FILE folder.png folder.png
+  FILE selected.png selected.png
   FILE default_style.ini default_style.ini
 )

@@ -221,7 +221,7 @@ namespace Windows {
         {
             if (selection_mode)
             {
-                GAME::ClearSelection();
+                GAME::ClearSelection(current_category);
             }
             selection_mode = !selection_mode;
         }
@@ -292,6 +292,7 @@ namespace Windows {
                 {
                     GAME::StartDeleteGameImagesThread(current_category);
                     current_category->current_folder = &current_category->folders[0];
+                    ImGui::SetNextWindowFocus();
                 }
                 else
                 {
@@ -368,12 +369,19 @@ namespace Windows {
                     {
                         if (game->type == TYPE_FOLDER)
                         {
-                            GameCategory *cat = categoryMap[game->category];
-                            GAME::StartDeleteGameImagesThread(cat);
-                            Folder *folder = GAME::FindFolder(cat, game->folder_id);
-                            cat->current_folder = folder;
-                            selected_game = nullptr;
-                            GAME::StartLoadImagesThread(cat->id, cat->current_folder->page_num, cat->current_folder->page_num, cat->games_per_page);
+                            if (!selection_mode)
+                            {
+                                GameCategory *cat = categoryMap[game->category];
+                                GAME::StartDeleteGameImagesThread(cat);
+                                Folder *folder = GAME::FindFolder(cat, game->folder_id);
+                                cat->current_folder = folder;
+                                selected_game = nullptr;
+                                GAME::StartLoadImagesThread(cat->id, cat->current_folder->page_num, cat->current_folder->page_num, cat->games_per_page);
+                            }
+                        }
+                        else if (selection_mode)
+                        {
+                            game->selected = true;
                         }
                         else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                         {
@@ -415,7 +423,22 @@ namespace Windows {
 
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
                     ImGui::SetCursorPosX(pos.x+(j*grid_size));
-                    if (game->favorite)
+                    if (game->selected)
+                    {
+                        ImGui::Image(reinterpret_cast<ImTextureID>(selected_icon.id), ImVec2(16,16));
+                        ImGui::SameLine();
+                        ImGui::SetCursorPosX(pos.x+(j*grid_size)+14);
+                        if (current_category->rows ==3)
+                        {
+                            ImGui::Text("%.14s", game->title);
+                        }
+                        else
+                        {
+                            ImGui::Text("%.20s", game->title);
+                        }
+                        
+                    }
+                    else if (game->favorite)
                     {
                         ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
                         ImGui::SameLine();
@@ -432,7 +455,6 @@ namespace Windows {
                     }
                     else
                     {
-                        ImGui::SetCursorPosX(pos.x+(j*grid_size));
                         if (game->type == TYPE_FOLDER)
                         {
                             ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
@@ -493,11 +515,18 @@ namespace Windows {
             {
                 if (game->type == TYPE_FOLDER)
                 {
-                    GameCategory *cat = categoryMap[game->category];
-                    GAME::StartDeleteGameImagesThread(cat);
-                    Folder *folder = GAME::FindFolder(cat, game->folder_id);
-                    cat->current_folder = folder;
-                    selected_game = nullptr;
+                    if (!selection_mode)
+                    {
+                        GameCategory *cat = categoryMap[game->category];
+                        GAME::StartDeleteGameImagesThread(cat);
+                        Folder *folder = GAME::FindFolder(cat, game->folder_id);
+                        cat->current_folder = folder;
+                        selected_game = nullptr;
+                    }
+                }
+                else if (selection_mode)
+                {
+                    game->selected = true;
                 }
                 else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                 {
@@ -570,7 +599,21 @@ namespace Windows {
             }
             
             ImGui::SetCursorPosY(ImGui::GetCursorPosY()-2);
-            if (game->favorite)
+            if (game->selected)
+            {
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
+                ImGui::Image(reinterpret_cast<ImTextureID>(selected_icon.id), ImVec2(16,16));
+                ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
+                if (current_category->rows == 3)
+                {
+                    ImGui::Text("%.14s", game->title);
+                }
+                else
+                {
+                    ImGui::Text("%.20s", game->title);
+                }
+            }
+            else if (game->favorite)
             {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
                 ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
@@ -667,15 +710,27 @@ namespace Windows {
                 ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
                 ImGui::SameLine();
             }
+            if (game->selected)
+            {
+                ImGui::Image(reinterpret_cast<ImTextureID>(selected_icon.id), ImVec2(16,16));
+                ImGui::SameLine();
+            }
             ImGui::PushID(i);
             if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
             {
                 if (game->type == TYPE_FOLDER)
                 {
-                    GameCategory *cat = categoryMap[game->category];
-                    Folder *folder = GAME::FindFolder(cat, game->folder_id);
-                    cat->current_folder = folder;
-                    selected_game = nullptr;
+                    if (!selection_mode)
+                    {
+                        GameCategory *cat = categoryMap[game->category];
+                        Folder *folder = GAME::FindFolder(cat, game->folder_id);
+                        cat->current_folder = folder;
+                        selected_game = nullptr;
+                    }
+                }
+                else if (selection_mode)
+                {
+                    game->selected = true;
                 }
                 else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                 {

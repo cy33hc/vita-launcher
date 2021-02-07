@@ -243,7 +243,7 @@ namespace GAME {
     void StartUninstallGameThread(Game *game);
     int DeleteApp(const char *titleid);
     Folder* FindFolder(GameCategory *category, int folder_id);
-    void ClearSelection();
+    void ClearSelection(GameCategory *category);
     static int LoadScePaf();
     static int UnloadScePaf();
 }
