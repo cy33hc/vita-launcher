@@ -380,6 +380,11 @@ namespace Windows {
 
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
                     ImGui::SetCursorPosX(pos.x+(j*grid_size));
+                    if (game->type == TYPE_FOLDER)
+                    {
+                        ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
+                        ImGui::SameLine();
+                    }
                     if (game->favorite)
                     {
                         ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
@@ -522,6 +527,11 @@ namespace Windows {
             }
             
             ImGui::SetCursorPosY(ImGui::GetCursorPosY()-2);
+            if (game->type == TYPE_FOLDER)
+            {
+                ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
+                ImGui::SameLine();
+            }
             if (game->favorite)
             {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);

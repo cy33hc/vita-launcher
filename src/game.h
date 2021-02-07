@@ -87,7 +87,6 @@ typedef struct {
     CPU_SPEED cpu_speed;
 } BootSettings;
 
-#define FOLDER -1
 #define FAVORITES 0
 #define VITA_GAMES 1
 #define PSP_GAMES 2
@@ -140,6 +139,7 @@ typedef struct {
 #define TYPE_PSP_ISO 2
 #define TYPE_EBOOT 3
 #define TYPE_SCUMMVM 4
+#define TYPE_FOLDER 127
 
 #define FOLDER_TYPE_ROOT 1
 #define FOLDER_TYPE_SUBFOLDER 2

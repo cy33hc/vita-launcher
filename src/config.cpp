@@ -40,6 +40,7 @@ namespace CONFIG {
         sprintf(root_folder.category, category->category);
         root_folder.id = FOLDER_ROOT_ID;
         root_folder.type = FOLDER_TYPE_ROOT;
+        sprintf(root_folder.icon_path, "ux0:app/SMLA00001/folder.png");
         sprintf(root_folder.title, "/");
         root_folder.page_num = 1;
         root_folder.max_page = 1;

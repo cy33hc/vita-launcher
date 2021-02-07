@@ -502,6 +502,23 @@ namespace DB {
         }
         sqlite3_finalize(res);
         
+        for (int i=0; i<TOTAL_CATEGORY; i++)
+        {
+            GameCategory *category = &game_categories[i];
+            for (int j=1; j<category->folders.size(); j++)
+            {
+                Game game;
+                sprintf(game.id, "%d", category->folders[j].id);
+                sprintf(game.title, "%s", category->folders[j].title);
+                sprintf(game.category, "%s", category->folders[j].category);
+                game.type = TYPE_FOLDER;
+                game.folder_id = category->folders[j].id;
+                game.favorite = false;
+                game.tex = no_icon;
+                category->folders[0].games.insert(category->folders[0].games.begin(), game);
+            }
+        }
+
         if (database == nullptr)
         {
             sqlite3_close(db);
@@ -519,7 +536,7 @@ namespace DB {
         sqlite3_stmt *res;
         std::string sql = std::string("SELECT ") + COL_ID + "," + COL_TITLE + "," +
             COL_CATEGORY + "," + COL_ICON_PATH + " FROM " + FOLDERS_TABLE +
-            " WHERE " + COL_CATEGORY + "=? ORDER BY " + COL_TITLE;
+            " WHERE " + COL_CATEGORY + "=? ORDER BY " + COL_TITLE + " DESC";
 
         int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
         debugNetPrintf(DEBUG,"sql= %s\n", sql.c_str());

@@ -613,6 +613,7 @@ namespace GAME {
     }
 
     void LoadGameImage(Game *game) {
+        debugNetPrintf(DEBUG,"title=%s, type=%d\n", game->title, game->type);
         Tex tex;
         tex = no_icon;
 
@@ -632,6 +633,13 @@ namespace GAME {
         else if (game->type == TYPE_SCUMMVM)
         {
             sprintf(icon_path, "%s/icon0.png", game->rom_path);
+        }
+        else if (game->type == TYPE_FOLDER)
+        {
+            GameCategory *cat = categoryMap[game->category];
+            Folder* folder = FindFolder(cat, game->folder_id);
+            sprintf(icon_path, "%s", folder->icon_path);
+            debugNetPrintf(DEBUG,"icon_path=%s\n", icon_path);
         }
         else
         {
@@ -870,12 +878,16 @@ namespace GAME {
     {
         const Game *p1 = (Game *)v1;
         const Game *p2 = (Game *)v2;
-        int p1_len = strlen(p1->title);
-        int p2_len = strlen(p2->title);
-        int len = p1_len;
-        if (p2_len < p1_len)
-            len = p2_len;
-        return strncmp(p1->title, p2->title, len);
+        if (p1->type == TYPE_FOLDER && p2->type != TYPE_FOLDER)
+        {
+            return -1;
+        }
+        else if (p1->type != TYPE_FOLDER && p2->type == TYPE_FOLDER)
+        {
+            return 1;
+        }
+
+        return strcmp(p1->title, p2->title);
     }
 
     void DeleteGamesImages(GameCategory *category)
