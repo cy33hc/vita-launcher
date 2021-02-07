@@ -22,6 +22,7 @@ typedef struct {
     int folder_id;
     uint64_t visible_time = 0;
     bool thread_started = false;
+    bool selected = false;
     Tex tex;
 } Game;
 
@@ -163,6 +164,7 @@ extern char pspemu_path[];
 extern char pspemu_iso_path[];
 extern char pspemu_eboot_path[];
 extern char game_uninstalled;
+extern std::vector<Game*> selected_games;
 
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;
@@ -183,6 +185,10 @@ typedef struct ScanGamesParams {
   const char* category;
   int type;
 } ScanGamesParams;
+
+typedef struct DeleteImagesParams {
+    Folder *folder;
+};
 
 namespace GAME {
     int GameComparator(const void *v1, const void *v2);
@@ -210,7 +216,7 @@ namespace GAME {
     int ScanGamesThread(SceSize args, void *argp);
     void StartScanGamesThread();
     void DeleteGamesImages(GameCategory *category);
-    int DeleteGamesImagesThread(SceSize args, ScanGamesParams *params);
+    int DeleteGamesImagesThread(SceSize args, DeleteImagesParams *params);
     void StartDeleteGameImagesThread(GameCategory *category);
     void SetMaxPage(GameCategory *category);
     Game* FindGame(GameCategory *category, Game *game);
@@ -237,7 +243,7 @@ namespace GAME {
     void StartUninstallGameThread(Game *game);
     int DeleteApp(const char *titleid);
     Folder* FindFolder(GameCategory *category, int folder_id);
-
+    void ClearSelection();
     static int LoadScePaf();
     static int UnloadScePaf();
 }

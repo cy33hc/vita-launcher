@@ -54,6 +54,7 @@ bool handle_add_iso_game = false;
 bool handle_add_eboot_game = false;
 bool handle_search_game = false;
 bool handle_uninstall_game = false;
+bool selection_mode = false;
 
 char game_action_message[256];
 
@@ -216,6 +217,15 @@ namespace Windows {
             search_count++;
         }
 
+        if ((pad_prev.buttons & SCE_CTRL_SELECT) && !(pad.buttons & SCE_CTRL_SELECT) && !paused)
+        {
+            if (selection_mode)
+            {
+                GAME::ClearSelection();
+            }
+            selection_mode = !selection_mode;
+        }
+
         pad_prev = pad;
         previous_right = io.NavInputs[ImGuiNavInput_DpadRight];
         previous_left = io.NavInputs[ImGuiNavInput_DpadLeft];
@@ -273,11 +283,23 @@ namespace Windows {
             sprintf(id, "../#%d%s", 0, current_category->category);
             if (ImGui::Selectable(id, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(14, 0)))
             {
-                current_category->current_folder = &current_category->folders[0];
-                if (current_category->view_mode == VIEW_MODE_SCROLL)
+                if (current_category->view_mode == VIEW_MODE_LIST)
                 {
+                    current_category->current_folder = &current_category->folders[0];
                     ImGui::SetNextWindowFocus();
                 }
+                else if (current_category->view_mode == VIEW_MODE_SCROLL)
+                {
+                    GAME::StartDeleteGameImagesThread(current_category);
+                    current_category->current_folder = &current_category->folders[0];
+                }
+                else
+                {
+                    GAME::StartDeleteGameImagesThread(current_category);
+                    current_category->current_folder = &current_category->folders[0];
+                    GAME::StartLoadImagesThread(current_category->id, current_category->current_folder->page_num, current_category->current_folder->page_num, current_category->games_per_page);
+                }
+                
             }
             ImGui::SameLine();
             ImGui::Text(current_category->current_folder->title);
@@ -347,9 +369,11 @@ namespace Windows {
                         if (game->type == TYPE_FOLDER)
                         {
                             GameCategory *cat = categoryMap[game->category];
+                            GAME::StartDeleteGameImagesThread(cat);
                             Folder *folder = GAME::FindFolder(cat, game->folder_id);
                             cat->current_folder = folder;
                             selected_game = nullptr;
+                            GAME::StartLoadImagesThread(cat->id, cat->current_folder->page_num, cat->current_folder->page_num, cat->games_per_page);
                         }
                         else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                         {
@@ -470,6 +494,7 @@ namespace Windows {
                 if (game->type == TYPE_FOLDER)
                 {
                     GameCategory *cat = categoryMap[game->category];
+                    GAME::StartDeleteGameImagesThread(cat);
                     Folder *folder = GAME::FindFolder(cat, game->folder_id);
                     cat->current_folder = folder;
                     selected_game = nullptr;
@@ -594,6 +619,8 @@ namespace Windows {
         io.KeyRepeatRate = 0.005f;
         ImGui_ImplVita2D_SetAnalogRepeatDelay(1000);
 
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY()-3);
+        ShowDisplayTitle();
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
         {
             if (io.NavInputs[ImGuiNavInput_DpadRight] == 1.0f && !paused)
@@ -624,7 +651,7 @@ namespace Windows {
         }
         
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()+5);
-        ImGui::BeginChild(ImGui::GetID(current_category->title), ImVec2(950,480));
+        ImGui::BeginChild(ImGui::GetID(current_category->title), ImVec2(950,455));
         if (ImGui::IsWindowAppearing())
         {
             ImGui::SetWindowFocus();
@@ -635,10 +662,22 @@ namespace Windows {
         {
             Game *game = &current_category->current_folder->games[i];
             ImGui::SetColumnWidth(-1, 760);
+            if (game->type == TYPE_FOLDER)
+            {
+                ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
+                ImGui::SameLine();
+            }
             ImGui::PushID(i);
             if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
             {
-                if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                if (game->type == TYPE_FOLDER)
+                {
+                    GameCategory *cat = categoryMap[game->category];
+                    Folder *folder = GAME::FindFolder(cat, game->folder_id);
+                    cat->current_folder = folder;
+                    selected_game = nullptr;
+                }
+                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                 {
                     GAME::Launch(game);
                 }
@@ -681,7 +720,10 @@ namespace Windows {
                 ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
             }
             ImGui::NextColumn();
-            ImGui::Text(game->id);
+            if (game->type != TYPE_FOLDER)
+            {
+                ImGui::Text(game->id);
+            }
             ImGui::NextColumn();               
             ImGui::Separator();
         }

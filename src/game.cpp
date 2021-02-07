@@ -38,6 +38,7 @@ char pspemu_eboot_path[32];
 char game_uninstalled = 0;
 
 GameCategory *current_category;
+std::vector<Game*> selected_games;
 
 int games_to_scan = 1;
 int games_scanned = 0;
@@ -1200,13 +1201,13 @@ namespace GAME {
 			sceKernelStartThread(download_images_thid, sizeof(ScanGamesParams), &params);
     }
 
-    int DeleteGamesImagesThread(SceSize args, ScanGamesParams *params)
+    int DeleteGamesImagesThread(SceSize args, DeleteImagesParams *params)
     {
         sceKernelDelayThread(5000);
-        GameCategory *category = categoryMap[params->category];
-        for (int i=0; i < category->current_folder->games.size(); i++)
+        Folder *folder = params->folder;
+        for (int i=0; i < folder->games.size(); i++)
         {
-            Game *game = &category->current_folder->games[i];
+            Game *game = &folder->games[i];
             game->visible = 0;
             game->thread_started = false;
             if (game->tex.id != no_icon.id)
@@ -1221,12 +1222,11 @@ namespace GAME {
 
     void StartDeleteGameImagesThread(GameCategory *category)
     {
-        ScanGamesParams params;
-        params.type = category->rom_type;
-        params.category = category->category;
+        DeleteImagesParams params;
+        params.folder = category->current_folder;
         delete_images_thid = sceKernelCreateThread("delete_images_thread", (SceKernelThreadEntry)GAME::DeleteGamesImagesThread, 0x10000100, 0x4000, 0, 0, NULL);
 		if (delete_images_thid >= 0)
-			sceKernelStartThread(delete_images_thid, sizeof(ScanGamesParams), &params);
+			sceKernelStartThread(delete_images_thid, sizeof(DeleteImagesParams), &params);
     }
 
     void FindGamesByPartialName(std::vector<GameCategory*> &categories, char* search_text, std::vector<Game> &games)
@@ -1357,5 +1357,14 @@ exit:
                 return &category->folders[i];
             }
         }
+    }
+
+    void ClearSelection()
+    {
+        for (int i=0; i<selected_games.size(); i++)
+        {
+            selected_games[i]->selected = false;
+        }
+        selected_games.clear();
     }
 }
