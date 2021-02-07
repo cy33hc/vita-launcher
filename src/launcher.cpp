@@ -271,9 +271,13 @@ namespace Windows {
         {
             char id[32];
             sprintf(id, "../#%d%s", 0, current_category->category);
-            if (ImGui::Selectable(id, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(10, 0)))
+            if (ImGui::Selectable(id, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(14, 0)))
             {
                 current_category->current_folder = &current_category->folders[0];
+                if (current_category->view_mode == VIEW_MODE_SCROLL)
+                {
+                    ImGui::SetNextWindowFocus();
+                }
             }
             ImGui::SameLine();
             ImGui::Text(current_category->current_folder->title);
@@ -340,7 +344,14 @@ namespace Windows {
                     Game *game = &current_category->current_folder->games[game_start_index+button_id];
                     if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), current_category->thumbnail_size, ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
                     {
-                        if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                        if (game->type == TYPE_FOLDER)
+                        {
+                            GameCategory *cat = categoryMap[game->category];
+                            Folder *folder = GAME::FindFolder(cat, game->folder_id);
+                            cat->current_folder = folder;
+                            selected_game = nullptr;
+                        }
+                        else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                         {
                             GAME::Launch(game);
                         }
@@ -380,11 +391,6 @@ namespace Windows {
 
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
                     ImGui::SetCursorPosX(pos.x+(j*grid_size));
-                    if (game->type == TYPE_FOLDER)
-                    {
-                        ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
-                        ImGui::SameLine();
-                    }
                     if (game->favorite)
                     {
                         ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
@@ -403,6 +409,11 @@ namespace Windows {
                     else
                     {
                         ImGui::SetCursorPosX(pos.x+(j*grid_size));
+                        if (game->type == TYPE_FOLDER)
+                        {
+                            ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
+                            ImGui::SameLine();
+                        }
                         if (current_category->rows ==3)
                         {
                             ImGui::Text("%.15s", game->title);
@@ -456,7 +467,14 @@ namespace Windows {
             ImGui::SetCursorPos(ImVec2(pos.x-5, pos.y));
             if (ImGui::Button(sel_id, current_category->button_size))
             {
-                if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                if (game->type == TYPE_FOLDER)
+                {
+                    GameCategory *cat = categoryMap[game->category];
+                    Folder *folder = GAME::FindFolder(cat, game->folder_id);
+                    cat->current_folder = folder;
+                    selected_game = nullptr;
+                }
+                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                 {
                     GAME::Launch(game);
                 }
@@ -527,11 +545,6 @@ namespace Windows {
             }
             
             ImGui::SetCursorPosY(ImGui::GetCursorPosY()-2);
-            if (game->type == TYPE_FOLDER)
-            {
-                ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
-                ImGui::SameLine();
-            }
             if (game->favorite)
             {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
@@ -548,6 +561,12 @@ namespace Windows {
             }
             else
             {
+                if (game->type == TYPE_FOLDER)
+                {
+                    ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
+                    ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
+                    ImGui::SameLine();
+                }
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-2);
                 if (current_category->rows ==3)
                 {
