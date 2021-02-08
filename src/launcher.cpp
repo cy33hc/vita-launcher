@@ -46,8 +46,7 @@ static std::vector<Game> games_selection;
 static BootSettings settings;
 static char retro_core[128];
 static int move_location = 0;
-static char txt_folder_name[128];
-static char txt_icon_path[192];
+static Folder temp_folder;
 static std::vector<CategorySelection> categories_selection;
 
 GameCategory *tmp_category;
@@ -66,7 +65,7 @@ bool handle_add_eboot_game = false;
 bool handle_search_game = false;
 bool handle_uninstall_game = false;
 bool handle_new_folder = false;
-bool handle_edit_folder = false;
+bool handle_edit_delete_folder = false;
 bool selection_mode = false;
 
 char game_action_message[256];
@@ -897,6 +896,11 @@ namespace Windows {
             HandleAddNewFolder();
         }
 
+        if (handle_edit_delete_folder)
+        {
+            HandleEditDeleteFolder();
+        }
+
         ShowSettingsDialog();
     }
 
@@ -1338,7 +1342,7 @@ namespace Windows {
                         if (current_category->id != FAVORITES)
                         {
                             if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache && current_category->current_folder->id == FOLDER_ROOT_ID
-                                && !move_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !rename_game)
+                                && !move_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !rename_game && !edit_folder)
                             {
                                 ImGui::Checkbox("Add new folder", &add_folder);
                                 ImGui::Separator();
@@ -1347,23 +1351,29 @@ namespace Windows {
                         
                         if (selected_game != nullptr && current_category->id != FAVORITES)
                         {
+                            if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache && selected_game->type == TYPE_FOLDER
+                                && !move_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !rename_game && !add_folder)
+                            {
+                                ImGui::Checkbox("Edit/Delete folder", &edit_folder);
+                                ImGui::Separator();
+                            }
 
                             if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache &&
                                 !move_game && !add_eboot_game && !add_psp_iso_game && selected_game->type != TYPE_BUBBLE
-                                && !download_thumbnails && !uninstall_game && !add_folder)
+                                && !download_thumbnails && !uninstall_game && !add_folder && !edit_folder)
                             {
                                 ImGui::Checkbox("Rename selected game", &rename_game);
                                 ImGui::Separator();
                             }
 
-                            if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache &&
+                            if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache && !edit_folder &&
                                 !rename_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
                             {
                                 ImGui::Checkbox("Move selected game", &move_game);
                                 ImGui::Separator();
                             }
 
-                            if (!refresh_games && !add_rom_game && !refresh_current_category && !move_game && !rename_game &&
+                            if (!refresh_games && !add_rom_game && !refresh_current_category && !move_game && !rename_game && !edit_folder &&
                                 !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
                             {
                                 ImGui::Checkbox("Hide selected game", &remove_from_cache);
@@ -1371,7 +1381,7 @@ namespace Windows {
                             }
 
                             if (!refresh_games && !add_rom_game && !refresh_current_category && !move_game && !rename_game &&
-                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !remove_from_cache &&
+                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !remove_from_cache && !edit_folder &&
                                 selected_game->type == TYPE_BUBBLE && !add_folder)
                             {
                                 ImGui::Checkbox("Un-install selected game", &uninstall_game);
@@ -1382,7 +1392,7 @@ namespace Windows {
                         if (current_category->rom_type == TYPE_PSP_ISO)
                         {
                             if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
-                                !add_eboot_game && !add_rom_game && !rename_game && !download_thumbnails && !uninstall_game)
+                                !add_eboot_game && !add_rom_game && !rename_game && !download_thumbnails && !uninstall_game && !edit_folder)
                             {
                                 ImGui::Checkbox("Add new PSP ISO game", &add_psp_iso_game);
                                 ImGui::Separator();
@@ -1392,7 +1402,7 @@ namespace Windows {
                         if (current_category->rom_type == TYPE_EBOOT)
                         {
                             if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
-                                !add_psp_iso_game && !add_rom_game && !rename_game && !download_thumbnails && !uninstall_game)
+                                !add_psp_iso_game && !add_rom_game && !rename_game && !download_thumbnails && !uninstall_game && !edit_folder)
                             {
                                 ImGui::Checkbox("Add new EBOOT game", &add_eboot_game);
                                 ImGui::Separator();
@@ -1402,7 +1412,7 @@ namespace Windows {
                         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
                         {
                             if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
-                                !add_eboot_game && !add_psp_iso_game && !rename_game && !download_thumbnails && !uninstall_game)
+                                !add_eboot_game && !add_psp_iso_game && !rename_game && !download_thumbnails && !uninstall_game && !edit_folder)
                             {
                                 if (current_category->id == PS1_GAMES)
                                 {
@@ -1418,7 +1428,7 @@ namespace Windows {
 
                         if (current_category->rom_type != TYPE_BUBBLE)
                         {
-                            if (!refresh_games && !remove_from_cache && !add_rom_game && !move_game && !rename_game &&
+                            if (!refresh_games && !remove_from_cache && !add_rom_game && !move_game && !rename_game && !edit_folder &&
                                 !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
                             {
                                 char cb_text[64];
@@ -1432,7 +1442,7 @@ namespace Windows {
                             || current_category->rom_type == TYPE_SCUMMVM)
                         {
                             if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
-                                !add_eboot_game && !add_psp_iso_game && !rename_game && !add_rom_game && !uninstall_game)
+                                !add_eboot_game && !add_psp_iso_game && !rename_game && !add_rom_game && !uninstall_game && !edit_folder)
                             {
                                 char cb_text[64];
                                 sprintf(cb_text, "Download thumbnails in %s category", current_category->title);
@@ -1442,7 +1452,7 @@ namespace Windows {
                         }
 
                         if (!remove_from_cache && !add_rom_game && !refresh_current_category && !move_game && !rename_game &&
-                            !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
+                            !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder && !edit_folder)
                         {
                             ImGui::Checkbox("Rescan all game categories to rebuild cache", &refresh_games);
                             ImGui::Separator();
@@ -1588,8 +1598,8 @@ namespace Windows {
                 
                 if (add_folder)
                 {
-                    sprintf(txt_folder_name, "Folder");
-                    sprintf(txt_icon_path, "ux0:app/SMLA00001/folder.png");
+                    sprintf(temp_folder.title, "Folder");
+                    sprintf(temp_folder.icon_path, "ux0:app/SMLA00001/folder.png");
                     categories_selection.clear();
                     for (int i=1; i<TOTAL_CATEGORY; i++)
                     {
@@ -1609,6 +1619,17 @@ namespace Windows {
                     }
                     handle_new_folder = true;
                 }
+
+                if (edit_folder)
+                {
+                    Folder *folder = GAME::FindFolder(current_category, selected_game->folder_id);
+                    sprintf(temp_folder.category, folder->category);
+                    sprintf(temp_folder.title, folder->title);
+                    sprintf(temp_folder.icon_path, folder->icon_path);
+                    temp_folder.id = folder->id;
+                    handle_edit_delete_folder = true;
+                }
+
                 paused = false;
                 move_game = false;
                 refresh_games = false;
@@ -1621,6 +1642,7 @@ namespace Windows {
                 download_thumbnails = false;
                 uninstall_game = false;
                 add_folder = false;
+                edit_folder = false;
                 
                 ImGui::CloseCurrentPopup();
             }
@@ -2432,25 +2454,25 @@ namespace Windows {
             ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(480,260));
 
             ImGui::Text("Name:"); ImGui::SameLine();
-            if (ImGui::Selectable(txt_folder_name, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(400, 0)))
+            if (ImGui::Selectable(temp_folder.title, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(400, 0)))
             {
-                ime_single_field = txt_folder_name;
+                ime_single_field = temp_folder.title;
                 ime_before_update = nullptr;
                 ime_after_update = nullptr;
                 ime_callback = SingleValueImeCallback;
-                Dialog::initImeDialog("Folder Name", txt_folder_name, 127, SCE_IME_TYPE_DEFAULT, 0, 0);
+                Dialog::initImeDialog("Folder Name", temp_folder.title, 127, SCE_IME_TYPE_DEFAULT, 0, 0);
                 gui_mode = GUI_MODE_IME;
             };
             ImGui::Separator();
             
             ImGui::Text("Icon Path:"); ImGui::SameLine();
-            if (ImGui::Selectable(txt_icon_path, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(370, 0)))
+            if (ImGui::Selectable(temp_folder.icon_path, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(370, 0)))
             {
-                ime_single_field = txt_icon_path;
+                ime_single_field = temp_folder.icon_path;
                 ime_before_update = nullptr;
                 ime_after_update = nullptr;
                 ime_callback = SingleValueImeCallback;
-                Dialog::initImeDialog("Icon Path", txt_icon_path, 127, SCE_IME_TYPE_DEFAULT, 0, 0);
+                Dialog::initImeDialog("Icon Path", temp_folder.icon_path, 127, SCE_IME_TYPE_DEFAULT, 0, 0);
                 gui_mode = GUI_MODE_IME;
             };
             ImGui::Separator();
@@ -2475,11 +2497,9 @@ namespace Windows {
                         GameCategory *category = categoryMap[categories_selection[i].category];
                         Folder folder;
                         sprintf(folder.category, "%s", categories_selection[i].category);
-                        sprintf(folder.title, "%s", txt_folder_name);
-                        sprintf(folder.icon_path, "%s", txt_icon_path);
-                        debugNetPrintf(DEBUG,"folder id=%d, title=%s, cat=%s, icon_path=%s\n", folder.id, folder.title, folder.category, folder.icon_path);
+                        sprintf(folder.title, "%s", temp_folder.title);
+                        sprintf(folder.icon_path, "%s", temp_folder.icon_path);
                         DB::InsertFolder(db, &folder);
-                        debugNetPrintf(DEBUG,"folder id=%d, title=%s, cat=%s, icon_path=%s\n", folder.id, folder.title, folder.category, folder.icon_path);
                         int current_folder_id = category->current_folder->id;
                         category->folders.push_back(folder);
                         category->current_folder = GAME::FindFolder(category, current_folder_id);
@@ -2510,6 +2530,88 @@ namespace Windows {
                 handle_new_folder = false;
                 ImGui::CloseCurrentPopup();
             }
+            ImGui::EndPopup();
+        }
+    }
+
+    void HandleEditDeleteFolder()
+    {
+        paused = true;
+        ImGui::OpenPopup("Edit/Delete Folder");
+        ImGui::SetNextWindowPos(ImVec2(230, 200));
+        ImGui::SetNextWindowSize(ImVec2(490,140));
+        if (ImGui::BeginPopupModal("Edit/Delete Folder", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+        {
+            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(480,260));
+
+            ImGui::Text("Name:"); ImGui::SameLine();
+            if (ImGui::Selectable(temp_folder.title, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(400, 0)))
+            {
+                ime_single_field = temp_folder.title;
+                ime_before_update = nullptr;
+                ime_after_update = nullptr;
+                ime_callback = SingleValueImeCallback;
+                Dialog::initImeDialog("Folder Name", temp_folder.title, 127, SCE_IME_TYPE_DEFAULT, 0, 0);
+                gui_mode = GUI_MODE_IME;
+            };
+            ImGui::Separator();
+            
+            ImGui::Text("Icon Path:"); ImGui::SameLine();
+            if (ImGui::Selectable(temp_folder.icon_path, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(370, 0)))
+            {
+                ime_single_field = temp_folder.icon_path;
+                ime_before_update = nullptr;
+                ime_after_update = nullptr;
+                ime_callback = SingleValueImeCallback;
+                Dialog::initImeDialog("Icon Path", temp_folder.icon_path, 127, SCE_IME_TYPE_DEFAULT, 0, 0);
+                gui_mode = GUI_MODE_IME;
+            };
+            ImGui::Separator();
+            
+            if (ImGui::Button("Save"))
+            {
+                Folder *folder = GAME::FindFolder(current_category, temp_folder.id);
+                sprintf(folder->title, temp_folder.title);
+                sprintf(folder->icon_path, temp_folder.icon_path);
+                DB::UpdateFolder(nullptr, folder);
+                for (int i=0; i<current_category->folders[0].games.size(); i++)
+                {
+                    if (current_category->folders[0].games[i].folder_id == folder->id)
+                    {
+                        sprintf(current_category->folders[0].games[i].title, "%s", folder->title);
+                        break;
+                    }
+                }
+                paused = false;
+                handle_edit_delete_folder = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+
+            if (ImGui::Button("Cancel"))
+            {
+                paused = false;
+                handle_edit_delete_folder = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+
+            if (ImGui::Button("Delete"))
+            {
+                GAME::MoveGamesBetweenFolders(current_category, temp_folder.id, FOLDER_ROOT_ID);
+                DB::DeleteFolder(nullptr, &temp_folder);
+                GAME::RemoveFolderFromCategory(current_category, temp_folder.id);
+                Game game;
+                game.folder_id = temp_folder.id;
+                game.type = TYPE_FOLDER;
+                GAME::RemoveGameFromCategory(current_category, &game);
+                GAME::SortGames(current_category);
+                GAME::SetMaxPage(current_category);
+                paused = false;
+                handle_edit_delete_folder = false;
+                ImGui::CloseCurrentPopup();
+            }
+
             ImGui::EndPopup();
         }
     }

@@ -149,6 +149,14 @@ namespace DB {
             sql = std::string("CREATE INDEX games_index ON ") + GAMES_TABLE + "(" + 
                 COL_TITLE + "," + COL_TYPE + "," + COL_CATEGORY + ")";
             sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX games_index_folder_cat ON ") + GAMES_TABLE + "(" + 
+                COL_FOLDER_ID + "," + COL_CATEGORY + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX games_index_rom_path ON ") + GAMES_TABLE + "(" + 
+                COL_ROM_PATH + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
         }        
 
         if (!TableExists(db, FAVORITES_TABLE))
@@ -164,6 +172,14 @@ namespace DB {
 
             sql = std::string("CREATE INDEX favorites_index ON ") + FAVORITES_TABLE + "(" + 
                 COL_TITLE + "," + COL_TYPE + "," + COL_CATEGORY + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX favorites_index_folder_cat ON ") + FAVORITES_TABLE + "(" + 
+                COL_FOLDER_ID + "," + COL_CATEGORY + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX favorites_index_rom_path ON ") + FAVORITES_TABLE + "(" + 
+                COL_ROM_PATH + ")";
             sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
         }
 
@@ -198,12 +214,28 @@ namespace DB {
             std::string sql = std::string("ALTER TABLE ") + GAMES_TABLE +
                 " ADD " + COL_FOLDER_ID + " INTEGER DEFAULT 0";
             sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX games_index_folder_cat ON ") + GAMES_TABLE + "(" + 
+                COL_FOLDER_ID + "," + COL_CATEGORY + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX games_index_rom_path ON ") + GAMES_TABLE + "(" + 
+                COL_ROM_PATH + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
         }
         
         if (!TableColumnExists(db, FAVORITES_TABLE, COL_FOLDER_ID))
         {
             std::string sql = std::string("ALTER TABLE ") + FAVORITES_TABLE +
                 " ADD " + COL_FOLDER_ID + " INTEGER DEFAULT 0";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX favorites_index_folder_cat ON ") + FAVORITES_TABLE + "(" + 
+                COL_FOLDER_ID + "," + COL_CATEGORY + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX favorites_index_rom_path ON ") + FAVORITES_TABLE + "(" + 
+                COL_ROM_PATH + ")";
             sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
         }
 
@@ -442,6 +474,34 @@ namespace DB {
         }
     }
 
+    void UpdateFolder(sqlite3 *database, Folder *folder)
+    {
+        sqlite3 *db = database;
+        if (db == nullptr)
+        {
+            sqlite3_open(CACHE_DB_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("UPDATE ") + FOLDERS_TABLE + " SET " + 
+            COL_TITLE + "=?, " +
+            COL_ICON_PATH + "=? " +
+            " WHERE " + COL_ID + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_text(res, 1, folder->title, strlen(folder->title), NULL);
+            sqlite3_bind_text(res, 2, folder->icon_path, strlen(folder->icon_path), NULL);
+            sqlite3_bind_int(res, 3, folder->id);
+            int step = sqlite3_step(res);
+            sqlite3_finalize(res);
+        }
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+    }
+
     int GetCachedGamesCount(sqlite3 *database)
     {
         sqlite3 *db = database;
@@ -601,6 +661,7 @@ namespace DB {
 
         sqlite3_stmt *res;
         std::string sql = std::string("DELETE FROM ") + FOLDERS_TABLE + " WHERE " + COL_ID + "=?";
+        debugNetPrintf(DEBUG,"sql = %s\n", sql.c_str());
         int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
     
         if (rc == SQLITE_OK) {
@@ -609,12 +670,30 @@ namespace DB {
             sqlite3_finalize(res);
         }
 
-        sql = std::string("UPDATE ") + GAMES_TABLE + " SET " + COL_FOLDER_ID + "=0" +
+        ResetGamesFolderId(db, folder);
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+    }
+
+    void ResetGamesFolderId(sqlite3 *database, Folder *folder)
+    {
+        sqlite3 *db = database;
+        if (db == nullptr)
+        {
+            sqlite3_open(CACHE_DB_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("UPDATE ") + GAMES_TABLE + " SET " + COL_FOLDER_ID + "=0" +
             " WHERE " + COL_FOLDER_ID + "=? AND " + COL_CATEGORY + "=?";
-        rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+    
         if (rc == SQLITE_OK) {
             sqlite3_bind_int(res, 1, folder->id);
-            sqlite3_bind_text(res, 2, folder->category, sizeof(folder->category), NULL);
+            sqlite3_bind_text(res, 2, folder->category, strlen(folder->category), NULL);
             int step = sqlite3_step(res);
             sqlite3_finalize(res);
         }

@@ -45,12 +45,14 @@ namespace DB {
     void UpdateDatabase(sqlite3 *database);
     void InsertGame(sqlite3 *database, Game *game);
     void InsertFolder(sqlite3 *database, Folder *folder);
+    void UpdateFolder(sqlite3 *database, Folder *folder);
     void GetFolders(sqlite3 *database, GameCategory *category);
     bool GameExists(sqlite3 *database, Game *game);
     int GetCachedGamesCount(sqlite3 *database);
     void GetCachedGames(sqlite3 *database);
     void DeleteGame(sqlite3 *database, Game *game);
     void DeleteFolder(sqlite3 *database, Folder *folder);
+    void ResetGamesFolderId(sqlite3 *database, Folder *folder);
     void DeleteFavorite(sqlite3 *database, Game *game);
     void InsertFavorite(sqlite3 *database, Game *game);
     void GetFavorites(sqlite3 *database, GameCategory *category);

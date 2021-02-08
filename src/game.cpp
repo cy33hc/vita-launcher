@@ -944,7 +944,8 @@ namespace GAME {
             Folder* current_folder = &category->folders[j];
             for (int i=0; i < current_folder->games.size(); i++)
             {
-                if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, current_folder->games[i].id) == 0) ||
+                if ((game->type == TYPE_FOLDER && current_folder->games[i].folder_id == game->folder_id) ||
+                    (game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, current_folder->games[i].id) == 0) ||
                     ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, current_folder->games[i].rom_path) == 0))
                 {
                     current_folder->games.erase(current_folder->games.begin()+i);
@@ -955,11 +956,25 @@ namespace GAME {
         return -1;
     }
 
+    void RemoveFolderFromCategory(GameCategory *category, int folder_id)
+    {
+        for (int i=0; i < category->folders.size(); i++)
+        {
+            if (category->folders[i].id == folder_id)
+            {
+                category->folders.erase(category->folders.begin()+i);
+                return i;
+            }
+        }
+        return -1;
+    }
+
     int RemoveGameFromFolder(Folder *folder, Game *game)
     {
         for (int i=0; i < folder->games.size(); i++)
         {
-            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, folder->games[i].id) == 0) ||
+            if ((game->type == TYPE_FOLDER && folder->games[i].folder_id == game->folder_id) ||
+                (game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, folder->games[i].id) == 0) ||
                 ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, folder->games[i].rom_path) == 0))
             {
                 folder->games.erase(folder->games.begin()+i);
@@ -1376,6 +1391,21 @@ exit:
                 return &category->folders[i];
             }
         }
+        return nullptr;
+    }
+
+    void MoveGamesBetweenFolders(GameCategory *category, int src_id, int dest_id)
+    {
+        Folder *src_folder = FindFolder(category, src_id);
+        Folder *dest_folder = FindFolder(category, dest_id);
+
+        for (int i=0; i<src_folder->games.size(); i++)
+        {
+            src_folder->games[i].folder_id = 0;
+        }
+
+        dest_folder->games.insert(dest_folder->games.end(), src_folder->games.begin(), src_folder->games.end());
+        src_folder->games.clear();
     }
 
     void ClearSelection(GameCategory *category)

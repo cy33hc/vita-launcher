@@ -201,7 +201,6 @@ namespace GAME {
     void PopulateEbootGameInfo(Game *game, std::string rom, int game_index);
     void ScanAdrenalineEbootGames(sqlite3 *db);
     void ScanScummVMGames(sqlite3 *db);
-    bool GetGameDetails(const char *id, Game *game);
     bool Launch(Game *game, BootSettings *settings = nullptr, char* retro_core = nullptr);
     void LoadGamesCache(sqlite3 *db);
     void LoadGameImages(int category, int prev_page, int page_num, int games_per_page);
@@ -245,6 +244,8 @@ namespace GAME {
     void StartUninstallGameThread(Game *game);
     int DeleteApp(const char *titleid);
     Folder* FindFolder(GameCategory *category, int folder_id);
+    void MoveGamesBetweenFolders(GameCategory *category, int src_id, int dest_id);
+    void RemoveFolderFromCategory(GameCategory *category, int folder_id);
     void ClearSelection(GameCategory *category);
     std::vector<Game> GetSelectedGames(GameCategory *category);
     static int LoadScePaf();
