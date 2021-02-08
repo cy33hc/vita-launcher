@@ -19,7 +19,7 @@ typedef struct {
     char type;
     bool icon_missing = false;
     int visible = 0;
-    int folder_id;
+    int folder_id = 0;
     uint64_t visible_time = 0;
     bool thread_started = false;
     bool selected = false;

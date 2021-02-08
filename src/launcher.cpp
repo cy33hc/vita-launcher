@@ -15,6 +15,13 @@ extern "C" {
 	#include "inifile.h"
 }
 
+typedef struct
+{
+    char category[10];
+    char name[32];
+    bool selected = false;
+} CategorySelection;
+
 Game *selected_game;
 Game *game_to_boot;
 static SceCtrlData pad_prev;
@@ -39,6 +46,9 @@ static std::vector<Game> games_selection;
 static BootSettings settings;
 static char retro_core[128];
 static int move_location = 0;
+static char txt_folder_name[128];
+static char txt_icon_path[192];
+static std::vector<CategorySelection> categories_selection;
 
 GameCategory *tmp_category;
 
@@ -55,6 +65,8 @@ bool handle_add_iso_game = false;
 bool handle_add_eboot_game = false;
 bool handle_search_game = false;
 bool handle_uninstall_game = false;
+bool handle_new_folder = false;
+bool handle_edit_folder = false;
 bool selection_mode = false;
 
 char game_action_message[256];
@@ -880,6 +892,11 @@ namespace Windows {
 			HandleUninstallGame();
 		}
 
+        if (handle_new_folder)
+        {
+            HandleAddNewFolder();
+        }
+
         ShowSettingsDialog();
     }
 
@@ -890,7 +907,7 @@ namespace Windows {
         {
             for (int i=0; i<TOTAL_CATEGORY; i++)
             {
-                if (game_categories[i].current_folder->games.size() > 0 || show_all_categories)
+                if (game_categories[i].folders[0].games.size() > 0 || show_all_categories)
                 {
                     // Add some padding for title so tabs are consistent width
                     std::string title = std::string(game_categories[i].alt_title);
@@ -968,6 +985,8 @@ namespace Windows {
             static bool add_eboot_game = false;
             static bool download_thumbnails = false;
             static bool uninstall_game = false;
+            static bool add_folder = false;
+            static bool edit_folder = false;
 
             float posX = ImGui::GetCursorPosX();
 
@@ -1316,26 +1335,36 @@ namespace Windows {
                 {
                     if (ImGui::BeginTabItem("Actions"))
                     {
+                        if (current_category->id != FAVORITES)
+                        {
+                            if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache && current_category->current_folder->id == FOLDER_ROOT_ID
+                                && !move_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !rename_game)
+                            {
+                                ImGui::Checkbox("Add new folder", &add_folder);
+                                ImGui::Separator();
+                            }
+                        }
+                        
                         if (selected_game != nullptr && current_category->id != FAVORITES)
                         {
+
                             if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache &&
                                 !move_game && !add_eboot_game && !add_psp_iso_game && selected_game->type != TYPE_BUBBLE
-                                && !download_thumbnails && !uninstall_game)
+                                && !download_thumbnails && !uninstall_game && !add_folder)
                             {
                                 ImGui::Checkbox("Rename selected game", &rename_game);
                                 ImGui::Separator();
                             }
 
                             if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache &&
-                                !rename_game && !add_eboot_game && !add_psp_iso_game && current_category->rom_type != TYPE_ROM &&
-                                current_category->rom_type != TYPE_SCUMMVM && !download_thumbnails && !uninstall_game)
+                                !rename_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
                             {
                                 ImGui::Checkbox("Move selected game", &move_game);
                                 ImGui::Separator();
                             }
 
                             if (!refresh_games && !add_rom_game && !refresh_current_category && !move_game && !rename_game &&
-                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game)
+                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
                             {
                                 ImGui::Checkbox("Hide selected game", &remove_from_cache);
                                 ImGui::Separator();
@@ -1343,7 +1372,7 @@ namespace Windows {
 
                             if (!refresh_games && !add_rom_game && !refresh_current_category && !move_game && !rename_game &&
                                 !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !remove_from_cache &&
-                                selected_game->type == TYPE_BUBBLE)
+                                selected_game->type == TYPE_BUBBLE && !add_folder)
                             {
                                 ImGui::Checkbox("Un-install selected game", &uninstall_game);
                                 ImGui::Separator();
@@ -1352,7 +1381,7 @@ namespace Windows {
 
                         if (current_category->rom_type == TYPE_PSP_ISO)
                         {
-                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game &&
+                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
                                 !add_eboot_game && !add_rom_game && !rename_game && !download_thumbnails && !uninstall_game)
                             {
                                 ImGui::Checkbox("Add new PSP ISO game", &add_psp_iso_game);
@@ -1362,7 +1391,7 @@ namespace Windows {
 
                         if (current_category->rom_type == TYPE_EBOOT)
                         {
-                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game &&
+                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
                                 !add_psp_iso_game && !add_rom_game && !rename_game && !download_thumbnails && !uninstall_game)
                             {
                                 ImGui::Checkbox("Add new EBOOT game", &add_eboot_game);
@@ -1372,7 +1401,7 @@ namespace Windows {
 
                         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
                         {
-                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game &&
+                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
                                 !add_eboot_game && !add_psp_iso_game && !rename_game && !download_thumbnails && !uninstall_game)
                             {
                                 if (current_category->id == PS1_GAMES)
@@ -1390,7 +1419,7 @@ namespace Windows {
                         if (current_category->rom_type != TYPE_BUBBLE)
                         {
                             if (!refresh_games && !remove_from_cache && !add_rom_game && !move_game && !rename_game &&
-                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game)
+                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
                             {
                                 char cb_text[64];
                                 sprintf(cb_text, "Rescan games in %s category only", current_category->title);
@@ -1402,7 +1431,7 @@ namespace Windows {
                         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES
                             || current_category->rom_type == TYPE_SCUMMVM)
                         {
-                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game &&
+                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
                                 !add_eboot_game && !add_psp_iso_game && !rename_game && !add_rom_game && !uninstall_game)
                             {
                                 char cb_text[64];
@@ -1413,7 +1442,7 @@ namespace Windows {
                         }
 
                         if (!remove_from_cache && !add_rom_game && !refresh_current_category && !move_game && !rename_game &&
-                            !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game)
+                            !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
                         {
                             ImGui::Checkbox("Rescan all game categories to rebuild cache", &refresh_games);
                             ImGui::Separator();
@@ -1469,7 +1498,8 @@ namespace Windows {
                         sqlite3_close(db);
                     }
                     GAME::SetMaxPage(current_category);
-                    
+                    selection_mode = false;
+                    GAME::ClearSelection(current_category);
                     selected_game = nullptr;
                 }
                 WriteString(CONFIG_GLOBAL, CONFIG_HIDE_TITLE_IDS, CONFIG::GetMultiValueString(hidden_title_ids).c_str());
@@ -1555,7 +1585,30 @@ namespace Windows {
 
                 if (add_eboot_game)
                     handle_add_eboot_game = true;
-                    
+                
+                if (add_folder)
+                {
+                    sprintf(txt_folder_name, "Folder");
+                    sprintf(txt_icon_path, "ux0:app/SMLA00001/folder.png");
+                    categories_selection.clear();
+                    for (int i=1; i<TOTAL_CATEGORY; i++)
+                    {
+                        CategorySelection cat;
+                        sprintf(cat.category, "%s", game_categories[i].category);
+                        sprintf(cat.name, "%s", game_categories[i].alt_title);
+                        if (current_category->id == game_categories[i].id)
+                        {
+                            cat.selected = true;
+                        }
+                        else
+                        {
+                            cat.selected = false;
+                        }
+                        
+                        categories_selection.push_back(cat);
+                    }
+                    handle_new_folder = true;
+                }
                 paused = false;
                 move_game = false;
                 refresh_games = false;
@@ -1567,6 +1620,7 @@ namespace Windows {
                 rename_game = false;
                 download_thumbnails = false;
                 uninstall_game = false;
+                add_folder = false;
                 
                 ImGui::CloseCurrentPopup();
             }
@@ -2148,7 +2202,7 @@ namespace Windows {
     void MoveGameToCategory(sqlite3 *database, Game *game, GameCategory *category)
     {
         GameCategory *current_category = categoryMap[game->category];
-        if (game->type > TYPE_ROM)
+        if (game->type > TYPE_ROM && game->type < TYPE_SCUMMVM)
         {
             Game tmp = *game;
             sprintf(tmp.category, "%s", category->category);
@@ -2157,7 +2211,7 @@ namespace Windows {
             tmp.thread_started = false;
             tmp.folder_id = 0;
             tmp.selected = false;
-            debugNetPrintf(DEBUG,"temp title=%s, cat=%s, rom_path=%s, id=%s\n", tmp.title, tmp.category, tmp.rom_path, tmp.id);
+            //debugNetPrintf(DEBUG,"temp title=%s, cat=%s, rom_path=%s, id=%s\n", tmp.title, tmp.category, tmp.rom_path, tmp.id);
             category->folders[0].games.push_back(tmp);
             DB::UpdateGame(database, &tmp);
             DB::UpdateFavoritesGameCategoryByRomPath(database, &tmp);
@@ -2201,12 +2255,10 @@ namespace Windows {
             tmp.thread_started = false;
             tmp.folder_id = folder->id;
             tmp.selected = false;
-            debugNetPrintf(DEBUG,"temp title=%s, cat=%s, rom_path=%s, id=%s, folder_id=%d\n", tmp.title, tmp.category, tmp.rom_path, tmp.id, tmp.folder_id);
+            //debugNetPrintf(DEBUG,"temp title=%s, cat=%s, rom_path=%s, id=%s, folder_id=%d\n", tmp.title, tmp.category, tmp.rom_path, tmp.id, tmp.folder_id);
             folder->games.push_back(tmp);
             DB::UpdateGame(database, &tmp);
-            GAME::SortGames(folder);
             GAME::RemoveGameFromFolder(current_category->current_folder, game);
-            GAME::SetMaxPage(current_category);
         }
     }
 
@@ -2215,114 +2267,135 @@ namespace Windows {
         paused = true;
         if (!game_moved)
         {
-            if ((selected_game->type == TYPE_ROM || selected_game->type == TYPE_SCUMMVM || selected_game->type == TYPE_FOLDER) && !selection_mode)
+            ImGui::OpenPopup("Select Move Location");
+            ImGui::SetNextWindowPos(ImVec2(230, 100));
+            ImGui::SetNextWindowSize(ImVec2(490,360));
+            if (ImGui::BeginPopupModal("Select Move Location", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
             {
-                sprintf(game_action_message, "Can't move ROM type games. Since they\nare dependent on RetroArch core of \nthe category.");
-                game_moved = true;
-            }
-            else
-            {
-                ImGui::OpenPopup("Select Move Location");
-                ImGui::SetNextWindowPos(ImVec2(230, 100));
-                ImGui::SetNextWindowSize(ImVec2(490,360));
-                if (ImGui::BeginPopupModal("Select Move Location", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(480,260));
+                ImGui::Text("Move To:"); ImGui::SameLine();
+                ImGui::RadioButton("Folder", &move_location, 0); ImGui::SameLine();
+                ImGui::RadioButton("Category", &move_location, 1);
+                ImGui::Separator();
+
+                if (move_location == 1)
                 {
-                    ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(480,260));
-                    ImGui::Text("Move To:"); ImGui::SameLine();
-                    ImGui::RadioButton("Category", &move_location, 0); ImGui::SameLine();
-                    ImGui::RadioButton("Folder", &move_location, 1);
-                    ImGui::Separator();
+                    ImGui::BeginChild("category list");
 
-                    if (move_location == 0)
+                    for (int i = 1; i < TOTAL_CATEGORY-1; i++)
                     {
-                        ImGui::BeginChild("category list");
-
-                        for (int i = 1; i < TOTAL_CATEGORY-1; i++)
+                        if (current_category->id != game_categories[i].id)
                         {
-                            if (current_category->id != game_categories[i].id)
+                            if (ImGui::Selectable(game_categories[i].alt_title) &&
+                                selected_game != nullptr)
                             {
-                                if (ImGui::Selectable(game_categories[i].alt_title) &&
-                                    selected_game != nullptr)
+                                if (!selection_mode)
                                 {
-                                    if (!selection_mode)
+                                    if ((selected_game->type == TYPE_ROM || selected_game->type == TYPE_SCUMMVM || selected_game->type == TYPE_FOLDER))
+                                    {
+                                        sprintf(game_action_message, "Can't move ROM type games. Since they\nare dependent on RetroArch core of \nthe category.");
+                                    }
+                                    else
                                     {
                                         MoveGameToCategory(nullptr, selected_game, &game_categories[i]);
                                         sprintf(game_action_message, "Game moved to %s category", game_categories[i].alt_title);
                                     }
-                                    else
+                                    
+                                }
+                                else
+                                {
+                                    sqlite3* db;
+                                    sqlite3_open(CACHE_DB_FILE, &db);
+                                    std::vector<Game> list = GAME::GetSelectedGames(current_category);
+                                    int games_not_moved = 0;
+                                    for (int j=0; j<list.size(); j++)
                                     {
-                                        sqlite3* db;
-                                        sqlite3_open(CACHE_DB_FILE, &db);
-                                        std::vector<Game> list = GAME::GetSelectedGames(current_category);
-                                        for (int j=0; j<list.size(); j++)
+                                        Game *game = &list[j];
+                                        //debugNetPrintf(DEBUG,"moving title=%s, cat=%s, rom_path=%s, id=%s\n", game->title, game->category, game->rom_path, game->id);
+                                        if (game->type == TYPE_BUBBLE || game->type == TYPE_EBOOT || game->type == TYPE_PSP_ISO)
                                         {
-                                            Game *game = &list[j];
-                                            debugNetPrintf(DEBUG,"moving title=%s, cat=%s, rom_path=%s, id=%s\n", game->title, game->category, game->rom_path, game->id);
                                             MoveGameToCategory(db, game, &game_categories[i]);
                                         }
-                                        sqlite3_close(db);
-                                        sprintf(game_action_message, "Game moved to %s category", game_categories[i].alt_title);
-                                        GAME::ClearSelection(current_category);
-                                        selection_mode = false;
+                                        else
+                                        {
+                                            games_not_moved++;
+                                        }
+                                        
                                     }
-                                    
-                                    game_moved = true;
-                                }
-                                ImGui::Separator();
-                            }
-                        }
-                        ImGui::EndChild();
-                    }
-                    else if (move_location == 1)
-                    {
-                        ImGui::BeginChild("folder list");
-
-                        for (int i = 0; i <current_category->folders.size(); i++)
-                        {
-                            if (current_category->current_folder->id != current_category->folders[i].id)
-                            {
-                                if (ImGui::Selectable(current_category->folders[i].title) &&
-                                    selected_game != nullptr)
-                                {
-                                    if (!selection_mode)
+                                    sqlite3_close(db);
+                                    if (games_not_moved == 0)
                                     {
-                                        MoveGameToFolder(nullptr, selected_game, &current_category->folders[i]);
-                                        sprintf(game_action_message, "Game moved to %s folder", current_category->folders[i].title);
+                                        sprintf(game_action_message, "All selected games moved to %s category", game_categories[i].alt_title);
                                     }
                                     else
                                     {
-                                        sqlite3* db;
-                                        sqlite3_open(CACHE_DB_FILE, &db);
-                                        std::vector<Game> list = GAME::GetSelectedGames(current_category);
-                                        for (int j=0; j<list.size(); j++)
-                                        {
-                                            Game *game = &list[j];
-                                            debugNetPrintf(DEBUG,"moving title=%s, cat=%s, rom_path=%s, id=%s\n", game->title, game->category, game->rom_path, game->id);
-                                            MoveGameToFolder(db, game, &current_category->folders[i]);
-                                        }
-                                        sqlite3_close(db);
-                                        sprintf(game_action_message, "Games moved to %s folder", current_category->folders[i].title);
-                                        GAME::ClearSelection(current_category);
-                                        selection_mode = false;
+                                        sprintf(game_action_message, "Some selected games wasn't moved to %s category because they ROM games", game_categories[i].alt_title);
                                     }
-                                    game_moved = true;
+                                    
+                                    GAME::ClearSelection(current_category);
+                                    selection_mode = false;
                                 }
-                                ImGui::Separator();
+                                
+                                game_moved = true;
                             }
+                            ImGui::Separator();
                         }
-                        ImGui::EndChild();
                     }
-
-                    ImGui::Separator();
-                    if (ImGui::Button("Cancel"))
-                    {
-                        paused = false;
-                        handle_move_game = false;
-                        game_moved = false;
-                        ImGui::CloseCurrentPopup();
-                    }
-                    ImGui::EndPopup();
+                    ImGui::EndChild();
                 }
+                else if (move_location == 0)
+                {
+                    ImGui::BeginChild("folder list");
+
+                    for (int i = 0; i <current_category->folders.size(); i++)
+                    {
+                        if (current_category->current_folder->id != current_category->folders[i].id)
+                        {
+                            if (ImGui::Selectable(current_category->folders[i].title) &&
+                                selected_game != nullptr)
+                            {
+                                if (!selection_mode)
+                                {
+                                    MoveGameToFolder(nullptr, selected_game, &current_category->folders[i]);
+                                    GAME::SortGames(&current_category->folders[i]);
+                                    GAME::SetMaxPage(current_category);
+                                    sprintf(game_action_message, "Game moved to %s folder", current_category->folders[i].title);
+                                }
+                                else
+                                {
+                                    sqlite3* db;
+                                    sqlite3_open(CACHE_DB_FILE, &db);
+                                    std::vector<Game> list = GAME::GetSelectedGames(current_category);
+                                    for (int j=0; j<list.size(); j++)
+                                    {
+                                        Game *game = &list[j];
+                                        //debugNetPrintf(DEBUG,"moving title=%s, cat=%s, rom_path=%s, id=%s\n", game->title, game->category, game->rom_path, game->id);
+                                        MoveGameToFolder(db, game, &current_category->folders[i]);
+                                    }
+                                    sqlite3_close(db);
+                                    GAME::SortGames(&current_category->folders[i]);
+                                    GAME::SetMaxPage(current_category);
+                                    sprintf(game_action_message, "Games moved to %s folder", current_category->folders[i].title);
+                                    GAME::ClearSelection(current_category);
+                                    selection_mode = false;
+                                }
+                                game_moved = true;
+                            }
+                            ImGui::Separator();
+                        }
+                    }
+                    ImGui::EndChild();
+                }
+
+                ImGui::Separator();
+                if (ImGui::Button("Cancel"))
+                {
+                    paused = false;
+                    handle_move_game = false;
+                    game_moved = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
             }
         }
         else
@@ -2346,6 +2419,99 @@ namespace Windows {
             }
         }
         
+    }
+
+    void HandleAddNewFolder()
+    {
+        paused = true;
+        ImGui::OpenPopup("Create New Folder");
+        ImGui::SetNextWindowPos(ImVec2(230, 100));
+        ImGui::SetNextWindowSize(ImVec2(490,340));
+        if (ImGui::BeginPopupModal("Create New Folder", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+        {
+            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(480,260));
+
+            ImGui::Text("Name:"); ImGui::SameLine();
+            if (ImGui::Selectable(txt_folder_name, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(400, 0)))
+            {
+                ime_single_field = txt_folder_name;
+                ime_before_update = nullptr;
+                ime_after_update = nullptr;
+                ime_callback = SingleValueImeCallback;
+                Dialog::initImeDialog("Folder Name", txt_folder_name, 127, SCE_IME_TYPE_DEFAULT, 0, 0);
+                gui_mode = GUI_MODE_IME;
+            };
+            ImGui::Separator();
+            
+            ImGui::Text("Icon Path:"); ImGui::SameLine();
+            if (ImGui::Selectable(txt_icon_path, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(370, 0)))
+            {
+                ime_single_field = txt_icon_path;
+                ime_before_update = nullptr;
+                ime_after_update = nullptr;
+                ime_callback = SingleValueImeCallback;
+                Dialog::initImeDialog("Icon Path", txt_icon_path, 127, SCE_IME_TYPE_DEFAULT, 0, 0);
+                gui_mode = GUI_MODE_IME;
+            };
+            ImGui::Separator();
+            
+            ImGui::Text("Categories:");
+            ImGui::ListBoxHeader("##categories", ImVec2(470, 184));
+            for (int i=0; i<categories_selection.size(); i++)
+            {
+                ImGui::Checkbox(categories_selection[i].name, &categories_selection[i].selected);
+            }
+            ImGui::ListBoxFooter();
+            ImGui::Separator();
+
+            if (ImGui::Button("OK"))
+            {
+                sqlite3 *db;
+                sqlite3_open(CACHE_DB_FILE, &db);
+                for (int i=0; i<categories_selection.size(); i++)
+                {
+                    if (categories_selection[i].selected)
+                    {
+                        GameCategory *category = categoryMap[categories_selection[i].category];
+                        Folder folder;
+                        sprintf(folder.category, "%s", categories_selection[i].category);
+                        sprintf(folder.title, "%s", txt_folder_name);
+                        sprintf(folder.icon_path, "%s", txt_icon_path);
+                        debugNetPrintf(DEBUG,"folder id=%d, title=%s, cat=%s, icon_path=%s\n", folder.id, folder.title, folder.category, folder.icon_path);
+                        DB::InsertFolder(db, &folder);
+                        debugNetPrintf(DEBUG,"folder id=%d, title=%s, cat=%s, icon_path=%s\n", folder.id, folder.title, folder.category, folder.icon_path);
+                        int current_folder_id = category->current_folder->id;
+                        category->folders.push_back(folder);
+                        category->current_folder = GAME::FindFolder(category, current_folder_id);
+
+                        Game game;
+                        sprintf(game.id, "%d", folder.id);
+                        sprintf(game.title, "%s", folder.title);
+                        sprintf(game.category, "%s", folder.category);
+                        game.type = TYPE_FOLDER;
+                        game.folder_id = folder.id;
+                        game.favorite = false;
+                        game.tex = no_icon;
+                        Folder *cat_folder = GAME::FindFolder(category, folder.id);
+                        category->folders[0].games.insert(category->folders[0].games.begin(), game);
+                        GAME::SortGames(&category->folders[0]);
+                    }
+                }
+                sqlite3_close(db);
+                paused = false;
+                handle_new_folder = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+
+            if (ImGui::Button("Cancel"))
+            {
+                paused = false;
+                handle_new_folder = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
     }
 
     void HandleSearchGame()

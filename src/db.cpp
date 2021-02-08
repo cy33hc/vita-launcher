@@ -539,10 +539,10 @@ namespace DB {
             " WHERE " + COL_CATEGORY + "=? ORDER BY " + COL_TITLE;
 
         int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
-        debugNetPrintf(DEBUG,"sql= %s\n", sql.c_str());
+        //debugNetPrintf(DEBUG,"sql= %s\n", sql.c_str());
         if (rc == SQLITE_OK) {
             sqlite3_bind_text(res, 1, category->category, strlen(category->category), NULL);
-            debugNetPrintf(DEBUG,"sqlite3_bind_text\n", sql.c_str());
+            //debugNetPrintf(DEBUG,"sqlite3_bind_text\n", sql.c_str());
             while (sqlite3_step(res) == SQLITE_ROW)
             {
                 Folder folder;
@@ -553,9 +553,9 @@ namespace DB {
                 folder.max_page = 1;
                 folder.page_num = 1;
                 folder.type = FOLDER_TYPE_SUBFOLDER;
-                debugNetPrintf(DEBUG,"id=%d, title=%s, category=%s, icon_path=%s\n", folder.id, folder.title, folder.category, folder.icon_path);
+                //debugNetPrintf(DEBUG,"id=%d, title=%s, category=%s, icon_path=%s\n", folder.id, folder.title, folder.category, folder.icon_path);
                 category->folders.push_back(folder);
-                debugNetPrintf(DEBUG,"cat=%s, folder size=%d\n", category->category, category->folders.size());
+                //debugNetPrintf(DEBUG,"cat=%s, folder size=%d\n", category->category, category->folders.size());
             }
         }
         category->current_folder = &category->folders[0];

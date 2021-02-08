@@ -94,7 +94,7 @@ namespace GAME {
             {
                 DB::GetFolders(db, &game_categories[i]);
             }
-            debugNetPrintf(DEBUG,"Finished gettings folders\n");
+            //debugNetPrintf(DEBUG,"Finished gettings folders\n");
             LoadGamesCache(db);
             sqlite3_close(db);
         }
@@ -614,7 +614,7 @@ namespace GAME {
     }
 
     void LoadGameImage(Game *game) {
-        debugNetPrintf(DEBUG,"title=%s, type=%d\n", game->title, game->type);
+        //debugNetPrintf(DEBUG,"title=%s, type=%d\n", game->title, game->type);
         Tex tex;
         tex = no_icon;
 
@@ -640,7 +640,7 @@ namespace GAME {
             GameCategory *cat = categoryMap[game->category];
             Folder* folder = FindFolder(cat, game->folder_id);
             sprintf(icon_path, "%s", folder->icon_path);
-            debugNetPrintf(DEBUG,"icon_path=%s\n", icon_path);
+            //debugNetPrintf(DEBUG,"icon_path=%s\n", icon_path);
         }
         else
         {
