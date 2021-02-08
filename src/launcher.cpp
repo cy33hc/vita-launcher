@@ -232,6 +232,21 @@ namespace Windows {
         previous_left = io.NavInputs[ImGuiNavInput_DpadLeft];
     }
 
+    void DeleteGameFromCache(sqlite3 *database, Game *game)
+    {
+        if (game->type == TYPE_BUBBLE)
+        {
+            hidden_title_ids.push_back(game->id);
+        }
+        else
+        {
+            DB::DeleteGame(database, game);
+            DB::DeleteFavorite(database, game);
+        }
+        GAME::RemoveGameFromCategory(categoryMap[game->category], game);
+        GAME::RemoveGameFromCategory(&game_categories[FAVORITES], game);
+    }
+
     void LauncherWindow() {
         Windows::SetupWindow();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -1436,12 +1451,25 @@ namespace Windows {
                 WriteString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, pspemu_path);
                 WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, cb_style_name);
 
-                if (remove_from_cache && selected_game != nullptr && selected_game->type == TYPE_BUBBLE)
+                if (remove_from_cache && selected_game != nullptr)
                 {
-                    Game *game = selected_game;
-                    hidden_title_ids.push_back(selected_game->id);
-                    GAME::RemoveGameFromCategory(current_category, game);
-                    GAME::RemoveGameFromCategory(&game_categories[FAVORITES], game);
+                    if (!selection_mode)
+                    {
+                        DeleteGameFromCache(nullptr, selected_game);
+                    }
+                    else
+                    {
+                        sqlite3 *db;
+                        sqlite3_open(CACHE_DB_FILE, &db);
+                        std::vector<Game> list = GAME::GetSelectedGames(current_category);
+                        for (int i=0; i<list.size(); i++)
+                        {
+                            DeleteGameFromCache(db, &list[i]);
+                        }
+                        sqlite3_close(db);
+                    }
+                    GAME::SetMaxPage(current_category);
+                    
                     selected_game = nullptr;
                 }
                 WriteString(CONFIG_GLOBAL, CONFIG_HIDE_TITLE_IDS, CONFIG::GetMultiValueString(hidden_title_ids).c_str());
@@ -1505,16 +1533,6 @@ namespace Windows {
 					handle_uninstall_game = true;
 					game_uninstalled = 0;
 				}	
-
-                if (remove_from_cache && selected_game != nullptr && selected_game->title != TYPE_BUBBLE)
-                {
-                    Game *game = selected_game;
-                    DB::DeleteGame(nullptr, game);
-                    DB::DeleteFavorite(nullptr, game);
-                    GAME::RemoveGameFromCategory(current_category, game);
-                    GAME::RemoveGameFromCategory(&game_categories[FAVORITES], game);
-                    selected_game = nullptr;
-                }
 
                 if (rename_game && selected_game != nullptr)
                 {
