@@ -222,7 +222,9 @@ namespace GAME {
     Game* FindGame(GameCategory *category, Game *game);
     int FindGamePosition(GameCategory *category, Game *game);
     int RemoveGameFromCategory(GameCategory *category, Game *game);
+    int RemoveGameFromFolder(Folder *folder, Game *game);
     void SortGames(GameCategory *category);
+    void SortGames(Folder *folder);
     void RefreshGames(bool all_categories);
     const char* GetGameCategory(const char *id);
     GameCategory* GetRomCategoryByName(const char* category_name);
@@ -244,6 +246,7 @@ namespace GAME {
     int DeleteApp(const char *titleid);
     Folder* FindFolder(GameCategory *category, int folder_id);
     void ClearSelection(GameCategory *category);
+    std::vector<Game> GetSelectedGames(GameCategory *category);
     static int LoadScePaf();
     static int UnloadScePaf();
 }

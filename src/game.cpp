@@ -955,6 +955,20 @@ namespace GAME {
         return -1;
     }
 
+    int RemoveGameFromFolder(Folder *folder, Game *game)
+    {
+        for (int i=0; i < folder->games.size(); i++)
+        {
+            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, folder->games[i].id) == 0) ||
+                ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, folder->games[i].rom_path) == 0))
+            {
+                folder->games.erase(folder->games.begin()+i);
+                return i;
+            }
+        }
+        return -1;
+    }
+
     void SortGames(GameCategory *category)
     {
         for (int j=0; j < category->folders.size(); j++)
@@ -962,6 +976,11 @@ namespace GAME {
             Folder* current_folder = &category->folders[j];
             qsort(&current_folder->games[0], current_folder->games.size(), sizeof(Game), GameComparator);
         }
+    }
+
+    void SortGames(Folder *folder)
+    {
+        qsort(&folder->games[0], folder->games.size(), sizeof(Game), GameComparator);
     }
 
     void RefreshGames(bool all_categories)
@@ -1367,4 +1386,16 @@ exit:
         }
     }
 
+    std::vector<Game> GetSelectedGames(GameCategory *category)
+    {
+        std::vector<Game> list;
+        for (int i=0; i<category->current_folder->games.size(); i++)
+        {
+            if (category->current_folder->games[i].selected)
+            {
+                list.push_back(category->current_folder->games[i]);
+            }
+        }
+        return list;
+    }
 }

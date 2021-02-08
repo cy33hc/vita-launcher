@@ -58,8 +58,8 @@ namespace DB {
     void DeleteGamesByType(sqlite3 *database, int type);
     void UpdateFavoritesGameCategoryById(sqlite3 *database, Game *game);
     void UpdateFavoritesGameCategoryByRomPath(sqlite3 *database, Game *game);
-    void UpdateGameCategory(sqlite3 *database, Game *game);
     void UpdateGameTitle(sqlite3 *database, Game *game);
+    void UpdateGame(sqlite3 *database, Game *game);
     void GetMaxTitleIdByType(sqlite3 *database, int type, char* max_title_id);
     bool FindMatchingThumbnail(char* db_name, std::vector<std::string> &tokens, char* thumbnail);
     bool FindMatchingThumbnail(sqlite3 *database, std::vector<std::string> &tokens, char* thumbnail);

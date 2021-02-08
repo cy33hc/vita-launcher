@@ -536,7 +536,7 @@ namespace DB {
         sqlite3_stmt *res;
         std::string sql = std::string("SELECT ") + COL_ID + "," + COL_TITLE + "," +
             COL_CATEGORY + "," + COL_ICON_PATH + " FROM " + FOLDERS_TABLE +
-            " WHERE " + COL_CATEGORY + "=? ORDER BY " + COL_TITLE + " DESC";
+            " WHERE " + COL_CATEGORY + "=? ORDER BY " + COL_TITLE;
 
         int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
         debugNetPrintf(DEBUG,"sql= %s\n", sql.c_str());
@@ -605,6 +605,16 @@ namespace DB {
     
         if (rc == SQLITE_OK) {
             sqlite3_bind_int(res, 1, folder->id);
+            int step = sqlite3_step(res);
+            sqlite3_finalize(res);
+        }
+
+        sql = std::string("UPDATE ") + GAMES_TABLE + " SET " + COL_FOLDER_ID + "=0" +
+            " WHERE " + COL_FOLDER_ID + "=? AND " + COL_CATEGORY + "=?";
+        rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_int(res, 1, folder->id);
+            sqlite3_bind_text(res, 2, folder->category, sizeof(folder->category), NULL);
             int step = sqlite3_step(res);
             sqlite3_finalize(res);
         }
@@ -710,7 +720,7 @@ namespace DB {
         }
    }
 
-   void UpdateGameCategory(sqlite3 *database, Game *game)
+   void UpdateGame(sqlite3 *database, Game *game)
    {
         sqlite3 *db = database;
         if (db == nullptr)
@@ -719,11 +729,17 @@ namespace DB {
         }
 
         sqlite3_stmt *res;
-        std::string sql = std::string("UPDATE ") + GAMES_TABLE + " SET " + COL_CATEGORY + "=? WHERE " + COL_ROM_PATH + "=?";
+        std::string sql = std::string("UPDATE ") + GAMES_TABLE + " SET " + 
+            COL_CATEGORY + "=?, " +
+            COL_TITLE + "=?, " +
+            COL_FOLDER_ID + "=? " +
+            " WHERE " + COL_ROM_PATH + "=?";
         int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
         if (rc == SQLITE_OK) {
             sqlite3_bind_text(res, 1, game->category, strlen(game->category), NULL);
-            sqlite3_bind_text(res, 2, game->rom_path, strlen(game->rom_path), NULL);
+            sqlite3_bind_text(res, 2, game->title, strlen(game->title), NULL);
+            sqlite3_bind_int(res, 3, game->folder_id);
+            sqlite3_bind_text(res, 4, game->rom_path, strlen(game->rom_path), NULL);
             int step = sqlite3_step(res);
             sqlite3_finalize(res);
         }
