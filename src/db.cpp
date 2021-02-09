@@ -5,7 +5,7 @@
 #include "db.h"
 #include "game.h"
 #include "textures.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 
 namespace DB {
     bool TableExists(sqlite3 *database, char* table_name)
@@ -72,13 +72,20 @@ namespace DB {
         return found;
     }
 
-    void GetVitaDbGames(GameCategory *category)
+    void GetVitaDbGames()
     {
         sqlite3 *db;
         sqlite3_stmt *res;
 
         int rc = sqlite3_open(VITA_APP_DB_FILE, &db);
-        std::string sql = "select titleId,val from tbl_appinfo where key=572932585 and titleID not like 'NPXS%'";
+        std::string sql = std::string("select titleId,val,folder_id ") +
+            "from tbl_appinfo left join app_folders on tbl_appinfo.titleId = app_folders.id " +
+            "where tbl_appinfo.key=572932585 and tbl_appinfo.titleID not like 'NPXS%'";
+        bool app_folder_exists = TableExists(db, APP_FOLDERS_TABLE);
+        if (!app_folder_exists)
+        {
+            sql = "select titleId,val from tbl_appinfo where key=572932585 and titleID not like 'NPXS%'";
+        }
         rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
     
         int step = sqlite3_step(res);
@@ -93,9 +100,28 @@ namespace DB {
                 sprintf(game.category, "%s", GAME::GetGameCategory(game.id));
                 sprintf(game.title, "%s", title.c_str());
                 sprintf(game.rom_path, "%s", "");
+                if (app_folder_exists)
+                {
+                    game.folder_id = sqlite3_column_int(res, 2);
+                }
+                else
+                {
+                    game.folder_id = 0;
+                }
                 game.tex = no_icon;
                 game.type = TYPE_BUBBLE;
-                categoryMap[game.category]->current_folder->games.push_back(game);
+
+                Folder *folder = GAME::FindFolder(categoryMap[game.category], game.folder_id);
+                if (folder != nullptr)
+                {
+                    folder->games.push_back(game);
+                }
+                else
+                {
+                    game.folder_id = 0;
+                    categoryMap[game.category]->current_folder->games.push_back(game);
+                }
+
                 game_scan_inprogress = game;
             }
             games_scanned++;
@@ -198,6 +224,18 @@ namespace DB {
         {
             sqlite3_close(db);
         }
+
+        sqlite3 *vita_app_db;
+        sqlite3_open(VITA_APP_DB_FILE, &vita_app_db);
+        if (!TableExists(vita_app_db, APP_FOLDERS_TABLE))
+        {
+            std::string sql = std::string("CREATE TABLE ") + APP_FOLDERS_TABLE + "(" +
+                COL_ID + " TEXT," +
+                COL_FOLDER_ID + " INTEGER," +
+                "PRIMARY KEY(" + COL_ID +"))";
+            sqlite3_exec(vita_app_db, sql.c_str(), NULL, NULL, NULL);
+        }
+        sqlite3_close(vita_app_db);
     }
 
     void UpdateDatabase(sqlite3 *database)
@@ -254,6 +292,18 @@ namespace DB {
         {
             sqlite3_close(db);
         }
+
+        sqlite3 *vita_app_db;
+        sqlite3_open(VITA_APP_DB_FILE, &vita_app_db);
+        if (!TableExists(vita_app_db, APP_FOLDERS_TABLE))
+        {
+            std::string sql = std::string("CREATE TABLE ") + APP_FOLDERS_TABLE + "(" +
+                COL_ID + " TEXT," +
+                COL_FOLDER_ID + " INTEGER," +
+                "PRIMARY KEY(" + COL_ID +"))";
+            sqlite3_exec(vita_app_db, sql.c_str(), NULL, NULL, NULL);
+        }
+        sqlite3_close(vita_app_db);
     }
 
     void InsertFavorite(sqlite3 *database, Game *game)
@@ -557,7 +607,16 @@ namespace DB {
             games_scanned++;
             game_scan_inprogress = game;
             Folder *folder = GAME::FindFolder(categoryMap[game.category], game.folder_id);
-            folder->games.push_back(game);
+            if (folder != nullptr)
+            {
+                folder->games.push_back(game);
+            }
+            else
+            {
+                game.folder_id = 0;
+                categoryMap[game.category]->current_folder->games.push_back(game);
+            }
+            
             step = sqlite3_step(res);
         }
         sqlite3_finalize(res);
@@ -599,10 +658,8 @@ namespace DB {
             " WHERE " + COL_CATEGORY + "=? ORDER BY " + COL_TITLE;
 
         int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
-        //debugNetPrintf(DEBUG,"sql= %s\n", sql.c_str());
         if (rc == SQLITE_OK) {
             sqlite3_bind_text(res, 1, category->category, strlen(category->category), NULL);
-            //debugNetPrintf(DEBUG,"sqlite3_bind_text\n", sql.c_str());
             while (sqlite3_step(res) == SQLITE_ROW)
             {
                 Folder folder;
@@ -613,9 +670,7 @@ namespace DB {
                 folder.max_page = 1;
                 folder.page_num = 1;
                 folder.type = FOLDER_TYPE_SUBFOLDER;
-                //debugNetPrintf(DEBUG,"id=%d, title=%s, category=%s, icon_path=%s\n", folder.id, folder.title, folder.category, folder.icon_path);
                 category->folders.push_back(folder);
-                //debugNetPrintf(DEBUG,"cat=%s, folder size=%d\n", category->category, category->folders.size());
             }
         }
         category->current_folder = &category->folders[0];
@@ -661,7 +716,6 @@ namespace DB {
 
         sqlite3_stmt *res;
         std::string sql = std::string("DELETE FROM ") + FOLDERS_TABLE + " WHERE " + COL_ID + "=?";
-        debugNetPrintf(DEBUG,"sql = %s\n", sql.c_str());
         int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
     
         if (rc == SQLITE_OK) {
@@ -944,17 +998,13 @@ namespace DB {
                     sql += "filename like '%" + tokens[i] + "%'";
             }
             sql += " order by length(filename) asc";
-            //debugNetPrintf(DEBUG,"sql = %s\n", sql.c_str());
             int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
-            //debugNetPrintf(DEBUG,"rc = %d\n", rc);
 
             if (rc == SQLITE_OK) {
                 int step = sqlite3_step(res);
-                //debugNetPrintf(DEBUG,"step = %d\n", step);
                 if (step == SQLITE_ROW)
                 {
                     sprintf(thumbnail, "%s", sqlite3_column_text(res, 0));
-                    //debugNetPrintf(DEBUG,"thumbnail = %s\n", thumbnail);
                     found = true;
                 }
                 sqlite3_finalize(res);
@@ -1187,5 +1237,119 @@ namespace DB {
         }
 
         return found;
+    }
+
+    void InsertVitaAppFolder(sqlite3 *database, char* title_id, int folder_id)
+    {
+        sqlite3 *db = database;
+        if (database == nullptr)
+        {
+            sqlite3_open(VITA_APP_DB_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("INSERT INTO ") + APP_FOLDERS_TABLE + 
+            "(" + COL_ID + ", " + COL_FOLDER_ID + ") VALUES (?,?)";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        if (rc == SQLITE_OK)
+        {
+            sqlite3_bind_text(res, 1, title_id, strlen(title_id), NULL);
+            sqlite3_bind_int(res, 2, folder_id);
+            sqlite3_step(res);
+        }
+        sqlite3_finalize(res);
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+    }
+
+    int UpdateVitaAppFolder(sqlite3 *database, char* title_id, int folder_id)
+    {
+        sqlite3 *db = database;
+        if (database == nullptr)
+        {
+            sqlite3_open(VITA_APP_DB_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        int count = 0;
+        std::string sql = std::string("UPDATE ") + APP_FOLDERS_TABLE + " SET " +
+            COL_FOLDER_ID + "=? WHERE " + COL_ID + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        if (rc == SQLITE_OK)
+        {
+            sqlite3_bind_int(res, 1, folder_id);
+            sqlite3_bind_text(res, 2, title_id, strlen(title_id), NULL);
+            rc = sqlite3_step(res);
+
+            if (rc == SQLITE_DONE)
+            {
+                count = sqlite3_changes(db);
+            }
+        }
+        sqlite3_finalize(res);
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+
+        return count;
+    }
+
+    void DeleteVitaAppFolder(sqlite3 *database, int folder_id)
+    {
+        sqlite3 *db = database;
+        if (database == nullptr)
+        {
+            sqlite3_open(VITA_APP_DB_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("DELETE FROM ") + APP_FOLDERS_TABLE +
+            " WHERE " + COL_FOLDER_ID + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        if (rc == SQLITE_OK)
+        {
+            sqlite3_bind_int(res, 1, folder_id);
+            sqlite3_step(res);
+        }
+        sqlite3_finalize(res);
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+    }
+
+    void DeleteVitaAppFolderById(sqlite3 *database, char* title_id)
+    {
+        sqlite3 *db = database;
+        if (database == nullptr)
+        {
+            sqlite3_open(VITA_APP_DB_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("DELETE FROM ") + APP_FOLDERS_TABLE +
+            " WHERE " + COL_ID + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        if (rc == SQLITE_OK)
+        {
+            sqlite3_bind_text(res, 1, title_id, strlen(title_id), NULL);
+            sqlite3_step(res);
+        }
+        sqlite3_finalize(res);
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
     }
 }

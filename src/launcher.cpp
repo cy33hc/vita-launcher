@@ -10,7 +10,7 @@
 #include "config.h"
 #include "ime_dialog.h"
 #include "gui.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -243,16 +243,17 @@ namespace Windows {
         previous_left = io.NavInputs[ImGuiNavInput_DpadLeft];
     }
 
-    void DeleteGameFromCache(sqlite3 *database, Game *game)
+    void DeleteGameFromCache(sqlite3 *cache_db, sqlite3 *vita_db, Game *game)
     {
         if (game->type == TYPE_BUBBLE)
         {
             hidden_title_ids.push_back(game->id);
+            DB::DeleteVitaAppFolderById(vita_db, game->id);
         }
         else
         {
-            DB::DeleteGame(database, game);
-            DB::DeleteFavorite(database, game);
+            DB::DeleteGame(cache_db, game);
+            DB::DeleteFavorite(cache_db, game);
         }
         GAME::RemoveGameFromCategory(categoryMap[game->category], game);
         GAME::RemoveGameFromCategory(&game_categories[FAVORITES], game);
@@ -600,7 +601,6 @@ namespace Windows {
                         uint64_t current_time = sceKernelGetProcessTimeWide();
                         if (current_time - game->visible_time > 200000 && !game->thread_started)
                         {
-                            //debugNetPrintf(DEBUG,"StartLoadGameImageThread %d\n",button_id);
                             GAME::StartLoadGameImageThread(current_category->id, button_id, current_category->columns);
                             game->thread_started = true;
                         }
@@ -979,7 +979,6 @@ namespace Windows {
         
         if (ImGui::BeginPopupModal("Settings and Actions", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            static bool refresh_games = false;
             static bool refresh_current_category = false;
             static bool remove_from_cache = false;
             static bool add_rom_game = false;
@@ -1341,7 +1340,7 @@ namespace Windows {
                     {
                         if (current_category->id != FAVORITES)
                         {
-                            if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache && current_category->current_folder->id == FOLDER_ROOT_ID
+                            if (!add_rom_game && !refresh_current_category && !remove_from_cache && current_category->current_folder->id == FOLDER_ROOT_ID
                                 && !move_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !rename_game && !edit_folder)
                             {
                                 ImGui::Checkbox("Add new folder", &add_folder);
@@ -1351,14 +1350,14 @@ namespace Windows {
                         
                         if (selected_game != nullptr && current_category->id != FAVORITES)
                         {
-                            if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache && selected_game->type == TYPE_FOLDER
+                            if (!add_rom_game && !refresh_current_category && !remove_from_cache && selected_game->type == TYPE_FOLDER
                                 && !move_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !rename_game && !add_folder)
                             {
                                 ImGui::Checkbox("Edit/Delete folder", &edit_folder);
                                 ImGui::Separator();
                             }
 
-                            if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache &&
+                            if (!add_rom_game && !refresh_current_category && !remove_from_cache &&
                                 !move_game && !add_eboot_game && !add_psp_iso_game && selected_game->type != TYPE_BUBBLE
                                 && !download_thumbnails && !uninstall_game && !add_folder && !edit_folder)
                             {
@@ -1366,21 +1365,21 @@ namespace Windows {
                                 ImGui::Separator();
                             }
 
-                            if (!refresh_games && !add_rom_game && !refresh_current_category && !remove_from_cache && !edit_folder &&
+                            if (!add_rom_game && !refresh_current_category && !remove_from_cache && !edit_folder &&
                                 !rename_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
                             {
                                 ImGui::Checkbox("Move selected game", &move_game);
                                 ImGui::Separator();
                             }
 
-                            if (!refresh_games && !add_rom_game && !refresh_current_category && !move_game && !rename_game && !edit_folder &&
+                            if (!add_rom_game && !refresh_current_category && !move_game && !rename_game && !edit_folder &&
                                 !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
                             {
                                 ImGui::Checkbox("Hide selected game", &remove_from_cache);
                                 ImGui::Separator();
                             }
 
-                            if (!refresh_games && !add_rom_game && !refresh_current_category && !move_game && !rename_game &&
+                            if (!add_rom_game && !refresh_current_category && !move_game && !rename_game &&
                                 !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !remove_from_cache && !edit_folder &&
                                 selected_game->type == TYPE_BUBBLE && !add_folder)
                             {
@@ -1391,7 +1390,7 @@ namespace Windows {
 
                         if (current_category->rom_type == TYPE_PSP_ISO)
                         {
-                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
+                            if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
                                 !add_eboot_game && !add_rom_game && !rename_game && !download_thumbnails && !uninstall_game && !edit_folder)
                             {
                                 ImGui::Checkbox("Add new PSP ISO game", &add_psp_iso_game);
@@ -1401,7 +1400,7 @@ namespace Windows {
 
                         if (current_category->rom_type == TYPE_EBOOT)
                         {
-                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
+                            if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
                                 !add_psp_iso_game && !add_rom_game && !rename_game && !download_thumbnails && !uninstall_game && !edit_folder)
                             {
                                 ImGui::Checkbox("Add new EBOOT game", &add_eboot_game);
@@ -1411,7 +1410,7 @@ namespace Windows {
 
                         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
                         {
-                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
+                            if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
                                 !add_eboot_game && !add_psp_iso_game && !rename_game && !download_thumbnails && !uninstall_game && !edit_folder)
                             {
                                 if (current_category->id == PS1_GAMES)
@@ -1428,7 +1427,7 @@ namespace Windows {
 
                         if (current_category->rom_type != TYPE_BUBBLE)
                         {
-                            if (!refresh_games && !remove_from_cache && !add_rom_game && !move_game && !rename_game && !edit_folder &&
+                            if (!remove_from_cache && !add_rom_game && !move_game && !rename_game && !edit_folder &&
                                 !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
                             {
                                 char cb_text[64];
@@ -1441,7 +1440,7 @@ namespace Windows {
                         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES
                             || current_category->rom_type == TYPE_SCUMMVM)
                         {
-                            if (!refresh_games && !remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
+                            if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
                                 !add_eboot_game && !add_psp_iso_game && !rename_game && !add_rom_game && !uninstall_game && !edit_folder)
                             {
                                 char cb_text[64];
@@ -1451,12 +1450,6 @@ namespace Windows {
                             }
                         }
 
-                        if (!remove_from_cache && !add_rom_game && !refresh_current_category && !move_game && !rename_game &&
-                            !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder && !edit_folder)
-                        {
-                            ImGui::Checkbox("Rescan all game categories to rebuild cache", &refresh_games);
-                            ImGui::Separator();
-                        }
                         ImGui::EndTabItem();
                     }
 
@@ -1494,18 +1487,21 @@ namespace Windows {
                 {
                     if (!selection_mode)
                     {
-                        DeleteGameFromCache(nullptr, selected_game);
+                        DeleteGameFromCache(nullptr, nullptr, selected_game);
                     }
                     else
                     {
-                        sqlite3 *db;
-                        sqlite3_open(CACHE_DB_FILE, &db);
+                        sqlite3 *cache_db, *vita_db;
+                        sqlite3_open(CACHE_DB_FILE, &cache_db);
+                        sqlite3_open(VITA_APP_DB_FILE, &cache_db);
+
                         std::vector<Game> list = GAME::GetSelectedGames(current_category);
                         for (int i=0; i<list.size(); i++)
                         {
-                            DeleteGameFromCache(db, &list[i]);
+                            DeleteGameFromCache(cache_db, vita_db, &list[i]);
                         }
-                        sqlite3_close(db);
+                        sqlite3_close(cache_db);
+                        sqlite3_close(vita_db);
                     }
                     GAME::SetMaxPage(current_category);
                     selection_mode = false;
@@ -1551,11 +1547,6 @@ namespace Windows {
                     sprintf(style_name, "%s", cb_style_name);
                     Style::SetStylePath(style_name);
                     Style::LoadStyle(style_path);
-                }
-
-                if (refresh_games)
-                {
-                    GAME::RefreshGames(true);
                 }
 
                 if (refresh_current_category)
@@ -1632,7 +1623,6 @@ namespace Windows {
 
                 paused = false;
                 move_game = false;
-                refresh_games = false;
                 remove_from_cache = false;
                 refresh_current_category = false;
                 add_psp_iso_game = false;
@@ -2221,7 +2211,7 @@ namespace Windows {
         
     }
 
-    void MoveGameToCategory(sqlite3 *database, Game *game, GameCategory *category)
+    void MoveGameToCategory(sqlite3 *cache_db, sqlite3 *vita_db, Game *game, GameCategory *category)
     {
         GameCategory *current_category = categoryMap[game->category];
         if (game->type > TYPE_ROM && game->type < TYPE_SCUMMVM)
@@ -2233,10 +2223,9 @@ namespace Windows {
             tmp.thread_started = false;
             tmp.folder_id = 0;
             tmp.selected = false;
-            //debugNetPrintf(DEBUG,"temp title=%s, cat=%s, rom_path=%s, id=%s\n", tmp.title, tmp.category, tmp.rom_path, tmp.id);
             category->folders[0].games.push_back(tmp);
-            DB::UpdateGame(database, &tmp);
-            DB::UpdateFavoritesGameCategoryByRomPath(database, &tmp);
+            DB::UpdateGame(cache_db, &tmp);
+            DB::UpdateFavoritesGameCategoryByRomPath(cache_db, &tmp);
             GAME::SortGames(category);
             GAME::SetMaxPage(category);
             GAME::RemoveGameFromCategory(current_category, game);
@@ -2251,7 +2240,8 @@ namespace Windows {
             WriteIniFile(CONFIG_INI_FILE);
             CloseIniFile();
             sprintf(game->category, "%s", category->category);
-            DB::UpdateFavoritesGameCategoryById(database, game);
+            DB::UpdateFavoritesGameCategoryById(cache_db, game);
+            DB::DeleteVitaAppFolderById(vita_db, game->id);
             Game tmp = *game;
             tmp.tex = no_icon;
             tmp.visible = false;
@@ -2266,22 +2256,31 @@ namespace Windows {
         }
     }
 
-    void MoveGameToFolder(sqlite3 *database, Game *game, Folder *folder)
+    void MoveGameToFolder(sqlite3 *cache_db, sqlite3 *vita_db, Game *game, Folder *folder)
     {
         GameCategory *current_category = categoryMap[game->category];
+        Game tmp = *game;
+        tmp.tex = no_icon;
+        tmp.visible = false;
+        tmp.thread_started = false;
+        tmp.folder_id = folder->id;
+        tmp.selected = false;
+        folder->games.push_back(tmp);
+
         if (game->type != TYPE_BUBBLE)
         {
-            Game tmp = *game;
-            tmp.tex = no_icon;
-            tmp.visible = false;
-            tmp.thread_started = false;
-            tmp.folder_id = folder->id;
-            tmp.selected = false;
-            //debugNetPrintf(DEBUG,"temp title=%s, cat=%s, rom_path=%s, id=%s, folder_id=%d\n", tmp.title, tmp.category, tmp.rom_path, tmp.id, tmp.folder_id);
-            folder->games.push_back(tmp);
-            DB::UpdateGame(database, &tmp);
-            GAME::RemoveGameFromFolder(current_category->current_folder, game);
+            DB::UpdateGame(cache_db, &tmp);
         }
+        else if (game->type == TYPE_BUBBLE)
+        {
+            int count = DB::UpdateVitaAppFolder(vita_db, tmp.id, folder->id);
+            if (count < 1)
+            {
+                DB::InsertVitaAppFolder(vita_db, tmp.id, folder->id);
+            }
+        }
+        
+        GAME::RemoveGameFromFolder(current_category->current_folder, game);
     }
 
     void HandleMoveGame()
@@ -2319,24 +2318,24 @@ namespace Windows {
                                     }
                                     else
                                     {
-                                        MoveGameToCategory(nullptr, selected_game, &game_categories[i]);
+                                        MoveGameToCategory(nullptr, nullptr, selected_game, &game_categories[i]);
                                         sprintf(game_action_message, "Game moved to %s category", game_categories[i].alt_title);
                                     }
                                     
                                 }
                                 else
                                 {
-                                    sqlite3* db;
-                                    sqlite3_open(CACHE_DB_FILE, &db);
+                                    sqlite3 *cache_db, *vita_db;
+                                    sqlite3_open(CACHE_DB_FILE, &cache_db);
+                                    sqlite3_open(VITA_APP_DB_FILE, &vita_db);
                                     std::vector<Game> list = GAME::GetSelectedGames(current_category);
                                     int games_not_moved = 0;
                                     for (int j=0; j<list.size(); j++)
                                     {
                                         Game *game = &list[j];
-                                        //debugNetPrintf(DEBUG,"moving title=%s, cat=%s, rom_path=%s, id=%s\n", game->title, game->category, game->rom_path, game->id);
                                         if (game->type == TYPE_BUBBLE || game->type == TYPE_EBOOT || game->type == TYPE_PSP_ISO)
                                         {
-                                            MoveGameToCategory(db, game, &game_categories[i]);
+                                            MoveGameToCategory(cache_db, vita_db, game, &game_categories[i]);
                                         }
                                         else
                                         {
@@ -2344,7 +2343,8 @@ namespace Windows {
                                         }
                                         
                                     }
-                                    sqlite3_close(db);
+                                    sqlite3_close(cache_db);
+                                    sqlite3_close(vita_db);
                                     if (games_not_moved == 0)
                                     {
                                         sprintf(game_action_message, "All selected games moved to %s category", game_categories[i].alt_title);
@@ -2378,23 +2378,26 @@ namespace Windows {
                             {
                                 if (!selection_mode)
                                 {
-                                    MoveGameToFolder(nullptr, selected_game, &current_category->folders[i]);
+                                    MoveGameToFolder(nullptr, nullptr, selected_game, &current_category->folders[i]);
                                     GAME::SortGames(&current_category->folders[i]);
                                     GAME::SetMaxPage(current_category);
                                     sprintf(game_action_message, "Game moved to %s folder", current_category->folders[i].title);
                                 }
                                 else
                                 {
-                                    sqlite3* db;
-                                    sqlite3_open(CACHE_DB_FILE, &db);
+                                    sqlite3 *cache_db, *vita_db;
+                                    sqlite3_open(CACHE_DB_FILE, &cache_db);
+                                    sqlite3_open(VITA_APP_DB_FILE, &vita_db);
+
                                     std::vector<Game> list = GAME::GetSelectedGames(current_category);
                                     for (int j=0; j<list.size(); j++)
                                     {
                                         Game *game = &list[j];
-                                        //debugNetPrintf(DEBUG,"moving title=%s, cat=%s, rom_path=%s, id=%s\n", game->title, game->category, game->rom_path, game->id);
-                                        MoveGameToFolder(db, game, &current_category->folders[i]);
+                                        MoveGameToFolder(cache_db, vita_db, game, &current_category->folders[i]);
                                     }
-                                    sqlite3_close(db);
+                                    sqlite3_close(cache_db);
+                                    sqlite3_close(vita_db);
+
                                     GAME::SortGames(&current_category->folders[i]);
                                     GAME::SetMaxPage(current_category);
                                     sprintf(game_action_message, "Games moved to %s folder", current_category->folders[i].title);
@@ -2600,6 +2603,7 @@ namespace Windows {
             {
                 GAME::MoveGamesBetweenFolders(current_category, temp_folder.id, FOLDER_ROOT_ID);
                 DB::DeleteFolder(nullptr, &temp_folder);
+                DB::DeleteVitaAppFolder(nullptr, temp_folder.id);
                 GAME::RemoveFolderFromCategory(current_category, temp_folder.id);
                 Game game;
                 game.folder_id = temp_folder.id;

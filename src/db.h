@@ -14,6 +14,7 @@
 #define FOLDERS_TABLE "folders"
 #define PSP_GAME_SETTINGS_TABLE "psp_settings"
 #define RETROROM_GAME_SETTINGS_TABLE "retrorom_settings"
+#define APP_FOLDERS_TABLE "app_folders"
 
 #define COL_TITLE_ID "title_id"
 #define COL_TYPE "type"
@@ -39,7 +40,7 @@
 namespace DB {
     bool TableExists(sqlite3 *db, char* table_name);
     bool TableColumnExists(sqlite3 *db, char* table_name, char* column_name);
-    void GetVitaDbGames(GameCategory *category);
+    void GetVitaDbGames();
     int GetVitaDbGamesCount();
     void SetupDatabase(sqlite3 *database);
     void UpdateDatabase(sqlite3 *database);
@@ -71,6 +72,10 @@ namespace DB {
     void SavePspGameSettings(char* rom_path, BootSettings *settings);
     void SaveRomCoreSettings(char* rom_path, char* core);
     bool GetMameRomName(sqlite3 *database, char* rom_name, char* name);
+    void InsertVitaAppFolder(sqlite3 *database, char* title_id, int folder_id);
+    int UpdateVitaAppFolder(sqlite3 *database, char* title_id, int folder_id);
+    void DeleteVitaAppFolder(sqlite3 *database, int folder_id);
+    void DeleteVitaAppFolderById(sqlite3 *database, char* title_id);
 }
 
 #endif

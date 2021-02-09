@@ -20,7 +20,7 @@
 #include "cso.h"
 #include "net.h"
 
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -65,11 +65,6 @@ namespace GAME {
     {
         current_category = &game_categories[VITA_GAMES];
 
-        sprintf(scan_message, "%s", "Reading game info from vita app database");
-        games_to_scan = DB::GetVitaDbGamesCount();
-        games_scanned = 0;
-        DB::GetVitaDbGames(current_category);
-        
         if (!FS::FileExists(PER_GAME_SETTINGS_DB_FILE))
         {
             DB::SetupPerGameSettingsDatabase();
@@ -77,6 +72,11 @@ namespace GAME {
 
         if (!FS::FileExists(CACHE_DB_FILE))
         {
+            sprintf(scan_message, "%s", "Reading game info from vita app database");
+            games_to_scan = DB::GetVitaDbGamesCount();
+            games_scanned = 0;
+            DB::GetVitaDbGames();
+            
             sqlite3 *db;
             sqlite3_open(CACHE_DB_FILE, &db);
             DB::SetupDatabase(db);
@@ -94,7 +94,12 @@ namespace GAME {
             {
                 DB::GetFolders(db, &game_categories[i]);
             }
-            //debugNetPrintf(DEBUG,"Finished gettings folders\n");
+
+            sprintf(scan_message, "%s", "Reading game info from vita app database");
+            games_to_scan = DB::GetVitaDbGamesCount();
+            games_scanned = 0;
+            DB::GetVitaDbGames();
+            
             LoadGamesCache(db);
             sqlite3_close(db);
         }
@@ -614,7 +619,6 @@ namespace GAME {
     }
 
     void LoadGameImage(Game *game) {
-        //debugNetPrintf(DEBUG,"title=%s, type=%d\n", game->title, game->type);
         Tex tex;
         tex = no_icon;
 
@@ -639,8 +643,14 @@ namespace GAME {
         {
             GameCategory *cat = categoryMap[game->category];
             Folder* folder = FindFolder(cat, game->folder_id);
-            sprintf(icon_path, "%s", folder->icon_path);
-            //debugNetPrintf(DEBUG,"icon_path=%s\n", icon_path);
+            if (folder != nullptr)
+            {
+                sprintf(icon_path, "%s", folder->icon_path);
+            }
+            else
+            {
+                sprintf(icon_path, "ux0:app/SMLA00001/folder.png");
+            }
         }
         else
         {

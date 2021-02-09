@@ -69,7 +69,6 @@ namespace Net
     caList[3]->ptr = Cloudflare_Inc_ECC_CA_3_pem;
     caList[3]->size = Cloudflare_Inc_ECC_CA_3_pem_size;
     int res = sceHttpsLoadCert(4, (const SceHttpsData**)caList, NULL, NULL);
-    //debugNetPrintf(DEBUG,"sceHttpsLoadCert res 0x%08X\n", res);
 
   }
 
@@ -99,39 +98,33 @@ namespace Net
 
 
     res = sceHttpCreateTemplate(VITALAUNCHER_USER_AGENT, SCE_HTTP_VERSION_1_1, SCE_TRUE);
-    //debugNetPrintf(DEBUG,"sceHttpCreateTemplate res %d\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     tmplId = res;
 
     res = sceHttpCreateConnectionWithURL(tmplId, src, SCE_TRUE);
-    //debugNetPrintf(DEBUG,"sceHttpCreateConnectionWithURL res %d\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     connId = res;
 
     res = sceHttpCreateRequestWithURL(connId, SCE_HTTP_METHOD_GET, src, 0);
-    //debugNetPrintf(DEBUG,"sceHttpCreateRequestWithURL res %d\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     reqId = res;
 
     res = sceHttpSendRequest(reqId, NULL, 0);
-    //debugNetPrintf(DEBUG,"sceHttpSendRequest res %d\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     res = sceHttpGetStatusCode(reqId, &statusCode);
-    //debugNetPrintf(DEBUG,"sceHttpGetStatusCode res %d\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     if (statusCode == 200) {
       res = sceHttpGetResponseContentLength(reqId, size);
-      //debugNetPrintf(DEBUG,"sceHttpGetResponseContentLength res %d\n", res);
     }
 
   ERROR_EXIT:
@@ -209,33 +202,28 @@ namespace Net
     int ret = 1;
 
     res = sceHttpCreateTemplate(VITALAUNCHER_USER_AGENT, SCE_HTTP_VERSION_1_1, SCE_TRUE);
-    //debugNetPrintf(DEBUG,"sceHttpCreateTemplate res 0x%08X\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     tmplId = res;
 
     res = sceHttpCreateConnectionWithURL(tmplId, src, SCE_TRUE);
-    //debugNetPrintf(DEBUG,"sceHttpCreateConnectionWithURL res 0x%08X\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     connId = res;
 
     res = sceHttpCreateRequestWithURL(connId, SCE_HTTP_METHOD_GET, src, 0);
-    //debugNetPrintf(DEBUG,"sceHttpCreateRequestWithURL res 0x%08X\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     reqId = res;
 
     res = sceHttpSendRequest(reqId, NULL, 0);
-    //debugNetPrintf(DEBUG,"sceHttpSendRequest res 0x%08X\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
     res = sceHttpGetStatusCode(reqId, &statusCode);
-    //debugNetPrintf(DEBUG,"sceHttpGetStatusCode res 0x%08X\n", res);
     if (res < 0)
       goto ERROR_EXIT;
 
@@ -250,7 +238,6 @@ namespace Net
 
       while (1) {
         int read = sceHttpReadData(reqId, buf, sizeof(buf));
-        //debugNetPrintf(DEBUG,"sceHttpReadData res %d\n", read);
         
         if (read < 0) {
           res = read;
