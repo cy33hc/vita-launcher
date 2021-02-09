@@ -311,6 +311,11 @@ namespace Windows {
             sprintf(id, "../#%d%s", 0, current_category->category);
             if (ImGui::Selectable(id, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(14, 0)))
             {
+                if (selection_mode)
+                {
+                    selection_mode = false;
+                    GAME::ClearSelection(current_category);
+                }
                 if (current_category->view_mode == VIEW_MODE_LIST)
                 {
                     current_category->current_folder = &current_category->folders[0];
@@ -328,8 +333,8 @@ namespace Windows {
                     current_category->current_folder = &current_category->folders[0];
                     GAME::StartLoadImagesThread(current_category->id, current_category->current_folder->page_num, current_category->current_folder->page_num, current_category->games_per_page);
                 }
-                
             }
+
             ImGui::SameLine();
             ImGui::Text(current_category->current_folder->title);
             ImGui::SameLine();
