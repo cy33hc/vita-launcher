@@ -1000,6 +1000,127 @@ namespace Windows {
 
             if (ImGui::BeginTabBar("Settings and Actions#tabbar", ImGuiTabBarFlags_FittingPolicyScroll))
             {
+                if (!parental_control)
+                {
+                    if (ImGui::BeginTabItem("Actions"))
+                    {
+                        if (current_category->id != FAVORITES)
+                        {
+                            if (!add_rom_game && !refresh_current_category && !remove_from_cache && current_category->current_folder->id == FOLDER_ROOT_ID && !selection_mode
+                                && !move_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !rename_game && !edit_folder)
+                            {
+                                ImGui::Checkbox("Add new folder", &add_folder);
+                                ImGui::Separator();
+                            }
+                        }
+                        
+                        if (selected_game != nullptr && current_category->id != FAVORITES)
+                        {
+                            if (!add_rom_game && !refresh_current_category && !remove_from_cache && selected_game->type == TYPE_FOLDER && !selection_mode
+                                && !move_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !rename_game && !add_folder)
+                            {
+                                ImGui::Checkbox("Edit/Delete folder", &edit_folder);
+                                ImGui::Separator();
+                            }
+
+                            if (!add_rom_game && !refresh_current_category && !remove_from_cache && !selection_mode &&
+                                !move_game && !add_eboot_game && !add_psp_iso_game && selected_game->type != TYPE_BUBBLE
+                                && !download_thumbnails && !uninstall_game && !add_folder && !edit_folder)
+                            {
+                                ImGui::Checkbox("Rename selected game", &rename_game);
+                                ImGui::Separator();
+                            }
+
+                            if (!add_rom_game && !refresh_current_category && !remove_from_cache && !edit_folder &&
+                                !rename_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
+                            {
+                                ImGui::Checkbox("Move selected game", &move_game);
+                                ImGui::Separator();
+                            }
+
+                            if (!add_rom_game && !refresh_current_category && !move_game && !rename_game && !edit_folder &&
+                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
+                            {
+                                ImGui::Checkbox("Hide selected game", &remove_from_cache);
+                                ImGui::Separator();
+                            }
+
+                            if (!add_rom_game && !refresh_current_category && !move_game && !rename_game && !selection_mode &&
+                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !remove_from_cache && !edit_folder &&
+                                selected_game->type == TYPE_BUBBLE && !add_folder)
+                            {
+                                ImGui::Checkbox("Un-install selected game", &uninstall_game);
+                                ImGui::Separator();
+                            }
+                        }
+
+                        if (current_category->rom_type == TYPE_PSP_ISO)
+                        {
+                            if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder && !selection_mode &&
+                                !add_eboot_game && !add_rom_game && !rename_game && !download_thumbnails && !uninstall_game && !edit_folder)
+                            {
+                                ImGui::Checkbox("Add new PSP ISO game", &add_psp_iso_game);
+                                ImGui::Separator();
+                            }
+                        }
+
+                        if (current_category->rom_type == TYPE_EBOOT)
+                        {
+                            if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder && !selection_mode &&
+                                !add_psp_iso_game && !add_rom_game && !rename_game && !download_thumbnails && !uninstall_game && !edit_folder)
+                            {
+                                ImGui::Checkbox("Add new EBOOT game", &add_eboot_game);
+                                ImGui::Separator();
+                            }
+                        }
+
+                        if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
+                        {
+                            if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder && !selection_mode &&
+                                !add_eboot_game && !add_psp_iso_game && !rename_game && !download_thumbnails && !uninstall_game && !edit_folder)
+                            {
+                                if (current_category->id == PS1_GAMES)
+                                {
+                                    ImGui::Checkbox("Add new PSX disc format game", &add_rom_game);
+                                }
+                                else
+                                {
+                                    ImGui::Checkbox("Add new game to cache", &add_rom_game);
+                                }
+                                ImGui::Separator();
+                            }
+                        }
+
+                        if (current_category->rom_type != TYPE_BUBBLE)
+                        {
+                            if (!remove_from_cache && !add_rom_game && !move_game && !rename_game && !edit_folder && !selection_mode &&
+                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
+                            {
+                                char cb_text[64];
+                                sprintf(cb_text, "Rescan games in %s category only", current_category->title);
+                                ImGui::Checkbox(cb_text, &refresh_current_category);
+                                ImGui::Separator();
+                            }
+                        }
+                        
+                        if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES
+                            || current_category->rom_type == TYPE_SCUMMVM)
+                        {
+                            if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder && !selection_mode &&
+                                !add_eboot_game && !add_psp_iso_game && !rename_game && !add_rom_game && !uninstall_game && !edit_folder)
+                            {
+                                char cb_text[64];
+                                sprintf(cb_text, "Download thumbnails in %s category", current_category->title);
+                                ImGui::Checkbox(cb_text, &download_thumbnails);
+                                ImGui::Separator();
+                            }
+                        }
+
+                        ImGui::EndTabItem();
+                    }
+
+                }
+
                 char cat_setting_title[64];
                 if (ImGui::BeginTabItem("Category"))
                 {
@@ -1339,141 +1460,22 @@ namespace Windows {
                     ImGui::EndTabItem();
                 }
 
-                if (!parental_control)
+                if (ImGui::BeginTabItem("Help"))
                 {
-                    if (ImGui::BeginTabItem("Actions"))
-                    {
-                        if (current_category->id != FAVORITES)
-                        {
-                            if (!add_rom_game && !refresh_current_category && !remove_from_cache && current_category->current_folder->id == FOLDER_ROOT_ID
-                                && !move_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !rename_game && !edit_folder)
-                            {
-                                ImGui::Checkbox("Add new folder", &add_folder);
-                                ImGui::Separator();
-                            }
-                        }
-                        
-                        if (selected_game != nullptr && current_category->id != FAVORITES)
-                        {
-                            if (!add_rom_game && !refresh_current_category && !remove_from_cache && selected_game->type == TYPE_FOLDER
-                                && !move_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !rename_game && !add_folder)
-                            {
-                                ImGui::Checkbox("Edit/Delete folder", &edit_folder);
-                                ImGui::Separator();
-                            }
-
-                            if (!add_rom_game && !refresh_current_category && !remove_from_cache &&
-                                !move_game && !add_eboot_game && !add_psp_iso_game && selected_game->type != TYPE_BUBBLE
-                                && !download_thumbnails && !uninstall_game && !add_folder && !edit_folder)
-                            {
-                                ImGui::Checkbox("Rename selected game", &rename_game);
-                                ImGui::Separator();
-                            }
-
-                            if (!add_rom_game && !refresh_current_category && !remove_from_cache && !edit_folder &&
-                                !rename_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
-                            {
-                                ImGui::Checkbox("Move selected game", &move_game);
-                                ImGui::Separator();
-                            }
-
-                            if (!add_rom_game && !refresh_current_category && !move_game && !rename_game && !edit_folder &&
-                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
-                            {
-                                ImGui::Checkbox("Hide selected game", &remove_from_cache);
-                                ImGui::Separator();
-                            }
-
-                            if (!add_rom_game && !refresh_current_category && !move_game && !rename_game &&
-                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !remove_from_cache && !edit_folder &&
-                                selected_game->type == TYPE_BUBBLE && !add_folder)
-                            {
-                                ImGui::Checkbox("Un-install selected game", &uninstall_game);
-                                ImGui::Separator();
-                            }
-                        }
-
-                        if (current_category->rom_type == TYPE_PSP_ISO)
-                        {
-                            if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
-                                !add_eboot_game && !add_rom_game && !rename_game && !download_thumbnails && !uninstall_game && !edit_folder)
-                            {
-                                ImGui::Checkbox("Add new PSP ISO game", &add_psp_iso_game);
-                                ImGui::Separator();
-                            }
-                        }
-
-                        if (current_category->rom_type == TYPE_EBOOT)
-                        {
-                            if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
-                                !add_psp_iso_game && !add_rom_game && !rename_game && !download_thumbnails && !uninstall_game && !edit_folder)
-                            {
-                                ImGui::Checkbox("Add new EBOOT game", &add_eboot_game);
-                                ImGui::Separator();
-                            }
-                        }
-
-                        if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
-                        {
-                            if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
-                                !add_eboot_game && !add_psp_iso_game && !rename_game && !download_thumbnails && !uninstall_game && !edit_folder)
-                            {
-                                if (current_category->id == PS1_GAMES)
-                                {
-                                    ImGui::Checkbox("Add new PSX disc format game", &add_rom_game);
-                                }
-                                else
-                                {
-                                    ImGui::Checkbox("Add new game to cache", &add_rom_game);
-                                }
-                                ImGui::Separator();
-                            }
-                        }
-
-                        if (current_category->rom_type != TYPE_BUBBLE)
-                        {
-                            if (!remove_from_cache && !add_rom_game && !move_game && !rename_game && !edit_folder &&
-                                !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
-                            {
-                                char cb_text[64];
-                                sprintf(cb_text, "Rescan games in %s category only", current_category->title);
-                                ImGui::Checkbox(cb_text, &refresh_current_category);
-                                ImGui::Separator();
-                            }
-                        }
-                        
-                        if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES
-                            || current_category->rom_type == TYPE_SCUMMVM)
-                        {
-                            if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
-                                !add_eboot_game && !add_psp_iso_game && !rename_game && !add_rom_game && !uninstall_game && !edit_folder)
-                            {
-                                char cb_text[64];
-                                sprintf(cb_text, "Download thumbnails in %s category", current_category->title);
-                                ImGui::Checkbox(cb_text, &download_thumbnails);
-                                ImGui::Separator();
-                            }
-                        }
-
-                        ImGui::EndTabItem();
-                    }
-
-                    if (ImGui::BeginTabItem("Help"))
-                    {
-                        ImGui::Text("1. Title ids can be full 9 characters or partial. A");
-                        ImGui::Text("   partial title is used for matching multiple title ids.");
-                        ImGui::Text("   App performs better with partial title ids.");
-                        ImGui::Text("   Example:");
-                        ImGui::Text("     The partial title id \"PSPEMU\" would match all");
-                        ImGui::Text("     titles that starts with \"PSPEMU\" like PSPEMU001,");
-                        ImGui::Text("     PSPEMU002, PSPEMU003... etc");
-                        ImGui::Text("");
-                        ImGui::Text("2. Some of the settings takes effect after restarting");
-                        ImGui::Text("   the application.");
-                        ImGui::Separator();
-                        ImGui::EndTabItem();
-                    }
+                    ImGui::Text("1. Title ids can be full 9 characters or partial. A");
+                    ImGui::Text("   partial title is used for matching multiple title ids.");
+                    ImGui::Text("   App performs better with partial title ids.");
+                    ImGui::Text("   Example:");
+                    ImGui::Text("     The partial title id \"PSPEMU\" would match all");
+                    ImGui::Text("     titles that starts with \"PSPEMU\" like PSPEMU001,");
+                    ImGui::Text("     PSPEMU002, PSPEMU003... etc");
+                    ImGui::Text("");
+                    ImGui::Text("2. Some of the settings takes effect after restarting");
+                    ImGui::Text("   the application.");
+                    ImGui::Separator();
+                    ImGui::EndTabItem();
                 }
+
                 ImGui::EndTabBar();
             }
 
