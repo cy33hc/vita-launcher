@@ -1364,6 +1364,8 @@ exit:
     void UninstallGame(Game *game)
     {
 		int ret = DeleteApp(game->id);
+        DB::DeleteVitaAppFolderById(nullptr, game->id);
+
 		if (ret >= 0)
 		{
 			GameCategory *cat = categoryMap[game->category];
