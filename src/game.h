@@ -245,7 +245,7 @@ namespace GAME {
     int DeleteApp(const char *titleid);
     Folder* FindFolder(GameCategory *category, int folder_id);
     void MoveGamesBetweenFolders(GameCategory *category, int src_id, int dest_id);
-    void RemoveFolderFromCategory(GameCategory *category, int folder_id);
+    int RemoveFolderFromCategory(GameCategory *category, int folder_id);
     void ClearSelection(GameCategory *category);
     std::vector<Game> GetSelectedGames(GameCategory *category);
     static int LoadScePaf();

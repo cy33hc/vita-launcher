@@ -321,11 +321,11 @@ namespace GAME {
         games_to_scan = files.size();
         games_scanned = 0;
         int rom_path_length = strlen(category->roms_path);
-        sqlite3 *mame_mappings_db = nullptr;
+        sqlite3 *mame_mappings_db;
 
         if (category->id == MAME_2000_GAMES || category->id == MAME_2003_GAMES || category->id == NEOGEO_GAMES)
         {
-            mame_mappings_db = sqlite3_open(MAME_ROM_NAME_MAPPINGS_FILE, &mame_mappings_db);
+            sqlite3_open(MAME_ROM_NAME_MAPPINGS_FILE, &mame_mappings_db);
         }
 
         int rom_length = 0;
@@ -966,7 +966,7 @@ namespace GAME {
         return -1;
     }
 
-    void RemoveFolderFromCategory(GameCategory *category, int folder_id)
+    int RemoveFolderFromCategory(GameCategory *category, int folder_id)
     {
         for (int i=0; i < category->folders.size(); i++)
         {
