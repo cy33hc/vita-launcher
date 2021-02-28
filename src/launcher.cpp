@@ -101,7 +101,7 @@ namespace Windows {
 
         if ((pad_prev.buttons & SCE_CTRL_SQUARE) && !(pad.buttons & SCE_CTRL_SQUARE) && !paused)
         {
-            if (selected_game != nullptr)
+            if (selected_game != nullptr && selected_game->type != TYPE_FOLDER)
             {
                 if (current_category->id != FAVORITES)
                 {
@@ -387,6 +387,7 @@ namespace Windows {
         ImGui::Separator();
         ImVec2 pos = ImGui::GetCursorPos();
         ImGuiStyle* style = &ImGui::GetStyle();
+        ImGui::PushStyleColor(ImGuiCol_TextDisabled, style->Colors[ImGuiCol_Text]);
         for (int i = 0; i < current_category->rows; i++)
         {
             for (int j=0; j < current_category->columns; j++)
@@ -456,55 +457,40 @@ namespace Windows {
 
                     ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
                     ImGui::SetCursorPosX(pos.x+(j*grid_size));
+                    int text_clip = 0;
                     if (game->selected)
                     {
                         ImGui::Image(reinterpret_cast<ImTextureID>(selected_icon.id), ImVec2(16,16));
                         ImGui::SameLine();
                         ImGui::SetCursorPosX(pos.x+(j*grid_size)+14);
-                        if (current_category->rows ==3)
-                        {
-                            ImGui::Text("%.14s", game->title);
-                        }
-                        else
-                        {
-                            ImGui::Text("%.20s", game->title);
-                        }
-                        
+                        text_clip = 14;
                     }
                     else if (game->favorite)
                     {
                         ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
                         ImGui::SameLine();
                         ImGui::SetCursorPosX(pos.x+(j*grid_size)+14);
-                        if (current_category->rows ==3)
-                        {
-                            ImGui::Text("%.14s", game->title);
-                        }
-                        else
-                        {
-                            ImGui::Text("%.20s", game->title);
-                        }
-                        
+                        text_clip = 14;
+                    }
+                    else if (game->type == TYPE_FOLDER)
+                    {
+                        ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
+                        ImGui::SameLine();
+                        text_clip = 14;
+                    }
+
+                    if (current_category->rows == 3)
+                    {
+                        ImGui::Selectable(game->title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_Disabled, ImVec2(135-text_clip, 0));
                     }
                     else
                     {
-                        if (game->type == TYPE_FOLDER)
-                        {
-                            ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
-                            ImGui::SameLine();
-                        }
-                        if (current_category->rows ==3)
-                        {
-                            ImGui::Text("%.15s", game->title);
-                        }
-                        else
-                        {
-                            ImGui::Text("%.21s", game->title);
-                        }
+                        ImGui::Selectable(game->title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_Disabled, ImVec2(215-text_clip, 0));
                     }
                 }
             }
         }
+        ImGui::PopStyleColor(ImGuiCol_TextDisabled);
         ImGui::SetCursorPos(ImVec2(pos.x, 521));
         ImGui::Separator();
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
@@ -534,6 +520,7 @@ namespace Windows {
         }
         ImVec2 pos = ImGui::GetCursorPos();
         ImGui::Columns(current_category->columns, current_category->title, false);
+        ImGui::PushStyleColor(ImGuiCol_TextDisabled, style->Colors[ImGuiCol_Text]);
         for (int button_id=0; button_id<current_category->current_folder->games.size(); button_id++)
         {
             char id[32];
@@ -631,55 +618,42 @@ namespace Windows {
             }
             
             ImGui::SetCursorPosY(ImGui::GetCursorPosY()-2);
+            int text_clip = 0;
             if (game->selected)
             {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
                 ImGui::Image(reinterpret_cast<ImTextureID>(selected_icon.id), ImVec2(16,16));
                 ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
-                if (current_category->rows == 3)
-                {
-                    ImGui::Text("%.14s", game->title);
-                }
-                else
-                {
-                    ImGui::Text("%.20s", game->title);
-                }
+                text_clip = 10;
             }
             else if (game->favorite)
             {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
                 ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
                 ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
-                if (current_category->rows == 3)
-                {
-                    ImGui::Text("%.14s", game->title);
-                }
-                else
-                {
-                    ImGui::Text("%.20s", game->title);
-                }
+                text_clip = 10;
+            }
+            else if (game->type == TYPE_FOLDER)
+            {
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
+                ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
+                ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
+                text_clip = 10;
+            }
+
+            if (current_category->rows == 3)
+            {
+                ImGui::Selectable(game->title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_Disabled, ImVec2(135-text_clip, 0));
             }
             else
             {
-                if (game->type == TYPE_FOLDER)
-                {
-                    ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
-                    ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
-                    ImGui::SameLine();
-                }
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX()-2);
-                if (current_category->rows ==3)
-                {
-                    ImGui::Text("%.15s", game->title);
-                }
-                else
-                {
-                    ImGui::Text("%.21s", game->title);
-                }
+                ImGui::Selectable(game->title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_Disabled, ImVec2(215-text_clip, 0));
             }
+
             ImGui::EndGroup();
             ImGui::NextColumn();
         }
+        ImGui::PopStyleColor(ImGuiCol_TextDisabled);
         ImGui::EndChild();
         ImGui::Columns(1);
 
@@ -1024,21 +998,21 @@ namespace Windows {
                             }
 
                             if (!add_rom_game && !refresh_current_category && !remove_from_cache && !selection_mode &&
-                                !move_game && !add_eboot_game && !add_psp_iso_game && selected_game->type != TYPE_BUBBLE
+                                !move_game && !add_eboot_game && !add_psp_iso_game && selected_game->type != TYPE_BUBBLE && selected_game->type != TYPE_FOLDER
                                 && !download_thumbnails && !uninstall_game && !add_folder && !edit_folder)
                             {
                                 ImGui::Checkbox("Rename selected game", &rename_game);
                                 ImGui::Separator();
                             }
 
-                            if (!add_rom_game && !refresh_current_category && !remove_from_cache && !edit_folder &&
+                            if (!add_rom_game && !refresh_current_category && !remove_from_cache && !edit_folder && selected_game->type != TYPE_FOLDER &&
                                 !rename_game && !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
                             {
                                 ImGui::Checkbox("Move selected game", &move_game);
                                 ImGui::Separator();
                             }
 
-                            if (!add_rom_game && !refresh_current_category && !move_game && !rename_game && !edit_folder &&
+                            if (!add_rom_game && !refresh_current_category && !move_game && !rename_game && !edit_folder && selected_game->type != TYPE_FOLDER &&
                                 !add_eboot_game && !add_psp_iso_game && !download_thumbnails && !uninstall_game && !add_folder)
                             {
                                 ImGui::Checkbox("Hide selected game", &remove_from_cache);
@@ -2636,7 +2610,7 @@ namespace Windows {
 
         if ((pad_prev.buttons & SCE_CTRL_SQUARE) && !(pad.buttons & SCE_CTRL_SQUARE))
         {
-            if (search_selected_game != nullptr)
+            if (search_selected_game != nullptr && search_selected_game->type != TYPE_FOLDER)
             {
                 if (!search_selected_game->favorite)
                 {

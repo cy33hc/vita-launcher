@@ -1289,7 +1289,7 @@ namespace GAME {
                             [](unsigned char c){ return std::tolower(c); });
                     std::transform(text.begin(), text.end(), text.begin(),
                             [](unsigned char c){ return std::tolower(c); });
-                    if (title.find(text) != std::string::npos)
+                    if (title.find(text) != std::string::npos && current_folder->games[k].type != TYPE_FOLDER)
                     {
                         Game game = current_folder->games[k];
                         game.tex = no_icon;
