@@ -42,8 +42,8 @@ typedef struct
    struct ENTRY *pSec;
    struct ENTRY *pKey;
    char          KeyText [128];
-   char          ValText [512];
-   char          Comment [512];
+   char          ValText [2048];
+   char          Comment [32];
 } EFIND;
 
 /* Macros */
