@@ -17,6 +17,7 @@ bool parental_control;
 char search_text[32];
 bool new_icon_method;
 bool swap_xo;
+bool show_categories_as_tabs;
 
 namespace CONFIG {
 
@@ -182,6 +183,9 @@ namespace CONFIG {
         // Load global config
         show_all_categories = ReadBool(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, true);
         WriteBool(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
+
+        show_categories_as_tabs = ReadBool(CONFIG_GLOBAL, CONFIG_SHOW_CATEGORY_AS_TABS, false);
+        WriteBool(CONFIG_GLOBAL, CONFIG_SHOW_CATEGORY_AS_TABS, show_categories_as_tabs);
 
         new_icon_method = ReadBool(CONFIG_GLOBAL, CONFIG_NEW_ICON_METHOD, false);
         WriteBool(CONFIG_GLOBAL, CONFIG_NEW_ICON_METHOD, new_icon_method);

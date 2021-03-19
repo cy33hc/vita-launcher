@@ -46,6 +46,10 @@ namespace Services
 		ImGui_ImplVita2D_GamepadUsage(true);
 		ImGui_ImplVita2D_MouseStickUsage(false);
 		ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE);
+		if (!show_categories_as_tabs)
+		{
+			ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CIRCLE);
+		}
 		ImGui_ImplVita2D_SwapXO(swap_xo);
 
 		Textures::Init();

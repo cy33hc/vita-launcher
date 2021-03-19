@@ -3,6 +3,7 @@
 
 #include <imgui_vita2d/imgui_vita.h>
 #include <imgui_vita2d/imgui_internal.h>
+#include "game.h"
 
 extern int view_mode;
 extern int grid_rows;
@@ -50,6 +51,8 @@ namespace Windows {
     void HandleUninstallGame();
     void HandleAddNewFolder();
     void HandleEditDeleteFolder();
+    void ChangeCategory(GameCategory *previous_category, int category_id);
+    void ChangeToRootFolder();
     void MultiValueImeCallback(int ime_result);
     void SingleValueImeCallback(int ime_result);
     void NullCallback(int ime_result);
@@ -58,6 +61,7 @@ namespace Windows {
     void AfterPspemuChangeCallback(int ime_result);
     void AfterGameTitleChangeCallback(int ime_result);
     void AfterPathChangeCallback(int ime_result);
+    void SetModalMode(bool modal);
 }
 
 #endif

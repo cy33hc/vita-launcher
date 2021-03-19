@@ -16,7 +16,7 @@ int gui_mode = GUI_MODE_SCAN;
 namespace GUI {
 	int RenderLoop(void) {
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		
+
 		bool done = false;
 		view_mode = current_category->view_mode;
 		

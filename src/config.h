@@ -50,7 +50,7 @@
 #define CONFIG_STYLE_NAME "style"
 #define CONFIG_DEFAULT_STYLE_NAME "Default"
 #define CONFIG_SWAP_XO "swap_xo"
-
+#define CONFIG_SHOW_CATEGORY_AS_TABS "show_categories_as_tabs"
 #define ICON_TYPE_BOXARTS "Boxarts"
 #define ICON_TYPE_TITLES "Titles"
 
@@ -205,6 +205,7 @@ extern bool parental_control;
 extern char search_text[];
 extern bool new_icon_method;
 extern bool swap_xo;
+extern bool show_categories_as_tabs;
 
 namespace CONFIG {
     void LoadConfig();
