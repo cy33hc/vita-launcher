@@ -51,6 +51,7 @@
 #define CONFIG_DEFAULT_STYLE_NAME "Default"
 #define CONFIG_SWAP_XO "swap_xo"
 #define CONFIG_SHOW_CATEGORY_AS_TABS "show_categories_as_tabs"
+#define CONFIG_CATEGORY_ICON "category_icon"
 #define ICON_TYPE_BOXARTS "Boxarts"
 #define ICON_TYPE_TITLES "Titles"
 

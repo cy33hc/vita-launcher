@@ -27,7 +27,7 @@ extern "C" {
 
 #define NUM_CACHED_PAGES 5
 
-GameCategory game_categories[TOTAL_CATEGORY];
+GameCategory game_categories[TOTAL_CATEGORY+1];
 std::map<std::string, GameCategory*> categoryMap;
 std::vector<std::string> psp_iso_extensions;
 std::vector<std::string> eboot_extensions;
@@ -123,12 +123,6 @@ namespace GAME {
             SortGames(&game_categories[i]);
             game_categories[i].current_folder->page_num = 1;
             SetMaxPage(&game_categories[i]);
-        }
-
-        if (game_categories[FAVORITES].current_folder->games.size() > 0)
-        {
-            current_category = &game_categories[FAVORITES];
-            grid_rows = current_category->rows;
         }
     }
 
@@ -652,6 +646,11 @@ namespace GAME {
                 sprintf(icon_path, "ux0:app/SMLA00001/folder.png");
             }
         }
+        else if (game->type == TYPE_CATEGORY)
+        {
+            GameCategory *cat = categoryMap[game->category];
+            sprintf(icon_path, cat->category_icon);
+        }
         else
         {
             GameCategory* category = categoryMap[game->category];
@@ -765,8 +764,10 @@ namespace GAME {
         {
             current_category = &game_categories[FAVORITES];
         }
+        current_category = &game_categories[TOTAL_CATEGORY];
         current_category->current_folder->page_num = 1;
         view_mode = current_category->view_mode;
+        grid_rows = current_category->rows;
         gui_mode  = GUI_MODE_LAUNCHER;
         if (view_mode == VIEW_MODE_GRID)
         {

@@ -73,6 +73,8 @@ char game_action_message[256];
 float previous_right = 0.0f;
 float previous_left = 0.0f;
 
+bool category_changed = false;
+
 namespace Windows {
     void Init()
     {
@@ -251,7 +253,14 @@ namespace Windows {
         {
             if ((pad_prev.buttons & SCE_CTRL_CIRCLE) && !(pad.buttons & SCE_CTRL_CIRCLE) && !paused)
             {
-                ChangeToRootFolder();
+                if (current_category->current_folder != &current_category->folders[0])
+                {
+                    ChangeToRootFolder();
+                }
+                else if (!show_categories_as_tabs && current_category->id != CATEGORY)
+                {
+                    ChangeCategory(current_category, CATEGORY);
+                }
             }
         }
 
@@ -291,6 +300,7 @@ namespace Windows {
         {
             GAME::StartLoadImagesThread(current_category->id, current_category->current_folder->page_num, current_category->current_folder->page_num, current_category->games_per_page);
         }
+        category_changed = true;
     }
 
     void ChangeToRootFolder()
@@ -396,12 +406,17 @@ namespace Windows {
         {
             ImGui::SetCursorPosY(ImGui::GetCursorPosY()+6);
         }
-        ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
-        ImGui::SameLine();
+        if (!show_categories_as_tabs)
+        {
+            ImGui::Text(current_category->alt_title);
+            ImGui::SameLine();
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
+        }
         if (current_category->current_folder->type == FOLDER_TYPE_ROOT)
         {
             ImGui::Text(current_category->current_folder->title);
             ImGui::SameLine();
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
         }
         else
         {
@@ -419,6 +434,7 @@ namespace Windows {
                 ImGui::Text("/");
             }
             ImGui::SameLine();
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
             ImGui::Text(current_category->current_folder->title);
             ImGui::SameLine();
         }
@@ -483,7 +499,12 @@ namespace Windows {
                     Game *game = &current_category->current_folder->games[game_start_index+button_id];
                     if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), current_category->thumbnail_size, ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
                     {
-                        if (game->type == TYPE_FOLDER)
+                        if (game->type == TYPE_CATEGORY)
+                        {
+                            GameCategory *cat = categoryMap[game->category];
+                            ChangeCategory(current_category, cat->id);
+                        }
+                        else if (game->type == TYPE_FOLDER)
                         {
                             if (!selection_mode)
                             {
@@ -570,6 +591,15 @@ namespace Windows {
                         ImGui::Selectable(game->title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_Disabled, ImVec2(215-text_clip, 0));
                     }
                 }
+                if (category_changed)
+                {
+                    break;
+                }
+            }
+            if (category_changed)
+            {
+                category_changed = false;
+                break;
             }
         }
         ImGui::PopStyleColor(ImGuiCol_TextDisabled);
@@ -614,7 +644,12 @@ namespace Windows {
             ImGui::SetCursorPos(ImVec2(pos.x-5, pos.y));
             if (ImGui::Button(sel_id, current_category->button_size))
             {
-                if (game->type == TYPE_FOLDER)
+                if (game->type == TYPE_CATEGORY)
+                {
+                    GameCategory *cat = categoryMap[game->category];
+                    ChangeCategory(current_category, cat->id);
+                }
+                else if (game->type == TYPE_FOLDER)
                 {
                     if (!selection_mode)
                     {
@@ -733,6 +768,12 @@ namespace Windows {
 
             ImGui::EndGroup();
             ImGui::NextColumn();
+
+            if (category_changed)
+            {
+                category_changed = false;
+                break;
+            }
         }
         ImGui::PopStyleColor(ImGuiCol_TextDisabled);
         ImGui::EndChild();
@@ -805,7 +846,12 @@ namespace Windows {
             bool folder_selected = false;
             if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
             {
-                if (game->type == TYPE_FOLDER)
+                if (game->type == TYPE_CATEGORY)
+                {
+                    GameCategory *cat = categoryMap[game->category];
+                    ChangeCategory(current_category, cat->id);
+                }
+                else if (game->type == TYPE_FOLDER)
                 {
                     if (!selection_mode)
                     {
@@ -872,6 +918,12 @@ namespace Windows {
             }
             ImGui::NextColumn();               
             ImGui::Separator();
+            
+            if (category_changed)
+            {
+                category_changed = false;
+                break;
+            }
         }
         ImGui::Columns(1);
         ImGui::EndChild();
@@ -1710,8 +1762,8 @@ namespace Windows {
         }
         else
         {
-            ImGui::SetNextWindowPos(ImVec2(230, 100));
-            ImGui::SetNextWindowSize(ImVec2(495,375));
+            ImGui::SetNextWindowPos(ImVec2(230, 80));
+            ImGui::SetNextWindowSize(ImVec2(495,385));
         }
         if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
         {

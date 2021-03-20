@@ -72,6 +72,11 @@ namespace CONFIG {
         sprintf(category->alt_title, "%s", ReadString(category->title, CONFIG_ALT_TITLE, category->title));
         WriteString(category->title, CONFIG_ALT_TITLE, category->alt_title);
 
+        char category_icon[96];
+        sprintf(category_icon, "ux0:app/SMLA00001/icons/%s.png", category->category);
+        sprintf(category->category_icon, "%s", ReadString(category->title, CONFIG_CATEGORY_ICON, category_icon));
+        WriteString(category->title, CONFIG_CATEGORY_ICON, category->category_icon);
+
         category->icon_type = ReadInt(category->title, CONFIG_ICON_TYPE, 1);
         WriteInt(category->title, CONFIG_ICON_TYPE, category->icon_type);
 
@@ -250,9 +255,25 @@ namespace CONFIG {
         SetupCategory(&game_categories[EMULATORS], EMULATORS, "emulator", "Emulators", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
         SetupCategory(&game_categories[HOMEBREWS], HOMEBREWS, "homebrew", "Homebrews", nullptr, nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
         SetupCategory(&game_categories[FAVORITES], FAVORITES, "favorites", "Favorites", nullptr, nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
+        SetupCategory(&game_categories[CATEGORY], CATEGORY, "category", "Categories", nullptr, nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
 
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();
+
+        for (int i = 0; i < TOTAL_CATEGORY; i++)
+        {
+            Game game;
+            sprintf(game.id, "%d", game_categories[i].id);
+            sprintf(game.title, "%s", game_categories[i].alt_title);
+            sprintf(game.category, "%s", game_categories[i].category);
+            game.type = TYPE_CATEGORY;
+            game.folder_id = game_categories[i].folders[0].id;
+            game.favorite = false;
+            game.tex = no_icon;
+            game_categories[TOTAL_CATEGORY].current_folder->games.push_back(game);
+
+        }
+        GAME::SetMaxPage(&game_categories[TOTAL_CATEGORY]);
     }
 
     void ParseMultiValueString(const char* prefix_list, std::vector<std::string> &prefixes, bool toLower)

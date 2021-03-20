@@ -48,6 +48,7 @@ typedef struct {
     char category[10];
     char roms_path[96];
     char icon_path[96];
+    char category_icon[96];
     char core[64];
     char rom_launcher_title_id[12];
     int view_mode;
@@ -131,6 +132,7 @@ typedef struct {
 #define UTILITIES 40
 #define EMULATORS 41
 #define HOMEBREWS 42
+#define CATEGORY 43
 
 #define TOTAL_CATEGORY 43
 #define TOTAL_ROM_CATEGORY 32
@@ -140,6 +142,7 @@ typedef struct {
 #define TYPE_PSP_ISO 2
 #define TYPE_EBOOT 3
 #define TYPE_SCUMMVM 4
+#define TYPE_CATEGORY 126
 #define TYPE_FOLDER 127
 
 #define FOLDER_TYPE_ROOT 1

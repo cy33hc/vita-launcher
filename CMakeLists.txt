@@ -118,6 +118,49 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE thumbnails_db/scummvm.db thumbnails/scummvm.db
   FILE thumbnails_db/dreamcast.db thumbnails/dreamcast.db
   FILE thumbnails_db/mame_mapping.db thumbnails/mame_mapping.db
+  FILE icons/a2600.png icons/a2600.png
+  FILE icons/a5200.png icons/a5200.png
+  FILE icons/a7800.png icons/a7800.png
+  FILE icons/aLynx.png icons/aLynx.png
+  FILE icons/amiga.png icons/amiga.png
+  FILE icons/bandai.png icons/bandai.png
+  FILE icons/c64.png icons/c64.png
+  FILE icons/dreamcast.png icons/dreamcast.png
+  FILE icons/emulator.png icons/emulator.png
+  FILE icons/favorites.png icons/favorites.png
+  FILE icons/gaw.png icons/gaw.png
+  FILE icons/gb.png icons/gb.png
+  FILE icons/gba.png icons/gba.png
+  FILE icons/gbc.png icons/gbc.png
+  FILE icons/ggear.png icons/ggear.png
+  FILE icons/homebrew.png icons/homebrew.png
+  FILE icons/mame2k.png icons/mame2k.png
+  FILE icons/mame2k3.png icons/mame2k3.png
+  FILE icons/mdrive.png icons/mdrive.png
+  FILE icons/msx1.png icons/msx1.png
+  FILE icons/msx2.png icons/msx2.png
+  FILE icons/msystem.png icons/msystem.png
+  FILE icons/n64.png icons/n64.png
+  FILE icons/nec.png icons/nec.png
+  FILE icons/neogeo.png icons/neogeo.png
+  FILE icons/neogeocd.png icons/neogeocd.png
+  FILE icons/neogeopc.png icons/neogeopc.png
+  FILE icons/nes.png icons/nes.png
+  FILE icons/original.png icons/original.png
+  FILE icons/ports.png icons/ports.png
+  FILE icons/ps1.png icons/ps1.png
+  FILE icons/psmini.png icons/psmini.png
+  FILE icons/psmobile.png icons/psmobile.png
+  FILE icons/psp.png icons/psp.png
+  FILE icons/saturn.png icons/saturn.png
+  FILE icons/scummvm.png icons/scummvm.png
+  FILE icons/sega32x.png icons/sega32x.png
+  FILE icons/segacd.png icons/segacd.png
+  FILE icons/snes.png icons/snes.png
+  FILE icons/tgrafx.png icons/tgrafx.png
+  FILE icons/utilities.png icons/utilities.png
+  FILE icons/vectrex.png icons/vectrex.png
+  FILE icons/vita.png icons/vita.png
   FILE noicon.png noicon.png
   FILE favorite.png favorite.png
   FILE square.png square.png
