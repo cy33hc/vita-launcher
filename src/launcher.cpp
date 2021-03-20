@@ -73,8 +73,6 @@ char game_action_message[256];
 float previous_right = 0.0f;
 float previous_left = 0.0f;
 
-bool category_changed = false;
-
 namespace Windows {
     void Init()
     {
@@ -300,7 +298,6 @@ namespace Windows {
         {
             GAME::StartLoadImagesThread(current_category->id, current_category->current_folder->page_num, current_category->current_folder->page_num, current_category->games_per_page);
         }
-        category_changed = true;
     }
 
     void ChangeToRootFolder()
@@ -486,6 +483,7 @@ namespace Windows {
         ImVec2 pos = ImGui::GetCursorPos();
         ImGuiStyle* style = &ImGui::GetStyle();
         ImGui::PushStyleColor(ImGuiCol_TextDisabled, style->Colors[ImGuiCol_Text]);
+        bool category_changed = false;
         for (int i = 0; i < current_category->rows; i++)
         {
             for (int j=0; j < current_category->columns; j++)
@@ -503,6 +501,7 @@ namespace Windows {
                         {
                             GameCategory *cat = categoryMap[game->category];
                             ChangeCategory(current_category, cat->id);
+                            category_changed = true;
                         }
                         else if (game->type == TYPE_FOLDER)
                         {
@@ -598,7 +597,6 @@ namespace Windows {
             }
             if (category_changed)
             {
-                category_changed = false;
                 break;
             }
         }
@@ -632,6 +630,7 @@ namespace Windows {
         ImVec2 pos = ImGui::GetCursorPos();
         ImGui::Columns(current_category->columns, current_category->title, false);
         ImGui::PushStyleColor(ImGuiCol_TextDisabled, style->Colors[ImGuiCol_Text]);
+        bool category_changed = false;
         for (int button_id=0; button_id<current_category->current_folder->games.size(); button_id++)
         {
             char id[32];
@@ -648,6 +647,7 @@ namespace Windows {
                 {
                     GameCategory *cat = categoryMap[game->category];
                     ChangeCategory(current_category, cat->id);
+                    category_changed = true;
                 }
                 else if (game->type == TYPE_FOLDER)
                 {
@@ -771,7 +771,6 @@ namespace Windows {
 
             if (category_changed)
             {
-                category_changed = false;
                 break;
             }
         }
@@ -828,6 +827,7 @@ namespace Windows {
         }
         ImGui::Separator();
         ImGui::Columns(2, current_category->title, true);
+        bool category_changed = false;
         for (int i = 0; i < current_category->current_folder->games.size(); i++)
         {
             Game *game = &current_category->current_folder->games[i];
@@ -850,6 +850,7 @@ namespace Windows {
                 {
                     GameCategory *cat = categoryMap[game->category];
                     ChangeCategory(current_category, cat->id);
+                    category_changed = true;
                 }
                 else if (game->type == TYPE_FOLDER)
                 {
@@ -921,7 +922,6 @@ namespace Windows {
             
             if (category_changed)
             {
-                category_changed = false;
                 break;
             }
         }
