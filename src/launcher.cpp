@@ -10,7 +10,7 @@
 #include "config.h"
 #include "ime_dialog.h"
 #include "gui.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -1494,7 +1494,7 @@ namespace Windows {
                         }
                         ImGui::Separator();
                     }
-                    
+
                     if (current_category->id != CATEGORY)
                     {
                         ImGui::Checkbox("Show Categories as Tabs", &show_categories_as_tabs_settings);

@@ -20,7 +20,7 @@
 #include "cso.h"
 #include "net.h"
 
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -631,7 +631,7 @@ namespace GAME {
     void LoadGameImage(Game *game) {
         Tex tex;
         tex = no_icon;
-        debugNetPrintf(DEBUG,"Loding image for game id=%s, type=%d, title=%s\n", game->id, game->type, game->title);
+
         char icon_path[384];
         if (game->type == TYPE_BUBBLE && strcmp(game->category, game_categories[PS_MOBILE_GAMES].category) == 0)
         {
