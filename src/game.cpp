@@ -804,17 +804,21 @@ namespace GAME {
     void RemoveGamesFromCategoryByType(sqlite3 *db, GameCategory *category, int rom_type)
     {
         DB::DeleteGamesByCategoryAndType(db, category->category, rom_type);
-        for (std::vector<Game>::iterator it=category->current_folder->games.begin(); it!=category->current_folder->games.end(); )
+        for (int i=0; i<category->folders.size(); i++)
         {
-            if (it->type == rom_type)
+            for (std::vector<Game>::iterator it=category->folders[i].games.begin(); it!=category->folders[i].games.end(); )
             {
-                category->current_folder->games.erase(it);
-            }
-            else
-            {
-                ++it;
+                if (it->type == rom_type)
+                {
+                    category->folders[i].games.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
             }
         }
+        category->current_folder = &category->folders[0];
     }
 
     int ScanGamesCategoryThread(SceSize args, ScanGamesParams *params)
@@ -834,18 +838,24 @@ namespace GAME {
             DB::DeleteGamesByType(db, params->type);
             for (int i=0; i<TOTAL_CATEGORY; i++)
             {
-                for (std::vector<Game>::iterator it=game_categories[i].current_folder->games.begin(); it!=game_categories[i].current_folder->games.end(); )
+                for (int j=0; j<game_categories[i].folders.size(); j++)
                 {
-                    if (it->type == params->type)
+                    for (std::vector<Game>::iterator it=game_categories[i].folders[j].games.begin(); it!=game_categories[i].folders[j].games.end(); )
                     {
-                        game_categories[i].current_folder->games.erase(it);
-                    }
-                    else
-                    {
-                        ++it;
+                        if (it->type == params->type)
+                        {
+                            game_categories[i].folders[j].games.erase(it);
+                        }
+                        else
+                        {
+                            ++it;
+                        }
                     }
                 }
             }
+            game_categories[PSP_GAMES].current_folder = &game_categories[PSP_GAMES].folders[0];
+            game_categories[PS1_GAMES].current_folder = &game_categories[PS1_GAMES].folders[0];
+            game_categories[PS_MIMI_GAMES].current_folder = &game_categories[PS_MIMI_GAMES].folders[0];
         }
 
         if (params->type == TYPE_ROM  || strcmp(params->category, "ps1") == 0)
