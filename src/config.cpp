@@ -349,6 +349,7 @@ namespace CONFIG {
             WriteString(cat->title, CONFIG_ROM_LAUNCHER_TITLE_ID, cat->rom_launcher_title_id);
             WriteString(cat->title, CONFIG_ROMS_PATH, cat->roms_path);
             WriteString(cat->title, CONFIG_ICON_PATH, cat->icon_path);
+            WriteString(cat->title, CONFIG_CATEGORY_ICON, cat->category_icon);
             WriteString(cat->title, CONFIG_ROM_EXTENSIONS, GetMultiValueString(cat->file_filters).c_str());
             WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores).c_str());
             WriteBool(cat->title, CONFIG_BOOT_WITH_ALT_CORE, cat->boot_with_alt_core);

@@ -67,6 +67,8 @@ bool handle_uninstall_game = false;
 bool handle_new_folder = false;
 bool handle_edit_delete_folder = false;
 bool selection_mode = false;
+bool show_all_categories_setting = show_all_categories;
+bool show_categories_as_tabs_settings = show_categories_as_tabs;
 
 char game_action_message[256];
 
@@ -1067,18 +1069,20 @@ namespace Windows {
         if (io.NavInputs[ImGuiNavInput_Input] == 1.0f)
         {
             SetModalMode(true);
+            show_categories_as_tabs_settings = show_categories_as_tabs;
+            show_all_categories_setting = show_all_categories;
             ImGui::OpenPopup("Settings and Actions");
         }
 
         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
         {
-            ImGui::SetNextWindowPos(ImVec2(200, 45));
-            ImGui::SetNextWindowSizeConstraints(ImVec2(500,130), ImVec2(500,450), NULL, NULL);
+            ImGui::SetNextWindowPos(ImVec2(200, 30));
+            ImGui::SetNextWindowSizeConstraints(ImVec2(500,130), ImVec2(500,475), NULL, NULL);
         }
         else
         {
-            ImGui::SetNextWindowPos(ImVec2(250, 140));
-            ImGui::SetNextWindowSizeConstraints(ImVec2(430,130), ImVec2(430,400), NULL, NULL);
+            ImGui::SetNextWindowPos(ImVec2(200, 140));
+            ImGui::SetNextWindowSizeConstraints(ImVec2(500,130), ImVec2(500,400), NULL, NULL);
         }
         
         if (ImGui::BeginPopupModal("Settings and Actions", NULL, ImGuiWindowFlags_AlwaysAutoResize))
@@ -1099,7 +1103,7 @@ namespace Windows {
 
             if (ImGui::BeginTabBar("Settings and Actions#tabbar", ImGuiTabBarFlags_FittingPolicyScroll))
             {
-                if (!parental_control)
+                if (!parental_control && current_category->id != CATEGORY)
                 {
                     if (ImGui::BeginTabItem("Actions"))
                     {
@@ -1253,139 +1257,52 @@ namespace Windows {
                     ImGui::RadioButton("3", &grid_rows, 3);
                     ImGui::Separator();
 
-                    if (current_category->id != FAVORITES && current_category->id != HOMEBREWS)
-                    {
-                        ImGui::Text("Bubble Titles:  "); ImGui::SameLine();
-                        if (ImGui::SmallButton("Add##title_prefixes") && !parental_control)
+                    if (current_category->id != CATEGORY)
+                    {                
+                        ImGui::Text("Category Icon:"); ImGui::SameLine();
+                        ImGui::PushID("category_icon");
+                        if (ImGui::Selectable(current_category->category_icon, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
                         {
-                            ime_multi_field = &current_category->valid_title_ids;
+                            ime_single_field = current_category->category_icon;
                             ime_before_update = nullptr;
                             ime_after_update = nullptr;
-                            ime_callback = MultiValueImeCallback;
-                            Dialog::initImeDialog("Title Id or Prefix", "", 9, SCE_IME_TYPE_DEFAULT, 0, 0);
+                            ime_callback = SingleValueImeCallback;
+                            Dialog::initImeDialog("Category Icon", current_category->category_icon, 95, SCE_IME_TYPE_DEFAULT, 0, 0);
                             gui_mode = GUI_MODE_IME;
-                        }
-                        ImGui::SameLine();
-                        if (current_category->valid_title_ids.size()>1)
-                            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,47));
-                        else
-                            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,23));
-                        ImGui::BeginChild("Title Prefixes");
-                        ImGui::Columns(2, "Title Prefixes", true);
-                        for (std::vector<std::string>::iterator it=current_category->valid_title_ids.begin(); 
-                            it!=current_category->valid_title_ids.end(); )
+                        };
+                        ImGui::PopID();
+                        ImGui::Separator();
+
+                        if (current_category->id != FAVORITES && current_category->id != HOMEBREWS)
                         {
-                            ImGui::SetColumnWidth(-1,110);
-                            if (ImGui::Selectable(it->c_str(), false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                            ImGui::Text("Bubble Titles:  "); ImGui::SameLine();
+                            if (ImGui::SmallButton("Add##title_prefixes") && !parental_control)
                             {
                                 ime_multi_field = &current_category->valid_title_ids;
                                 ime_before_update = nullptr;
                                 ime_after_update = nullptr;
                                 ime_callback = MultiValueImeCallback;
-                                Dialog::initImeDialog("Title Id or Prefix", it->c_str(), 9, SCE_IME_TYPE_DEFAULT, 0, 0);
-                                gui_mode = GUI_MODE_IME;
-                            };
-                            ImGui::NextColumn();
-                            char buttonId[64];
-                            sprintf(buttonId, "Delete##%s", it->c_str());
-                            if (ImGui::SmallButton(buttonId) && !parental_control)
-                            {
-                                current_category->valid_title_ids.erase(it);
-                            }
-                            else
-                            {
-                                ++it;
-                            }
-                            
-                            ImGui::NextColumn();               
-                            ImGui::Separator();
-                        }
-                        ImGui::Columns(1);
-                        ImGui::EndChild();
-                        ImGui::Separator();
-                    }
-
-                    if (current_category->id == PS1_GAMES || current_category->rom_type == TYPE_ROM)
-                    {
-                        ImGui::Text("Icon Path:"); ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 100);
-                        ImGui::PushID("icon_path");
-                        if (ImGui::Selectable(current_category->icon_path, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
-                        {
-                            ime_single_field = current_category->icon_path;
-                            ime_before_update = nullptr;
-                            ime_after_update = AfterPathChangeCallback;
-                            ime_callback = SingleValueImeCallback;
-                            Dialog::initImeDialog("Icon Path", current_category->icon_path, 95, SCE_IME_TYPE_DEFAULT, 0, 0);
-                            gui_mode = GUI_MODE_IME;
-                        };
-                        ImGui::PopID();
-                        ImGui::Separator();
-
-                        ImGui::PushID("roms_path");
-                        ImGui::Text("Roms Path:"); ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 100);
-                        if (ImGui::Selectable(current_category->roms_path, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
-                        {
-                            ime_single_field = current_category->roms_path;
-                            ime_before_update = nullptr;
-                            ime_after_update = AfterPathChangeCallback;
-                            ime_callback = SingleValueImeCallback;
-                            Dialog::initImeDialog("Roms Path", current_category->roms_path, 95, SCE_IME_TYPE_DEFAULT, 0, 0);
-                            gui_mode = GUI_MODE_IME;
-                        };
-                        ImGui::PopID();
-                        ImGui::Separator();
-                        ImGui::Text("Icon Preference:"); ImGui::SameLine();
-                        ImGui::RadioButton("Boxart", &current_category->icon_type, 1); ImGui::SameLine();
-                        ImGui::RadioButton("Screenshot", &current_category->icon_type, 2);
-                        ImGui::Separator();
-
-                        if (strcmp(current_category->rom_launcher_title_id, "DEDALOX64") != 0)
-                        {
-                            ImGui::PushID("retro_core");
-                            ImGui::Text("Retro Core:"); ImGui::SameLine();
-                            ImGui::SetCursorPosX(posX + 100);
-                            if (ImGui::Selectable(current_category->core, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
-                            {
-                                ime_single_field = current_category->core;
-                                ime_before_update = nullptr;
-                                ime_after_update = nullptr;
-                                ime_callback = SingleValueImeCallback;
-                                Dialog::initImeDialog("Core Path", current_category->core, 63, SCE_IME_TYPE_DEFAULT, 0, 0);
-                                gui_mode = GUI_MODE_IME;
-                            }
-                            ImGui::PopID();
-                            ImGui::Separator();
-
-                            ImGui::Text("Alternate Cores:"); ImGui::SameLine();
-                            if (ImGui::SmallButton("Add##retro_cores") && !parental_control)
-                            {
-                                ime_multi_field = &current_category->alt_cores;
-                                ime_before_update = nullptr;
-                                ime_after_update = nullptr;
-                                ime_callback = MultiValueImeCallback;
-                                Dialog::initImeDialog("Core Path", "", 63, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                Dialog::initImeDialog("Title Id or Prefix", "", 9, SCE_IME_TYPE_DEFAULT, 0, 0);
                                 gui_mode = GUI_MODE_IME;
                             }
                             ImGui::SameLine();
-                            if (current_category->alt_cores.size()>1)
-                                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(300,47));
+                            if (current_category->valid_title_ids.size()>1)
+                                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,47));
                             else
-                                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(300,23));
-                            ImGui::BeginChild("Alt Cores");
-                            ImGui::Columns(2, "Alt Cores", true);
-                            for (std::vector<std::string>::iterator it=current_category->alt_cores.begin(); 
-                                it!=current_category->alt_cores.end(); )
+                                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,23));
+                            ImGui::BeginChild("Title Prefixes");
+                            ImGui::Columns(2, "Title Prefixes", true);
+                            for (std::vector<std::string>::iterator it=current_category->valid_title_ids.begin(); 
+                                it!=current_category->valid_title_ids.end(); )
                             {
-                                ImGui::SetColumnWidth(-1,220);
+                                ImGui::SetColumnWidth(-1,110);
                                 if (ImGui::Selectable(it->c_str(), false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
                                 {
-                                    ime_multi_field = &current_category->alt_cores;
+                                    ime_multi_field = &current_category->valid_title_ids;
                                     ime_before_update = nullptr;
                                     ime_after_update = nullptr;
                                     ime_callback = MultiValueImeCallback;
-                                    Dialog::initImeDialog("Core Path", it->c_str(), 63, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                    Dialog::initImeDialog("Title Id or Prefix", it->c_str(), 9, SCE_IME_TYPE_DEFAULT, 0, 0);
                                     gui_mode = GUI_MODE_IME;
                                 };
                                 ImGui::NextColumn();
@@ -1393,70 +1310,174 @@ namespace Windows {
                                 sprintf(buttonId, "Delete##%s", it->c_str());
                                 if (ImGui::SmallButton(buttonId) && !parental_control)
                                 {
-                                    current_category->alt_cores.erase(it);
+                                    current_category->valid_title_ids.erase(it);
                                 }
                                 else
                                 {
                                     ++it;
                                 }
+                                
                                 ImGui::NextColumn();               
                                 ImGui::Separator();
                             }
                             ImGui::Columns(1);
                             ImGui::EndChild();
                             ImGui::Separator();
-                            ImGui::Checkbox("Boot with alternate cores", &current_category->boot_with_alt_core);
+                        }
+
+                        if (current_category->id == PS1_GAMES || current_category->rom_type == TYPE_ROM)
+                        {
+                            ImGui::Text("Icon Path:"); ImGui::SameLine();
+                            ImGui::SetCursorPosX(posX + 100);
+                            ImGui::PushID("icon_path");
+                            if (ImGui::Selectable(current_category->icon_path, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                            {
+                                ime_single_field = current_category->icon_path;
+                                ime_before_update = nullptr;
+                                ime_after_update = AfterPathChangeCallback;
+                                ime_callback = SingleValueImeCallback;
+                                Dialog::initImeDialog("Icon Path", current_category->icon_path, 95, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                gui_mode = GUI_MODE_IME;
+                            };
+                            ImGui::PopID();
                             ImGui::Separator();
-                        }
-                        
-                        ImGui::Text("Rom Extensions:"); ImGui::SameLine();
-                        if (ImGui::SmallButton("Add##file_filters") && !parental_control)
-                        {
-                            ime_multi_field = &current_category->file_filters;
-                            ime_before_update = nullptr;
-                            ime_after_update = nullptr;
-                            ime_callback = MultiValueImeCallback;
-                            Dialog::initImeDialog("Extension: Include \".\"", "", 5, SCE_IME_TYPE_DEFAULT, 0, 0);
-                            gui_mode = GUI_MODE_IME;
-                        }
-                        ImGui::SameLine();
-                        if (current_category->file_filters.size()>1)
-                            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,47));
-                        else
-                            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,23));
-                        ImGui::BeginChild("Rom Extensions");
-                        ImGui::Columns(2, "Rom Extensions", true);
-                        for (std::vector<std::string>::iterator it=current_category->file_filters.begin(); 
-                            it!=current_category->file_filters.end(); )
-                        {
-                            ImGui::SetColumnWidth(-1,110);
-                            if (ImGui::Selectable(it->c_str(), false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+
+                            ImGui::PushID("roms_path");
+                            ImGui::Text("Roms Path:"); ImGui::SameLine();
+                            ImGui::SetCursorPosX(posX + 100);
+                            if (ImGui::Selectable(current_category->roms_path, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                            {
+                                ime_single_field = current_category->roms_path;
+                                ime_before_update = nullptr;
+                                ime_after_update = AfterPathChangeCallback;
+                                ime_callback = SingleValueImeCallback;
+                                Dialog::initImeDialog("Roms Path", current_category->roms_path, 95, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                gui_mode = GUI_MODE_IME;
+                            };
+                            ImGui::PopID();
+                            ImGui::Separator();
+                            ImGui::Text("Icon Preference:"); ImGui::SameLine();
+                            ImGui::RadioButton("Boxart", &current_category->icon_type, 1); ImGui::SameLine();
+                            ImGui::RadioButton("Screenshot", &current_category->icon_type, 2);
+                            ImGui::Separator();
+
+                            if (strcmp(current_category->rom_launcher_title_id, "DEDALOX64") != 0)
+                            {
+                                ImGui::PushID("retro_core");
+                                ImGui::Text("Retro Core:"); ImGui::SameLine();
+                                ImGui::SetCursorPosX(posX + 100);
+                                if (ImGui::Selectable(current_category->core, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                                {
+                                    ime_single_field = current_category->core;
+                                    ime_before_update = nullptr;
+                                    ime_after_update = nullptr;
+                                    ime_callback = SingleValueImeCallback;
+                                    Dialog::initImeDialog("Core Path", current_category->core, 63, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                    gui_mode = GUI_MODE_IME;
+                                }
+                                ImGui::PopID();
+                                ImGui::Separator();
+
+                                ImGui::Text("Alternate Cores:"); ImGui::SameLine();
+                                if (ImGui::SmallButton("Add##retro_cores") && !parental_control)
+                                {
+                                    ime_multi_field = &current_category->alt_cores;
+                                    ime_before_update = nullptr;
+                                    ime_after_update = nullptr;
+                                    ime_callback = MultiValueImeCallback;
+                                    Dialog::initImeDialog("Core Path", "", 63, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                    gui_mode = GUI_MODE_IME;
+                                }
+                                ImGui::SameLine();
+                                if (current_category->alt_cores.size()>1)
+                                    ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(300,47));
+                                else
+                                    ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(300,23));
+                                ImGui::BeginChild("Alt Cores");
+                                ImGui::Columns(2, "Alt Cores", true);
+                                for (std::vector<std::string>::iterator it=current_category->alt_cores.begin(); 
+                                    it!=current_category->alt_cores.end(); )
+                                {
+                                    ImGui::SetColumnWidth(-1,220);
+                                    if (ImGui::Selectable(it->c_str(), false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                                    {
+                                        ime_multi_field = &current_category->alt_cores;
+                                        ime_before_update = nullptr;
+                                        ime_after_update = nullptr;
+                                        ime_callback = MultiValueImeCallback;
+                                        Dialog::initImeDialog("Core Path", it->c_str(), 63, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                        gui_mode = GUI_MODE_IME;
+                                    };
+                                    ImGui::NextColumn();
+                                    char buttonId[64];
+                                    sprintf(buttonId, "Delete##%s", it->c_str());
+                                    if (ImGui::SmallButton(buttonId) && !parental_control)
+                                    {
+                                        current_category->alt_cores.erase(it);
+                                    }
+                                    else
+                                    {
+                                        ++it;
+                                    }
+                                    ImGui::NextColumn();               
+                                    ImGui::Separator();
+                                }
+                                ImGui::Columns(1);
+                                ImGui::EndChild();
+                                ImGui::Separator();
+                                ImGui::Checkbox("Boot with alternate cores", &current_category->boot_with_alt_core);
+                                ImGui::Separator();
+                            }
+                            
+                            ImGui::Text("Rom Extensions:"); ImGui::SameLine();
+                            if (ImGui::SmallButton("Add##file_filters") && !parental_control)
                             {
                                 ime_multi_field = &current_category->file_filters;
                                 ime_before_update = nullptr;
                                 ime_after_update = nullptr;
                                 ime_callback = MultiValueImeCallback;
-                                Dialog::initImeDialog("Extension: Include \".\"", it->c_str(), 5, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                Dialog::initImeDialog("Extension: Include \".\"", "", 5, SCE_IME_TYPE_DEFAULT, 0, 0);
                                 gui_mode = GUI_MODE_IME;
-                            };
-                            ImGui::NextColumn();
-                            char buttonId[64];
-                            sprintf(buttonId, "Delete##%s", it->c_str());
-                            if (ImGui::SmallButton(buttonId) && !parental_control)
-                            {
-                                current_category->file_filters.erase(it);
                             }
+                            ImGui::SameLine();
+                            if (current_category->file_filters.size()>1)
+                                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,47));
                             else
+                                ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(190,23));
+                            ImGui::BeginChild("Rom Extensions");
+                            ImGui::Columns(2, "Rom Extensions", true);
+                            for (std::vector<std::string>::iterator it=current_category->file_filters.begin(); 
+                                it!=current_category->file_filters.end(); )
                             {
-                                ++it;
+                                ImGui::SetColumnWidth(-1,110);
+                                if (ImGui::Selectable(it->c_str(), false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                                {
+                                    ime_multi_field = &current_category->file_filters;
+                                    ime_before_update = nullptr;
+                                    ime_after_update = nullptr;
+                                    ime_callback = MultiValueImeCallback;
+                                    Dialog::initImeDialog("Extension: Include \".\"", it->c_str(), 5, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                    gui_mode = GUI_MODE_IME;
+                                };
+                                ImGui::NextColumn();
+                                char buttonId[64];
+                                sprintf(buttonId, "Delete##%s", it->c_str());
+                                if (ImGui::SmallButton(buttonId) && !parental_control)
+                                {
+                                    current_category->file_filters.erase(it);
+                                }
+                                else
+                                {
+                                    ++it;
+                                }
+                                
+                                ImGui::NextColumn();               
+                                ImGui::Separator();
                             }
-                            
-                            ImGui::NextColumn();               
+                            ImGui::Columns(1);
+                            ImGui::EndChild();
                             ImGui::Separator();
                         }
-                        ImGui::Columns(1);
-                        ImGui::EndChild();
-                        ImGui::Separator();
                     }
 
                     ImGui::EndTabItem();
@@ -1464,15 +1485,21 @@ namespace Windows {
 
                 if (ImGui::BeginTabItem("Global"))
                 {
-                    ImGui::Checkbox("Show All Categories", &show_all_categories);
-                    if (ImGui::IsWindowAppearing())
+                    if (show_categories_as_tabs_settings)
                     {
-                        SetNavFocusHere();
+                        ImGui::Checkbox("Show All Categories", &show_all_categories_setting);
+                        if (ImGui::IsWindowAppearing())
+                        {
+                            SetNavFocusHere();
+                        }
+                        ImGui::Separator();
                     }
-                    ImGui::Separator();
-
-                    ImGui::Checkbox("Show Categories as Tabs", &show_categories_as_tabs);
-                    ImGui::Separator();
+                    
+                    if (current_category->id != CATEGORY)
+                    {
+                        ImGui::Checkbox("Show Categories as Tabs", &show_categories_as_tabs_settings);
+                        ImGui::Separator();
+                    }
 
                     ImGui::Checkbox("Swap X/O Buttons", &swap_xo);
                     ImGui::Separator();
@@ -1582,8 +1609,8 @@ namespace Windows {
             if (ImGui::Button("OK"))
             {
                 OpenIniFile (CONFIG_INI_FILE);
-                WriteInt(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories);
-                WriteBool(CONFIG_GLOBAL, CONFIG_SHOW_CATEGORY_AS_TABS, show_categories_as_tabs);
+                WriteInt(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, show_all_categories_setting);
+                WriteBool(CONFIG_GLOBAL, CONFIG_SHOW_CATEGORY_AS_TABS, show_categories_as_tabs_settings);
                 WriteBool(CONFIG_GLOBAL, CONFIG_NEW_ICON_METHOD, new_icon_method);
                 WriteBool(CONFIG_GLOBAL, CONFIG_SWAP_XO, swap_xo);
                 ImGui_ImplVita2D_SwapXO(swap_xo);
@@ -1729,6 +1756,8 @@ namespace Windows {
                     handle_edit_delete_folder = true;
                 }
 
+                show_categories_as_tabs = show_categories_as_tabs_settings;
+                show_all_categories = show_all_categories_setting;
                 SetModalMode(false);
                 move_game = false;
                 remove_from_cache = false;
@@ -3039,6 +3068,7 @@ namespace Windows {
         WriteString(tmp_category->title, CONFIG_ALT_TITLE, tmp_category->alt_title);
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();
+        sprintf(game_categories[CATEGORY].current_folder->games[tmp_category->id].title, tmp_category->alt_title);
         SetModalMode(false);
     }
 
