@@ -20,7 +20,7 @@
 #include "cso.h"
 #include "net.h"
 
-//#include "debugnet.h"
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -118,12 +118,28 @@ namespace GAME {
             ++it;
         }
 
+        for (int i = 0; i < TOTAL_CATEGORY; i++)
+        {
+
+        }
+
         for (int i=0; i < TOTAL_CATEGORY; i++)
         {
+            Game game;
+            sprintf(game.id, "%d", game_categories[i].id);
+            sprintf(game.title, "%s", game_categories[i].alt_title);
+            sprintf(game.category, "%s", game_categories[i].category);
+            game.type = TYPE_CATEGORY;
+            game.folder_id = 0;
+            game.favorite = false;
+            game.tex = no_icon;
+            game_categories[TOTAL_CATEGORY].current_folder->games.push_back(game);
+
             SortGames(&game_categories[i]);
             game_categories[i].current_folder->page_num = 1;
             SetMaxPage(&game_categories[i]);
         }
+        GAME::SetMaxPage(&game_categories[TOTAL_CATEGORY]);
     }
 
     std::string str_tolower(std::string s) {
@@ -615,7 +631,7 @@ namespace GAME {
     void LoadGameImage(Game *game) {
         Tex tex;
         tex = no_icon;
-
+        debugNetPrintf(DEBUG,"Loding image for game id=%s, type=%d, title=%s\n", game->id, game->type, game->title);
         char icon_path[384];
         if (game->type == TYPE_BUBBLE && strcmp(game->category, game_categories[PS_MOBILE_GAMES].category) == 0)
         {
@@ -764,7 +780,6 @@ namespace GAME {
         {
             current_category = &game_categories[FAVORITES];
         }
-        current_category = &game_categories[TOTAL_CATEGORY];
         current_category->current_folder->page_num = 1;
         view_mode = current_category->view_mode;
         grid_rows = current_category->rows;

@@ -259,21 +259,6 @@ namespace CONFIG {
 
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();
-
-        for (int i = 0; i < TOTAL_CATEGORY; i++)
-        {
-            Game game;
-            sprintf(game.id, "%d", game_categories[i].id);
-            sprintf(game.title, "%s", game_categories[i].alt_title);
-            sprintf(game.category, "%s", game_categories[i].category);
-            game.type = TYPE_CATEGORY;
-            game.folder_id = game_categories[i].folders[0].id;
-            game.favorite = false;
-            game.tex = no_icon;
-            game_categories[TOTAL_CATEGORY].current_folder->games.push_back(game);
-
-        }
-        GAME::SetMaxPage(&game_categories[TOTAL_CATEGORY]);
     }
 
     void ParseMultiValueString(const char* prefix_list, std::vector<std::string> &prefixes, bool toLower)

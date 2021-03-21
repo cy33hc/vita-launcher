@@ -10,7 +10,7 @@
 #include "config.h"
 #include "ime_dialog.h"
 #include "gui.h"
-//#include "debugnet.h"
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
