@@ -25,7 +25,7 @@ extern "C" {
 	#include "inifile.h"
 }
 
-#define NUM_CACHED_PAGES 5
+#define NUM_CACHED_PAGES 4
 
 GameCategory game_categories[TOTAL_CATEGORY+1];
 std::map<std::string, GameCategory*> categoryMap;

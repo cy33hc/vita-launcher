@@ -291,11 +291,14 @@ namespace Windows {
         GAME::ClearSelection(previous_category);
         current_category = &game_categories[category_id];
         view_mode = current_category->view_mode;
-        selected_game = nullptr;
         category_selected = -1;
         grid_rows = current_category->rows;
 
-        GAME::StartDeleteGameImagesThread(previous_category);
+        if (previous_category->id != CATEGORY)
+        {
+            GAME::StartDeleteGameImagesThread(previous_category);
+        }
+
         if(current_category->view_mode == VIEW_MODE_GRID)
         {
             GAME::StartLoadImagesThread(current_category->id, current_category->current_folder->page_num, current_category->current_folder->page_num, current_category->games_per_page);
@@ -485,7 +488,8 @@ namespace Windows {
         ImVec2 pos = ImGui::GetCursorPos();
         ImGuiStyle* style = &ImGui::GetStyle();
         ImGui::PushStyleColor(ImGuiCol_TextDisabled, style->Colors[ImGuiCol_Text]);
-        bool category_changed = false;
+        GameCategory *new_category = nullptr;
+
         for (int i = 0; i < current_category->rows; i++)
         {
             for (int j=0; j < current_category->columns; j++)
@@ -501,9 +505,7 @@ namespace Windows {
                     {
                         if (game->type == TYPE_CATEGORY)
                         {
-                            GameCategory *cat = categoryMap[game->category];
-                            ChangeCategory(current_category, cat->id);
-                            category_changed = true;
+                            new_category = categoryMap[game->category];
                         }
                         else if (game->type == TYPE_FOLDER)
                         {
@@ -545,6 +547,7 @@ namespace Windows {
                             DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
                         }
                     }
+
                     if (ImGui::IsWindowAppearing() && button_id == 0)
                     {
                         SetNavFocusHere();
@@ -552,6 +555,7 @@ namespace Windows {
                         game_position = GetGamePositionOnPage(selected_game);
                         tab_infocus = false;
                     }
+
                     if (ImGui::IsItemFocused())
                     {
                         selected_game = game;
@@ -592,23 +596,30 @@ namespace Windows {
                         ImGui::Selectable(game->title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_Disabled, ImVec2(215-text_clip, 0));
                     }
                 }
-                if (category_changed)
+                if (new_category != nullptr)
                 {
                     break;
                 }
             }
-            if (category_changed)
+            if (new_category != nullptr)
             {
                 break;
             }
         }
+
         ImGui::PopStyleColor(ImGuiCol_TextDisabled);
         ImGui::SetCursorPos(ImVec2(pos.x, 521));
         ImGui::Separator();
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
         ImGui::Text("Page: %d/%d", current_category->current_folder->page_num, current_category->current_folder->max_page); ImGui::SameLine();
-
         ShowCommonSubWindow();
+
+        if (new_category != nullptr)
+        {
+            ChangeCategory(current_category, new_category->id);
+            new_category = nullptr;
+            selected_game = nullptr;
+        }
     }
 
     void ShowScrollViewWindow()
@@ -632,7 +643,8 @@ namespace Windows {
         ImVec2 pos = ImGui::GetCursorPos();
         ImGui::Columns(current_category->columns, current_category->title, false);
         ImGui::PushStyleColor(ImGuiCol_TextDisabled, style->Colors[ImGuiCol_Text]);
-        bool category_changed = false;
+        GameCategory *new_category = nullptr;
+
         for (int button_id=0; button_id<current_category->current_folder->games.size(); button_id++)
         {
             char id[32];
@@ -647,9 +659,7 @@ namespace Windows {
             {
                 if (game->type == TYPE_CATEGORY)
                 {
-                    GameCategory *cat = categoryMap[game->category];
-                    ChangeCategory(current_category, cat->id);
-                    category_changed = true;
+                    new_category = categoryMap[game->category];
                 }
                 else if (game->type == TYPE_FOLDER)
                 {
@@ -771,7 +781,7 @@ namespace Windows {
             ImGui::EndGroup();
             ImGui::NextColumn();
 
-            if (category_changed)
+            if (new_category != nullptr)
             {
                 break;
             }
@@ -783,6 +793,13 @@ namespace Windows {
         ImGui::SetCursorPos(ImVec2(pos.x, 521));
         ImGui::Separator();
         ShowCommonSubWindow();
+
+        if (new_category != nullptr)
+        {
+            ChangeCategory(current_category, new_category->id);
+            new_category = nullptr;
+            selected_game = nullptr;
+        }
     }
 
     void ShowListViewWindow()
@@ -829,7 +846,8 @@ namespace Windows {
         }
         ImGui::Separator();
         ImGui::Columns(2, current_category->title, true);
-        bool category_changed = false;
+        GameCategory *new_category = nullptr;
+
         for (int i = 0; i < current_category->current_folder->games.size(); i++)
         {
             Game *game = &current_category->current_folder->games[i];
@@ -850,9 +868,7 @@ namespace Windows {
             {
                 if (game->type == TYPE_CATEGORY)
                 {
-                    GameCategory *cat = categoryMap[game->category];
-                    ChangeCategory(current_category, cat->id);
-                    category_changed = true;
+                    new_category = categoryMap[game->category];
                 }
                 else if (game->type == TYPE_FOLDER)
                 {
@@ -922,7 +938,7 @@ namespace Windows {
             ImGui::NextColumn();               
             ImGui::Separator();
             
-            if (category_changed)
+            if (new_category != nullptr)
             {
                 break;
             }
@@ -932,6 +948,13 @@ namespace Windows {
         ImGui::SetCursorPosY(520);
         ImGui::Separator();
         ShowCommonSubWindow();
+
+        if (new_category != nullptr)
+        {
+            ChangeCategory(current_category, new_category->id);
+            new_category = nullptr;
+            selected_game = nullptr;
+        }
     }
 
     void ShowCommonSubWindow()

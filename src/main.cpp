@@ -115,6 +115,8 @@ namespace Services
 int main(int, char **)
 {
 	//debugNetInit(ip_server,port_server,DEBUG);
+	//debugNetPrintf(DEBUG,"Start debug\n");
+
 	Net::Init();
 	Services::Init();
 	Services::InitImGui();
