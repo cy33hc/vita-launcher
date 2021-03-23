@@ -294,6 +294,7 @@ namespace Windows {
         current_category = &game_categories[category_id];
         view_mode = current_category->view_mode;
         category_selected = -1;
+        selected_game = nullptr;
         grid_rows = current_category->rows;
         aspect_ratio = current_category->ratio;
 
