@@ -783,6 +783,7 @@ namespace GAME {
         current_category->current_folder->page_num = 1;
         view_mode = current_category->view_mode;
         grid_rows = current_category->rows;
+        aspect_ratio = current_category->ratio;
         gui_mode  = GUI_MODE_LAUNCHER;
         if (view_mode == VIEW_MODE_GRID)
         {

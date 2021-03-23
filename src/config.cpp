@@ -52,20 +52,51 @@ namespace CONFIG {
         WriteInt(category->title, CONFIG_CATEGORY_ORDER, category->order);
 
         category->rows = ReadInt(category->title, CONFIG_GRID_ROWS, 3);
+        category->ratio = ReadInt(category->title, CONFIG_ASPECT_RATIO, 1);
+        WriteInt(category->title, CONFIG_ASPECT_RATIO, category->ratio);
         if (category->rows <= 2)
         {
             category->rows = 2;
             category->columns = 4;
             category->button_size = ImVec2(230,233);
-            category->thumbnail_size = ImVec2(220,205);
-            category->games_per_page = 8;
+            category->normal_thumbnail_size = ImVec2(220,205);
+            if (category->ratio == ASPECT_RATIO_4x4)
+            {
+                category->thumbnail_size = ImVec2(220,205);
+                category->thumbnail_offset = ImVec2(0,0);
+            }
+            else if (category->ratio == ASPECT_RATIO_4x3)
+            {
+                category->thumbnail_size = ImVec2(220,165);
+                category->thumbnail_offset = ImVec2(0,20);
+            }
+            else
+            {
+                category->thumbnail_size = ImVec2(154,205);
+                category->thumbnail_offset = ImVec2(33,0);
+            }
         }
         else if (category->rows >= 3)
         {
             category->rows = 3;
             category->columns = 6;
             category->button_size = ImVec2(148,154);
-            category->thumbnail_size = ImVec2(138,127);
+            category->normal_thumbnail_size = ImVec2(138,127);
+            if (category->ratio == ASPECT_RATIO_4x4)
+            {
+                category->thumbnail_size = ImVec2(138,127);
+                category->thumbnail_offset = ImVec2(0,0);
+            }
+            else if (category->ratio == ASPECT_RATIO_4x3)
+            {
+                category->thumbnail_size = ImVec2(138,104);
+                category->thumbnail_offset = ImVec2(0,12);
+            }
+            else
+            {
+                category->thumbnail_size = ImVec2(95,127);
+                category->thumbnail_offset = ImVec2(22,0);
+            }
         }
         category->games_per_page = category->rows * category->columns;
 
@@ -354,6 +385,7 @@ namespace CONFIG {
             WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores).c_str());
             WriteBool(cat->title, CONFIG_BOOT_WITH_ALT_CORE, cat->boot_with_alt_core);
             WriteInt(cat->title, CONFIG_ICON_TYPE, cat->icon_type);
+            WriteInt(cat->title, CONFIG_ASPECT_RATIO, cat->ratio);
         }
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();

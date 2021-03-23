@@ -36,6 +36,7 @@
 #define CONFIG_GRID_ROWS "grid_rows"
 #define CONFIG_NEW_ICON_METHOD "new_icon_method"
 #define CONFIG_ICON_TYPE "icon_type"
+#define CONFIG_ASPECT_RATIO "icon_aspect_ratio"
 
 #define DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID "ADRLANCHR"
 #define RETROARCH_TITLE_ID "RETROVITA"
@@ -43,6 +44,10 @@
 #define VIEW_MODE_GRID 0
 #define VIEW_MODE_LIST 1
 #define VIEW_MODE_SCROLL 2
+
+#define ASPECT_RATIO_4x4 1
+#define ASPECT_RATIO_4x3 2
+#define ASPECT_RATIO_3x4 3
 
 #define CONFIG_GLOBAL "Global"
 #define CONFIG_SHOW_ALL_CATEGORIES "show_all_categories"

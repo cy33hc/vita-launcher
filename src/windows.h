@@ -7,6 +7,7 @@
 
 extern int view_mode;
 extern int grid_rows;
+extern int aspect_ratio;
 
 namespace Windows {
     inline void SetupWindow(void) {

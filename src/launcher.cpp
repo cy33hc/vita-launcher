@@ -28,6 +28,7 @@ static SceCtrlData pad_prev;
 bool paused = false;
 int view_mode;
 int grid_rows;
+int aspect_ratio;
 static std::vector<std::string> games_on_filesystem;
 static float scroll_direction = 0.0f;
 static int game_position = 0;
@@ -92,6 +93,7 @@ namespace Windows {
         }
         sprintf(txt_search_text, search_text);
         grid_rows = current_category->rows;
+        aspect_ratio = current_category->ratio;
     }
 
     void HandleLauncherWindowInput()
@@ -293,6 +295,7 @@ namespace Windows {
         view_mode = current_category->view_mode;
         category_selected = -1;
         grid_rows = current_category->rows;
+        aspect_ratio = current_category->ratio;
 
         if (previous_category->id != CATEGORY)
         {
@@ -489,19 +492,31 @@ namespace Windows {
         ImGuiStyle* style = &ImGui::GetStyle();
         ImGui::PushStyleColor(ImGuiCol_TextDisabled, style->Colors[ImGuiCol_Text]);
         GameCategory *new_category = nullptr;
+        ImVec2 thumbnail_size;
+        ImVec2 thumbnail_offset;
 
         for (int i = 0; i < current_category->rows; i++)
         {
             for (int j=0; j < current_category->columns; j++)
             {
-                ImGui::SetCursorPos(ImVec2(pos.x+(j*grid_size),pos.y+(i*grid_size)));
                 int button_id = (i*current_category->columns)+j;
                 if (game_start_index+button_id < current_category->current_folder->games.size())
                 {
                     char id[32];
                     sprintf(id, "%d#image", button_id);
                     Game *game = &current_category->current_folder->games[game_start_index+button_id];
-                    if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), current_category->thumbnail_size, ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+                    if (game->type == TYPE_FOLDER)
+                    {
+                        thumbnail_offset = ImVec2(0,0);
+                        thumbnail_size = current_category->normal_thumbnail_size;
+                    }
+                    else
+                    {
+                        thumbnail_size = current_category->thumbnail_size;
+                        thumbnail_offset = current_category->thumbnail_offset;
+                    }
+                    ImGui::SetCursorPos(ImVec2(pos.x+(j*grid_size)+thumbnail_offset.x,pos.y+(i*grid_size)+thumbnail_offset.y));
+                    if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), thumbnail_size, ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
                     {
                         if (game->type == TYPE_CATEGORY)
                         {
@@ -644,6 +659,8 @@ namespace Windows {
         ImGui::Columns(current_category->columns, current_category->title, false);
         ImGui::PushStyleColor(ImGuiCol_TextDisabled, style->Colors[ImGuiCol_Text]);
         GameCategory *new_category = nullptr;
+        ImVec2 thumbnail_size;
+        ImVec2 thumbnail_offset;
 
         for (int button_id=0; button_id<current_category->current_folder->games.size(); button_id++)
         {
@@ -706,8 +723,18 @@ namespace Windows {
                 tab_infocus = false;
             }
 
-            ImGui::SetCursorPos(ImVec2(pos.x, pos.y+4));
-            ImGui::Image(reinterpret_cast<ImTextureID>(game->tex.id), current_category->thumbnail_size);
+            if (game->type == TYPE_FOLDER)
+            {
+                thumbnail_size = current_category->normal_thumbnail_size;
+                thumbnail_offset = ImVec2(0,0);
+            }
+            else
+            {
+                thumbnail_offset = current_category->thumbnail_offset;
+                thumbnail_size = current_category->thumbnail_size;
+            }
+            ImGui::SetCursorPos(ImVec2(pos.x+thumbnail_offset.x, pos.y+4+thumbnail_offset.y));
+            ImGui::Image(reinterpret_cast<ImTextureID>(game->tex.id), thumbnail_size);
             if (ImGui::IsItemVisible())
             {
                 if (game->tex.id == no_icon.id)
@@ -1277,7 +1304,11 @@ namespace Windows {
                     ImGui::Separator();
                     ImGui::Text("Grid Rows:"); ImGui::SameLine();
                     ImGui::RadioButton("2", &grid_rows, 2); ImGui::SameLine();
-                    ImGui::RadioButton("3", &grid_rows, 3);
+                    ImGui::RadioButton("3", &grid_rows, 3); ImGui::SameLine();
+                    ImGui::Text("Ratio:"); ImGui::SameLine();
+                    ImGui::RadioButton("4x4", &aspect_ratio, 1); ImGui::SameLine();
+                    ImGui::RadioButton("4x3", &aspect_ratio, 2); ImGui::SameLine();
+                    ImGui::RadioButton("3x4", &aspect_ratio, 3);
                     ImGui::Separator();
 
                     if (current_category->id != CATEGORY)
@@ -1683,19 +1714,47 @@ namespace Windows {
                 {
                     current_category->rows = 2;
                     current_category->columns = 4;
-                    current_category->games_per_page = 8;
+                    current_category->ratio = aspect_ratio;
                     current_category->button_size = ImVec2(230,233);
-                    current_category->thumbnail_size = ImVec2(220,205);
                     current_category->games_per_page = current_category->rows * current_category->columns;
+                    if (aspect_ratio == ASPECT_RATIO_4x4)
+                    {
+                        current_category->thumbnail_size = ImVec2(220,205);
+                        current_category->thumbnail_offset = ImVec2(0,0);
+                    }
+                    else if (aspect_ratio == ASPECT_RATIO_4x3)
+                    {
+                        current_category->thumbnail_size = ImVec2(220,165);
+                        current_category->thumbnail_offset = ImVec2(0,20);
+                    }
+                    else
+                    {
+                        current_category->thumbnail_size = ImVec2(154,205);
+                        current_category->thumbnail_offset = ImVec2(33,0);
+                    }
                 }
                 else if (grid_rows = 3)
                 {
                     current_category->rows = 3;
                     current_category->columns = 6;
-                    current_category->games_per_page = 18;
+                    current_category->ratio = aspect_ratio;
                     current_category->button_size = ImVec2(148,154);
-                    current_category->thumbnail_size = ImVec2(138,127);
                     current_category->games_per_page = current_category->rows * current_category->columns;
+                    if (aspect_ratio == ASPECT_RATIO_4x4)
+                    {
+                        current_category->thumbnail_size = ImVec2(138,127);
+                        current_category->thumbnail_offset = ImVec2(0,0);
+                    }
+                    else if (aspect_ratio == ASPECT_RATIO_4x3)
+                    {
+                        current_category->thumbnail_size = ImVec2(138,104);
+                        current_category->thumbnail_offset = ImVec2(0,12);
+                    }
+                    else
+                    {
+                        current_category->thumbnail_size = ImVec2(95,127);
+                        current_category->thumbnail_offset = ImVec2(22,0);
+                    }
                 }
                 GAME::SetMaxPage(current_category);
                 CONFIG::SaveCategoryConfig(current_category);

@@ -61,9 +61,12 @@ typedef struct {
     char download_url[256];
     int rows;
     int columns;
+    int ratio;
     int games_per_page;
     ImVec2 button_size;
     ImVec2 thumbnail_size;
+    ImVec2 thumbnail_offset;
+    ImVec2 normal_thumbnail_size;
     int icon_type;
 } GameCategory;
 
