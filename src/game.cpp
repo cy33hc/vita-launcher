@@ -1258,7 +1258,7 @@ namespace GAME {
 
     int DeleteGamesImagesThread(SceSize args, DeleteImagesParams *params)
     {
-        sceKernelDelayThread(5000);
+        sceKernelDelayThread(params->timeout);
         Folder *folder = params->folder;
         for (int i=0; i < folder->games.size(); i++)
         {
@@ -1275,10 +1275,11 @@ namespace GAME {
         return sceKernelExitDeleteThread(0);
     }
 
-    void StartDeleteGameImagesThread(GameCategory *category)
+    void StartDeleteGameImagesThread(GameCategory *category, int timeout)
     {
         DeleteImagesParams params;
         params.folder = category->current_folder;
+        params.timeout = timeout;
         delete_images_thid = sceKernelCreateThread("delete_images_thread", (SceKernelThreadEntry)GAME::DeleteGamesImagesThread, 0x10000100, 0x4000, 0, 0, NULL);
 		if (delete_images_thid >= 0)
 			sceKernelStartThread(delete_images_thid, sizeof(DeleteImagesParams), &params);

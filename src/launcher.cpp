@@ -300,7 +300,7 @@ namespace Windows {
 
         if (previous_category->id != CATEGORY)
         {
-            GAME::StartDeleteGameImagesThread(previous_category);
+            GAME::StartDeleteGameImagesThread(previous_category, 5000);
         }
 
         if(current_category->view_mode == VIEW_MODE_GRID)
@@ -331,7 +331,7 @@ namespace Windows {
             }
             else if (current_category->view_mode == VIEW_MODE_SCROLL)
             {
-                GAME::StartDeleteGameImagesThread(current_category);
+                GAME::StartDeleteGameImagesThread(current_category,20000);
                 current_category->current_folder = &current_category->folders[0];
                 if (show_categories_as_tabs)
                 {
@@ -340,7 +340,7 @@ namespace Windows {
             }
             else
             {
-                GAME::StartDeleteGameImagesThread(current_category);
+                GAME::StartDeleteGameImagesThread(current_category,20000);
                 current_category->current_folder = &current_category->folders[0];
                 GAME::StartLoadImagesThread(current_category->id, current_category->current_folder->page_num, current_category->current_folder->page_num, current_category->games_per_page);
             }
@@ -528,7 +528,6 @@ namespace Windows {
                         {
                             if (!selection_mode)
                             {
-                                GAME::StartDeleteGameImagesThread(current_category);
                                 new_folder = GAME::FindFolder(current_category, game->folder_id);
                             }
                         }
@@ -636,6 +635,7 @@ namespace Windows {
         }
         if (new_folder != nullptr)
         {
+            GAME::StartDeleteGameImagesThread(current_category, 20000);
             current_category->current_folder = new_folder;
             selected_game = nullptr;
             GAME::StartLoadImagesThread(current_category->id, current_category->current_folder->page_num, current_category->current_folder->page_num, current_category->games_per_page);
@@ -690,7 +690,6 @@ namespace Windows {
                 {
                     if (!selection_mode)
                     {
-                        GAME::StartDeleteGameImagesThread(current_category);
                         new_folder = GAME::FindFolder(current_category, game->folder_id);
                     }
                 }
@@ -835,6 +834,7 @@ namespace Windows {
 
         if (new_folder != nullptr)
         {
+            GAME::StartDeleteGameImagesThread(current_category, 20000);
             current_category->current_folder = new_folder;
             new_folder = nullptr;
             selected_game = nullptr;

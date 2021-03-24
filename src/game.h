@@ -194,6 +194,7 @@ typedef struct ScanGamesParams {
 
 typedef struct DeleteImagesParams {
     Folder *folder;
+    int timeout;
 };
 
 namespace GAME {
@@ -221,7 +222,7 @@ namespace GAME {
     int ScanGamesThread(SceSize args, void *argp);
     void StartScanGamesThread();
     int DeleteGamesImagesThread(SceSize args, DeleteImagesParams *params);
-    void StartDeleteGameImagesThread(GameCategory *category);
+    void StartDeleteGameImagesThread(GameCategory *category, int timeout);
     void SetMaxPage(GameCategory *category);
     Game* FindGame(GameCategory *category, Game *game);
     int FindGamePosition(GameCategory *category, Game *game);
