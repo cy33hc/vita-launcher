@@ -369,6 +369,7 @@ namespace CONFIG {
         WriteInt(cat->title, CONFIG_VIEW_MODE, cat->view_mode);
         WriteString(cat->title, CONFIG_ALT_TITLE, cat->alt_title);
         WriteInt(cat->title, CONFIG_GRID_ROWS, cat->rows);
+        WriteInt(cat->title, CONFIG_ASPECT_RATIO, cat->ratio);
         if (cat->id != FAVORITES && cat->id != HOMEBREWS)
         {
             WriteString(cat->title, CONFIG_TITLE_ID_PREFIXES, GetMultiValueString(cat->valid_title_ids).c_str());
@@ -385,7 +386,6 @@ namespace CONFIG {
             WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores).c_str());
             WriteBool(cat->title, CONFIG_BOOT_WITH_ALT_CORE, cat->boot_with_alt_core);
             WriteInt(cat->title, CONFIG_ICON_TYPE, cat->icon_type);
-            WriteInt(cat->title, CONFIG_ASPECT_RATIO, cat->ratio);
         }
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();

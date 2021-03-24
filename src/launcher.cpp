@@ -10,7 +10,7 @@
 #include "config.h"
 #include "ime_dialog.h"
 #include "gui.h"
-//#include "debugnet.h"
+//##include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -493,6 +493,7 @@ namespace Windows {
         ImGuiStyle* style = &ImGui::GetStyle();
         ImGui::PushStyleColor(ImGuiCol_TextDisabled, style->Colors[ImGuiCol_Text]);
         GameCategory *new_category = nullptr;
+        Folder *new_folder = nullptr;
         ImVec2 thumbnail_size;
         ImVec2 thumbnail_offset;
 
@@ -527,12 +528,8 @@ namespace Windows {
                         {
                             if (!selection_mode)
                             {
-                                GameCategory *cat = categoryMap[game->category];
-                                GAME::StartDeleteGameImagesThread(cat);
-                                Folder *folder = GAME::FindFolder(cat, game->folder_id);
-                                cat->current_folder = folder;
-                                selected_game = nullptr;
-                                GAME::StartLoadImagesThread(cat->id, cat->current_folder->page_num, cat->current_folder->page_num, cat->games_per_page);
+                                GAME::StartDeleteGameImagesThread(current_category);
+                                new_folder = GAME::FindFolder(current_category, game->folder_id);
                             }
                         }
                         else if (selection_mode)
@@ -563,6 +560,7 @@ namespace Windows {
                             DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
                         }
                     }
+                    game->visible = ImGui::IsItemVisible() ? 1 : 0;
 
                     if (ImGui::IsWindowAppearing() && button_id == 0)
                     {
@@ -612,12 +610,12 @@ namespace Windows {
                         ImGui::Selectable(game->title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_Disabled, ImVec2(215-text_clip, 0));
                     }
                 }
-                if (new_category != nullptr)
+                if (new_category != nullptr || new_folder != nullptr)
                 {
                     break;
                 }
             }
-            if (new_category != nullptr)
+            if (new_category != nullptr || new_folder != nullptr)
             {
                 break;
             }
@@ -635,6 +633,13 @@ namespace Windows {
             ChangeCategory(current_category, new_category->id);
             new_category = nullptr;
             selected_game = nullptr;
+        }
+        if (new_folder != nullptr)
+        {
+            current_category->current_folder = new_folder;
+            selected_game = nullptr;
+            GAME::StartLoadImagesThread(current_category->id, current_category->current_folder->page_num, current_category->current_folder->page_num, current_category->games_per_page);
+
         }
     }
 
@@ -660,6 +665,8 @@ namespace Windows {
         ImGui::Columns(current_category->columns, current_category->title, false);
         ImGui::PushStyleColor(ImGuiCol_TextDisabled, style->Colors[ImGuiCol_Text]);
         GameCategory *new_category = nullptr;
+        Folder *new_folder = nullptr;
+
         ImVec2 thumbnail_size;
         ImVec2 thumbnail_offset;
 
@@ -683,11 +690,8 @@ namespace Windows {
                 {
                     if (!selection_mode)
                     {
-                        GameCategory *cat = categoryMap[game->category];
-                        GAME::StartDeleteGameImagesThread(cat);
-                        Folder *folder = GAME::FindFolder(cat, game->folder_id);
-                        cat->current_folder = folder;
-                        selected_game = nullptr;
+                        GAME::StartDeleteGameImagesThread(current_category);
+                        new_folder = GAME::FindFolder(current_category, game->folder_id);
                     }
                 }
                 else if (selection_mode)
@@ -809,7 +813,7 @@ namespace Windows {
             ImGui::EndGroup();
             ImGui::NextColumn();
 
-            if (new_category != nullptr)
+            if (new_category != nullptr || new_folder)
             {
                 break;
             }
@@ -826,6 +830,13 @@ namespace Windows {
         {
             ChangeCategory(current_category, new_category->id);
             new_category = nullptr;
+            selected_game = nullptr;
+        }
+
+        if (new_folder != nullptr)
+        {
+            current_category->current_folder = new_folder;
+            new_folder = nullptr;
             selected_game = nullptr;
         }
     }
@@ -1715,7 +1726,6 @@ namespace Windows {
                 {
                     current_category->rows = 2;
                     current_category->columns = 4;
-                    current_category->ratio = aspect_ratio;
                     current_category->button_size = ImVec2(230,233);
                     current_category->games_per_page = current_category->rows * current_category->columns;
                     if (aspect_ratio == ASPECT_RATIO_4x4)
@@ -1738,7 +1748,6 @@ namespace Windows {
                 {
                     current_category->rows = 3;
                     current_category->columns = 6;
-                    current_category->ratio = aspect_ratio;
                     current_category->button_size = ImVec2(148,154);
                     current_category->games_per_page = current_category->rows * current_category->columns;
                     if (aspect_ratio == ASPECT_RATIO_4x4)
@@ -1757,6 +1766,7 @@ namespace Windows {
                         current_category->thumbnail_offset = ImVec2(22,0);
                     }
                 }
+                current_category->ratio = aspect_ratio;
                 GAME::SetMaxPage(current_category);
                 CONFIG::SaveCategoryConfig(current_category);
 

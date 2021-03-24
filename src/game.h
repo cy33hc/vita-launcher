@@ -220,7 +220,6 @@ namespace GAME {
     void StartLoadImagesThread(int category, int prev_page_num, int page, int games_per_page);
     int ScanGamesThread(SceSize args, void *argp);
     void StartScanGamesThread();
-    void DeleteGamesImages(GameCategory *category);
     int DeleteGamesImagesThread(SceSize args, DeleteImagesParams *params);
     void StartDeleteGameImagesThread(GameCategory *category);
     void SetMaxPage(GameCategory *category);

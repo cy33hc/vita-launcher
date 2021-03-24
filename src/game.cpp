@@ -768,7 +768,7 @@ namespace GAME {
     int ScanGamesThread(SceSize args, void *argp)
     {
         gui_mode = GUI_MODE_SCAN;
-        sceKernelDelayThread(10000);
+        sceKernelDelayThread(5000);
         for (int i=0; i < TOTAL_CATEGORY; i++)
         {
             game_categories[i].current_folder->games.clear();
@@ -926,22 +926,6 @@ namespace GAME {
         }
 
         return strcmp(p1->title, p2->title);
-    }
-
-    void DeleteGamesImages(GameCategory *category)
-    {
-        for (int i=0; i < category->current_folder->games.size(); i++)
-        {
-            Game *game = &category->current_folder->games[i];
-            game->visible = 0;
-            game->thread_started = false;
-            if (game->tex.id != no_icon.id)
-            {
-                Tex tmp = game->tex;
-                game->tex = no_icon;
-                Textures::Free(&tmp);
-            }
-        }
     }
 
     Game* FindGame(GameCategory *category, Game *game)
