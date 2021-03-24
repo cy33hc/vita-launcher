@@ -1727,6 +1727,7 @@ namespace Windows {
                     current_category->rows = 2;
                     current_category->columns = 4;
                     current_category->button_size = ImVec2(230,233);
+                    current_category->normal_thumbnail_size = ImVec2(220,205);
                     current_category->games_per_page = current_category->rows * current_category->columns;
                     if (aspect_ratio == ASPECT_RATIO_4x4)
                     {
@@ -1749,6 +1750,7 @@ namespace Windows {
                     current_category->rows = 3;
                     current_category->columns = 6;
                     current_category->button_size = ImVec2(148,154);
+                    current_category->normal_thumbnail_size = ImVec2(138,127);
                     current_category->games_per_page = current_category->rows * current_category->columns;
                     if (aspect_ratio == ASPECT_RATIO_4x4)
                     {
