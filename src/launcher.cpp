@@ -776,7 +776,7 @@ namespace Windows {
                 }
             }
             
-            ImGui::SetCursorPosY(ImGui::GetCursorPosY()-2);
+            ImGui::SetCursorPosY(pos.y + current_category->normal_thumbnail_size.y+6);
             int text_clip = 0;
             if (game->selected)
             {
