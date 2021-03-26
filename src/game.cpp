@@ -702,20 +702,21 @@ namespace GAME {
     {
         int end = params->page_num+params->games_per_page;
         GameCategory *category = &game_categories[params->category];
-        if (end > category->current_folder->games.size())
+        Folder *folder = category->current_folder;
+        if (end > folder->games.size())
         {
-            end = category->current_folder->games.size();
+            end = folder->games.size();
         }
         for (int i=params->page_num; i<end; i++)
         {
-            if (category->current_folder->games[i].visible>0 && !category->current_folder->games[i].icon_missing)
+            if (folder->games[i].visible>0 && !folder->games[i].icon_missing)
             {
-                GAME::LoadGameImage(&category->current_folder->games[i]);
+                GAME::LoadGameImage(&folder->games[i]);
                 // For concurrency, game might be invisible after being visible.
-                if (category->current_folder->games[i].visible == 0 && category->current_folder->games[i].tex.id != no_icon.id)
+                if (folder->games[i].visible == 0 && folder->games[i].tex.id != no_icon.id)
                 {
-                    Tex tmp = category->current_folder->games[i].tex;
-                    category->current_folder->games[i].tex = no_icon;
+                    Tex tmp = folder->games[i].tex;
+                    folder->games[i].tex = no_icon;
                     Textures::Free(&tmp);
                 }
             }
