@@ -253,7 +253,8 @@ namespace Windows {
 
         if (!show_categories_as_tabs)
         {
-            if ((pad_prev.buttons & SCE_CTRL_CIRCLE) && !(pad.buttons & SCE_CTRL_CIRCLE) && !paused)
+            if ((((pad_prev.buttons & SCE_CTRL_CIRCLE) && !(pad.buttons & SCE_CTRL_CIRCLE) && !swap_xo) ||
+                 ((pad_prev.buttons & SCE_CTRL_CROSS) && !(pad.buttons & SCE_CTRL_CROSS) && swap_xo)) && !paused)
             {
                 if (current_category->current_folder != &current_category->folders[0])
                 {
@@ -358,7 +359,14 @@ namespace Windows {
             }
             else
             {
-                ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CIRCLE);
+                if (swap_xo)
+                {
+                    ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CROSS);
+                }
+                else
+                {
+                    ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CIRCLE);
+                }
             }
         }
     }
