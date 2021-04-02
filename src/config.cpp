@@ -288,6 +288,14 @@ namespace CONFIG {
         SetupCategory(&game_categories[FAVORITES], FAVORITES, "favorites", "Favorites", nullptr, nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
         SetupCategory(&game_categories[CATEGORY], CATEGORY, "category", "Categories", nullptr, nullptr, nullptr, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
 
+        sorted_categories[0] = &game_categories[0];
+        sorted_categories[CATEGORY] = &game_categories[CATEGORY];
+        for (int i=1; i<TOTAL_CATEGORY; i++)
+        {
+            sorted_categories[i] = &game_categories[TOTAL_CATEGORY-i];
+        }
+        GAME::SortCategories();
+
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();
     }
@@ -386,6 +394,7 @@ namespace CONFIG {
             WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores).c_str());
             WriteBool(cat->title, CONFIG_BOOT_WITH_ALT_CORE, cat->boot_with_alt_core);
             WriteInt(cat->title, CONFIG_ICON_TYPE, cat->icon_type);
+            WriteInt(cat->title, CONFIG_CATEGORY_ORDER, cat->order);
         }
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();

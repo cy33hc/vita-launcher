@@ -153,6 +153,7 @@ typedef struct {
 #define FOLDER_ROOT_ID 0
 
 extern GameCategory game_categories[];
+extern GameCategory* sorted_categories[];
 extern std::map<std::string, GameCategory*> categoryMap;
 extern GameCategory *current_category;
 extern int games_to_scan;
@@ -199,6 +200,7 @@ typedef struct DeleteImagesParams {
 
 namespace GAME {
     int GameComparator(const void *v1, const void *v2);
+    int GameCategoryComparator(const void *v1, const void *v2);
     void Init();
     void Scan();
     void ScanRetroCategory(sqlite3 *db, GameCategory *category);
@@ -239,8 +241,8 @@ namespace GAME {
     void StartScanGamesCategoryThread(GameCategory *category);
     int ScanGamesCategoryThread(SceSize args, ScanGamesParams *params);
     bool IsMatchPrefixes(const char* id, std::vector<std::string> &prefixes);
-    int IncrementCategory(int id, int num_of_ids);
-    int DecrementCategory(int id, int num_of_ids);
+    int IncrementCategory(int category_id, int num_of_ids);
+    int DecrementCategory(int category_id, int num_of_ids);
     void DownloadThumbnail(sqlite3 *database, Game *game);
     void DownloadThumbnails(GameCategory *category);
     void StartDownloadThumbnailsThread(GameCategory *category);
@@ -254,6 +256,11 @@ namespace GAME {
     int RemoveFolderFromCategory(GameCategory *category, int folder_id);
     void ClearSelection(GameCategory *category);
     std::vector<Game> GetSelectedGames(GameCategory *category);
+    int GetSortedCategoryIndex(int category_id);
+    int CategoryComparator(const void *v1, const void *v2);
+    void SortCategories();
+    void SortGameCategories();
+
     static int LoadScePaf();
     static int UnloadScePaf();
 }

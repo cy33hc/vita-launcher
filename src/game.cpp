@@ -28,6 +28,7 @@ extern "C" {
 #define NUM_CACHED_PAGES 4
 
 GameCategory game_categories[TOTAL_CATEGORY+1];
+GameCategory* sorted_categories[TOTAL_CATEGORY+1];
 std::map<std::string, GameCategory*> categoryMap;
 std::vector<std::string> psp_iso_extensions;
 std::vector<std::string> eboot_extensions;
@@ -139,6 +140,7 @@ namespace GAME {
             game_categories[i].current_folder->page_num = 1;
             SetMaxPage(&game_categories[i]);
         }
+        SortGameCategories();
         GAME::SetMaxPage(&game_categories[TOTAL_CATEGORY]);
     }
 
@@ -588,9 +590,22 @@ namespace GAME {
         }
     }
 
-    int IncrementCategory(int id, int num_of_ids)
+    int GetSortedCategoryIndex(int category_id)
     {
-        int new_id = id + num_of_ids;
+        for (int i=0; i<TOTAL_CATEGORY; i++)
+        {
+            if (sorted_categories[i]->id == category_id)
+            {
+                return i;
+            }
+        }
+    }
+
+    int IncrementCategory(int category_id, int num_of_ids)
+    {
+        int index = GetSortedCategoryIndex(category_id);
+
+        int new_id = index + num_of_ids;
         if (new_id >= TOTAL_CATEGORY)
         {
             new_id = new_id % TOTAL_CATEGORY;
@@ -598,9 +613,11 @@ namespace GAME {
         return new_id;
     }
 
-    int DecrementCategory(int id, int num_of_ids)
+    int DecrementCategory(int category_id, int num_of_ids)
     {
-        int new_id = id - num_of_ids;
+        int index = GetSortedCategoryIndex(category_id);
+
+        int new_id = index - num_of_ids;
         if (new_id >= 0)
         {
             return new_id;
@@ -929,6 +946,43 @@ namespace GAME {
         return strcmp(p1->title, p2->title);
     }
 
+    int GameCategoryComparator(const void *v1, const void *v2)
+    {
+        const Game *p1 = (Game *)v1;
+        const Game *p2 = (Game *)v2;
+        GameCategory *c1 = categoryMap[p1->category];
+        GameCategory *c2 = categoryMap[p2->category];
+
+        return CategoryComparator(&c1, &c2);
+    }
+
+    int CategoryComparator(const void *v1, const void *v2)
+    {
+        GameCategory *p1 = *(GameCategory **)v1;
+        GameCategory *p2 = *(GameCategory **)v2;
+        if (p1->id == FAVORITES || p2->id == CATEGORY)
+        {
+            return -1;
+        }
+        if (p2->id == FAVORITES || p1->id == CATEGORY)
+        {
+            return 1;
+        }
+
+        if (p1->order < p2->order)
+        {
+            return -1;
+        }
+        else if (p1->order > p2->order)
+        {
+            return 1;
+        }
+        else
+        {
+            return strcmp(p1->alt_title, p2->alt_title);
+        }
+    }
+
     Game* FindGame(GameCategory *category, Game *game)
     {
         for (int j=0; j < category->folders.size(); j++)
@@ -1018,6 +1072,16 @@ namespace GAME {
     void SortGames(Folder *folder)
     {
         qsort(&folder->games[0], folder->games.size(), sizeof(Game), GameComparator);
+    }
+
+    void SortCategories()
+    {
+        qsort(&sorted_categories[0], TOTAL_CATEGORY+1, sizeof(GameCategory*), CategoryComparator);
+    }
+
+    void SortGameCategories()
+    {
+        qsort(&game_categories[CATEGORY].folders[0].games[0], game_categories[CATEGORY].folders[0].games.size(), sizeof(Game), GameCategoryComparator);
     }
 
     void RefreshGames(bool all_categories)

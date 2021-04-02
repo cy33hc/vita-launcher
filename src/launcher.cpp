@@ -49,6 +49,7 @@ static char retro_core[128];
 static int move_location = 0;
 static Folder temp_folder;
 static std::vector<CategorySelection> categories_selection;
+static char txt_category_order[4];
 
 GameCategory *tmp_category;
 
@@ -155,12 +156,12 @@ namespace Windows {
             !(pad.buttons & SCE_CTRL_L1) && !paused)
         {
             GameCategory *next_category = current_category;
-            next_category = &game_categories[GAME::DecrementCategory(next_category->id, 1)];
+            next_category = sorted_categories[GAME::DecrementCategory(next_category->id, 1)];
             if (!show_all_categories)
             {
                 while (next_category->current_folder->games.size() == 0)
                 {
-                    next_category = &game_categories[GAME::DecrementCategory(next_category->id, 1)];
+                    next_category = sorted_categories[GAME::DecrementCategory(next_category->id, 1)];
                 }
             }
             category_selected = next_category->id;
@@ -173,12 +174,12 @@ namespace Windows {
                    !(pad.buttons & SCE_CTRL_R1) && !paused)
         {
             GameCategory *next_category = current_category;
-            next_category = &game_categories[GAME::IncrementCategory(next_category->id, 1)];
+            next_category = sorted_categories[GAME::IncrementCategory(next_category->id, 1)];
             if (!show_all_categories)
             {
                 while (next_category->current_folder->games.size() == 0)
                 {
-                    next_category = &game_categories[GAME::IncrementCategory(next_category->id, 1)];
+                    next_category = sorted_categories[GAME::IncrementCategory(next_category->id, 1)];
                 }
             }
             category_selected = next_category->id;
@@ -1099,10 +1100,10 @@ namespace Windows {
         {
             for (int i=0; i<TOTAL_CATEGORY; i++)
             {
-                if (game_categories[i].folders[0].games.size() > 0 || show_all_categories)
+                if (sorted_categories[i]->folders[0].games.size() > 0 || show_all_categories)
                 {
                     // Add some padding for title so tabs are consistent width
-                    std::string title = std::string(game_categories[i].alt_title);
+                    std::string title = std::string(sorted_categories[i]->alt_title);
                     if (title.length() == 2)
                         title = "  " + title + "  ";
                     else if (title.length() == 3)
@@ -1110,16 +1111,16 @@ namespace Windows {
                     else if (title == "Vita")
                         title = " " + title + " ";
                     ImGuiTabItemFlags tab_flags = ImGuiTabItemFlags_None;
-                    if (category_selected == i)
+                    if (GAME::GetSortedCategoryIndex(category_selected) == i)
                     {
                         tab_flags = ImGuiTabItemFlags_SetSelected;
                     }
                     if (ImGui::BeginTabItem(title.c_str(), NULL, tab_flags))
                     {
                         GameCategory *previous_category = current_category;
-                        if (previous_category->id != game_categories[i].id)
+                        if (previous_category->id != sorted_categories[i]->id)
                         {
-                            ChangeCategory(previous_category, i);
+                            ChangeCategory(previous_category, sorted_categories[i]->id);
                         }
                         ImGui::EndTabItem();
                     }
@@ -1141,6 +1142,7 @@ namespace Windows {
             SetModalMode(true);
             show_categories_as_tabs_settings = show_categories_as_tabs;
             show_all_categories_setting = show_all_categories;
+            sprintf(txt_category_order, "%d", current_category->order);
             ImGui::OpenPopup("Settings and Actions");
         }
 
@@ -1299,7 +1301,7 @@ namespace Windows {
                 {
                     ImGui::Text("Title:"); ImGui::SameLine();
                     ImGui::SetCursorPosX(posX + 100);
-                    if (ImGui::Selectable(current_category->alt_title, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                    if (ImGui::Selectable(current_category->alt_title, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(250, 0)) && !parental_control)
                     {
                         ime_single_field = current_category->alt_title;
                         ime_before_update = BeforeTitleChangeCallback;
@@ -1313,6 +1315,20 @@ namespace Windows {
                     if (ImGui::IsWindowAppearing())
                     {
                         SetNavFocusHere();
+                    }
+                    if (current_category->id != FAVORITES && current_category->id != CATEGORY)
+                    {
+                        ImGui::SameLine();
+                        ImGui::Text("Order:"); ImGui::SameLine();
+                        if (ImGui::Selectable(txt_category_order, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(30, 0)) && !parental_control)
+                        {
+                            ime_single_field = txt_category_order;
+                            ime_before_update = nullptr;
+                            ime_after_update = nullptr;
+                            ime_callback = SingleValueImeCallback;
+                            Dialog::initImeDialog("Category Order", txt_category_order, 2, SCE_IME_TYPE_NUMBER, 0, 0);
+                            gui_mode = GUI_MODE_IME;
+                        };
                     }
                     ImGui::Separator();
 
@@ -1778,6 +1794,12 @@ namespace Windows {
                 }
                 current_category->ratio = aspect_ratio;
                 GAME::SetMaxPage(current_category);
+                int order = atoi(txt_category_order);
+                int prev_order = current_category->order;
+                if (order > 0)
+                {
+                    current_category->order = order;
+                }
                 CONFIG::SaveCategoryConfig(current_category);
 
                 if (strcmp(cb_style_name, style_name) != 0)
@@ -1857,6 +1879,12 @@ namespace Windows {
                     sprintf(temp_folder.icon_path, folder->icon_path);
                     temp_folder.id = folder->id;
                     handle_edit_delete_folder = true;
+                }
+
+                if (order > 0 && order != prev_order)
+                {
+                    GAME::SortGameCategories();
+                    GAME::SortCategories();
                 }
 
                 show_categories_as_tabs = show_categories_as_tabs_settings;
