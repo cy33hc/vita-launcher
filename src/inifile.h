@@ -42,7 +42,7 @@ typedef struct
    struct ENTRY *pSec;
    struct ENTRY *pKey;
    char          KeyText [128];
-   char          ValText [2048];
+   char          ValText [4096];
    char          Comment [32];
 } EFIND;
 
