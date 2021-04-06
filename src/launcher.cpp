@@ -2534,6 +2534,11 @@ namespace Windows {
             GAME::RemoveGameFromCategory(current_category, game);
             GAME::SetMaxPage(current_category);
         }
+
+        if (!show_all_categories)
+        {
+            GAME::HideCategories();
+        }
     }
 
     void MoveGameToFolder(sqlite3 *cache_db, sqlite3 *vita_db, Game *game, Folder *folder)
