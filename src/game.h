@@ -260,6 +260,8 @@ namespace GAME {
     int CategoryComparator(const void *v1, const void *v2);
     void SortCategories();
     void SortGameCategories();
+    void HideCategories();
+    void ShowAllCategories();
 
     static int LoadScePaf();
     static int UnloadScePaf();

@@ -119,28 +119,22 @@ namespace GAME {
             ++it;
         }
 
-        for (int i = 0; i < TOTAL_CATEGORY; i++)
-        {
-
-        }
-
         for (int i=0; i < TOTAL_CATEGORY; i++)
         {
-            Game game;
-            sprintf(game.id, "%d", game_categories[i].id);
-            sprintf(game.title, "%s", game_categories[i].alt_title);
-            sprintf(game.category, "%s", game_categories[i].category);
-            game.type = TYPE_CATEGORY;
-            game.folder_id = 0;
-            game.favorite = false;
-            game.tex = no_icon;
-            game_categories[TOTAL_CATEGORY].current_folder->games.push_back(game);
-
             SortGames(&game_categories[i]);
             game_categories[i].current_folder->page_num = 1;
             SetMaxPage(&game_categories[i]);
         }
-        SortGameCategories();
+        
+        if (show_all_categories)
+        {
+            ShowAllCategories();
+        }
+        else
+        {
+            HideCategories();
+        }
+        
         GAME::SetMaxPage(&game_categories[TOTAL_CATEGORY]);
     }
 
@@ -794,10 +788,18 @@ namespace GAME {
 
         GAME::Scan();
 
-        if (game_categories[FAVORITES].current_folder->games.size() > 0)
+        if (show_categories_as_tabs)
         {
-            current_category = &game_categories[FAVORITES];
+            if (game_categories[FAVORITES].current_folder->games.size() > 0)
+            {
+                current_category = &game_categories[FAVORITES];
+            }
         }
+        else
+        {
+            current_category = &game_categories[CATEGORY];
+        }
+        
         current_category->current_folder->page_num = 1;
         view_mode = current_category->view_mode;
         grid_rows = current_category->rows;
@@ -1442,6 +1444,7 @@ exit:
     {
 		int ret = DeleteApp(game->id);
         DB::DeleteVitaAppFolderById(nullptr, game->id);
+        DB::DeleteFavorite(nullptr, game);
 
 		if (ret >= 0)
 		{
@@ -1503,6 +1506,64 @@ exit:
         {
             category->current_folder->games[i].selected = false;
         }
+    }
+
+    void ClearCategories()
+    {
+        for (std::vector<Game>::iterator it=game_categories[TOTAL_CATEGORY].folders[0].games.begin();
+              it!=game_categories[TOTAL_CATEGORY].folders[0].games.end(); )
+        {
+            game_categories[TOTAL_CATEGORY].folders[0].games.erase(it);
+            if (it->tex.id != no_icon.id)
+            {
+                Textures::Free(&it->tex);
+            }
+        }
+    }
+
+    void HideCategories()
+    {
+        ClearCategories();
+
+        for (int i=0; i < TOTAL_CATEGORY; i++)
+        {
+            if (game_categories[i].current_folder->games.size() > 0)
+            {
+                Game game;
+                sprintf(game.id, "%d", game_categories[i].id);
+                sprintf(game.title, "%s", game_categories[i].alt_title);
+                sprintf(game.category, "%s", game_categories[i].category);
+                game.type = TYPE_CATEGORY;
+                game.folder_id = 0;
+                game.favorite = false;
+                game.tex = no_icon;
+                game_categories[TOTAL_CATEGORY].current_folder->games.push_back(game);
+            }
+        }
+
+        SortGameCategories();
+    }
+
+    void ShowAllCategories()
+    {
+        ClearCategories();
+
+        game_categories[TOTAL_CATEGORY].current_folder->games.clear();
+
+        for (int i=0; i < TOTAL_CATEGORY; i++)
+        {
+            Game game;
+            sprintf(game.id, "%d", game_categories[i].id);
+            sprintf(game.title, "%s", game_categories[i].alt_title);
+            sprintf(game.category, "%s", game_categories[i].category);
+            game.type = TYPE_CATEGORY;
+            game.folder_id = 0;
+            game.favorite = false;
+            game.tex = no_icon;
+            game_categories[TOTAL_CATEGORY].current_folder->games.push_back(game);
+        }
+
+        SortGameCategories();
     }
 
     std::vector<Game> GetSelectedGames(GameCategory *category)

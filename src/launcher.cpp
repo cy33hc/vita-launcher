@@ -1575,7 +1575,7 @@ namespace Windows {
 
                 if (ImGui::BeginTabItem("Global"))
                 {
-                    if (show_categories_as_tabs_settings)
+                    if (current_category->id != CATEGORY)
                     {
                         ImGui::Checkbox("Show All Categories", &show_all_categories_setting);
                         if (ImGui::IsWindowAppearing())
@@ -1888,6 +1888,18 @@ namespace Windows {
                 }
 
                 show_categories_as_tabs = show_categories_as_tabs_settings;
+                if (show_all_categories != show_all_categories_setting)
+                {
+                    if (show_all_categories_setting)
+                    {
+                        GAME::ShowAllCategories();
+                    }
+                    else
+                    {
+                        GAME::HideCategories();
+                    }
+                }
+                
                 show_all_categories = show_all_categories_setting;
                 SetModalMode(false);
                 move_game = false;
