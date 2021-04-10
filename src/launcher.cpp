@@ -1632,7 +1632,7 @@ namespace Windows {
                         if (is_selected)
                             ImGui::SetItemDefaultFocus();
 
-                        for (int n = 1; n < TOTAL_CATEGORY; n++)
+                        for (int n = 0; n < TOTAL_CATEGORY; n++)
                         {
                             const bool is_selected = strcmp(game_categories[n].category, cb_startup_category)==0;
                             if (ImGui::Selectable(game_categories[n].alt_title, is_selected))
