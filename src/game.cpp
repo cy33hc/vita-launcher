@@ -788,16 +788,23 @@ namespace GAME {
 
         GAME::Scan();
 
-        if (show_categories_as_tabs)
+        if (strcmp(startup_category, CONFIG_DEFAULT_STARTUP_CATEGORY)==0)
         {
-            if (game_categories[FAVORITES].current_folder->games.size() > 0)
+            if (show_categories_as_tabs)
             {
-                current_category = &game_categories[FAVORITES];
+                if (game_categories[FAVORITES].current_folder->games.size() > 0)
+                {
+                    current_category = &game_categories[FAVORITES];
+                }
+            }
+            else
+            {
+                current_category = &game_categories[CATEGORY];
             }
         }
         else
         {
-            current_category = &game_categories[CATEGORY];
+            current_category = categoryMap[startup_category];
         }
         
         current_category->current_folder->page_num = 1;

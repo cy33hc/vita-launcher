@@ -35,6 +35,7 @@ static int game_position = 0;
 static bool tab_infocus = false;
 static int category_selected = -1;
 static char cb_style_name[64];
+static char cb_startup_category[10];
 static char cb_category_name[16] = "all";
 static int search_count = 0;
 static std::vector<std::string> styles;
@@ -81,6 +82,15 @@ namespace Windows {
     void Init()
     {
         sprintf(cb_style_name, "%s", style_name);
+        sprintf(cb_startup_category, "%s", startup_category);
+        if (show_categories_as_tabs)
+        {
+            if (strcmp(startup_category, CONFIG_DEFAULT_STARTUP_CATEGORY) != 0)
+            {
+                category_selected = categoryMap[startup_category]->id;
+            }
+        }
+
         // Retrieve styles
         std::vector<std::string> style_files = FS::ListDir(STYLES_FOLDER);
         styles.push_back(CONFIG_DEFAULT_STYLE_NAME);
@@ -1611,6 +1621,29 @@ namespace Windows {
                     }
                     ImGui::Separator();
 
+                    ImGui::Text("Startup Category:"); ImGui::SameLine();
+                    if (ImGui::BeginCombo("##StartupCategory", cb_startup_category, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular))
+                    {
+                        bool is_selected = strcmp(CONFIG_DEFAULT_STARTUP_CATEGORY, cb_startup_category)==0;
+                        if (ImGui::Selectable("Default", is_selected))
+                        {
+                            sprintf(cb_startup_category, CONFIG_DEFAULT_STARTUP_CATEGORY);
+                        }
+                        if (is_selected)
+                            ImGui::SetItemDefaultFocus();
+
+                        for (int n = 1; n < TOTAL_CATEGORY; n++)
+                        {
+                            const bool is_selected = strcmp(game_categories[n].category, cb_startup_category)==0;
+                            if (ImGui::Selectable(game_categories[n].alt_title, is_selected))
+                                sprintf(cb_startup_category, "%s", game_categories[n].category);
+                            if (is_selected)
+                                ImGui::SetItemDefaultFocus();
+                        }
+                        ImGui::EndCombo();
+                    }
+                    ImGui::Separator();
+
                     ImGui::PushID("pspemu_location");
                     ImGui::Text("Pspemu Path:"); ImGui::SameLine();
                     if (ImGui::Selectable(pspemu_path, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
@@ -1707,6 +1740,7 @@ namespace Windows {
 
                 WriteString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, pspemu_path);
                 WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, cb_style_name);
+                WriteString(CONFIG_GLOBAL, CONFIG_STARTUP_CATEGORY, cb_startup_category);
 
                 if (remove_from_cache && selected_game != nullptr)
                 {

@@ -57,6 +57,8 @@
 #define CONFIG_SWAP_XO "swap_xo"
 #define CONFIG_SHOW_CATEGORY_AS_TABS "show_categories_as_tabs"
 #define CONFIG_CATEGORY_ICON "category_icon"
+#define CONFIG_STARTUP_CATEGORY "startup_category"
+#define CONFIG_DEFAULT_STARTUP_CATEGORY "default"
 #define ICON_TYPE_BOXARTS "Boxarts"
 #define ICON_TYPE_TITLES "Titles"
 
@@ -212,6 +214,7 @@ extern char search_text[];
 extern bool new_icon_method;
 extern bool swap_xo;
 extern bool show_categories_as_tabs;
+extern char startup_category[];
 
 namespace CONFIG {
     void LoadConfig();

@@ -18,6 +18,7 @@ char search_text[32];
 bool new_icon_method;
 bool swap_xo;
 bool show_categories_as_tabs;
+char startup_category[10];
 
 namespace CONFIG {
 
@@ -215,6 +216,9 @@ namespace CONFIG {
         sprintf(style_name, "%s", style_value);
         WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, style_name);
         Style::SetStylePath(style_name);
+
+        sprintf(startup_category, ReadString(CONFIG_GLOBAL, CONFIG_STARTUP_CATEGORY, CONFIG_DEFAULT_STARTUP_CATEGORY));
+        WriteString(CONFIG_GLOBAL, CONFIG_STARTUP_CATEGORY, startup_category);
 
         // Load global config
         show_all_categories = ReadBool(CONFIG_GLOBAL, CONFIG_SHOW_ALL_CATEGORIES, true);
