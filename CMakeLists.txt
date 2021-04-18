@@ -13,7 +13,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "Launcher")
 set(VITA_TITLEID  "SMLA00001")
-set(VITA_VERSION  "02.91")
+set(VITA_VERSION  "02.92")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-psabi -Wunused-variable -Wwrite-strings -fpermissive -std=c++17 -Wimplicit-fallthrough")
@@ -161,6 +161,7 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE icons/utilities.png icons/utilities.png
   FILE icons/vectrex.png icons/vectrex.png
   FILE icons/vita.png icons/vita.png
+  FILE icons/system.png icons/system.png
   FILE noicon.png noicon.png
   FILE favorite.png favorite.png
   FILE square.png square.png

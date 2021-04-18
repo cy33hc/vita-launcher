@@ -248,6 +248,7 @@ namespace CONFIG {
         sprintf(adernaline_launcher_boot_bin_path, "ux0:app/%s/data/boot.bin", adernaline_launcher_title_id);
 
         SetupCategory(&game_categories[VITA_GAMES], VITA_GAMES, "vita", "Vita", nullptr, nullptr, VITA_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
+        SetupCategory(&game_categories[SYSTEM_APPS], SYSTEM_APPS, "system", "System Apps", nullptr, nullptr, SYSTEM_APP_ID_PREFIXES, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
         SetupCategory(&game_categories[PSP_GAMES], PSP_GAMES, "psp", "PSP", nullptr, nullptr, PSP_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_PSP_ISO, nullptr, 3);
         SetupCategory(&game_categories[PS1_GAMES], PS1_GAMES, "ps1", "PSX", "RETROVITA", "app0:pcsx_rearmed_libretro.self", PS1_TITLE_ID_PREFIXES, PS1_FILTERS, PS1_ALT_CORES, TYPE_EBOOT, PS1_DOWNLOAD_URL, 3);
         SetupCategory(&game_categories[PS_MIMI_GAMES], PS_MIMI_GAMES, "psmini", "PSP Mini", nullptr, nullptr, PSP_MINI_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_EBOOT, nullptr, 3);

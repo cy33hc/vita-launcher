@@ -401,7 +401,14 @@ namespace GAME {
         {
             char uri[35];
             sprintf(uri, "psgm:play?titleid=%s", game->id);
-            sceAppMgrLaunchAppByUri(0xFFFFF, uri);
+            if (strncmp(game->id, "NPXS", 4)==0)
+            {
+                sceAppMgrLaunchAppByUri(0x40000, uri);
+            }
+            else
+            {
+                sceAppMgrLaunchAppByUri(0xFFFFF, uri);
+            }
             sceKernelExitProcess(0);
         }
         else if (game->type == TYPE_ROM || (category->id == PS1_GAMES && strcmp(category->rom_launcher_title_id, RETROARCH_TITLE_ID)==0))
@@ -650,7 +657,14 @@ namespace GAME {
         }
         else if (game->type == TYPE_BUBBLE)
         {
-            sprintf(icon_path, "ur0:appmeta/%s/icon0.png", game->id);
+            if (strncmp(game->id, "NPXS", 4)==0)
+            {
+                sprintf(icon_path, "vs0:app/%s/sce_sys/icon0.png", game->id);
+            }
+            else
+            {
+                sprintf(icon_path, "ur0:appmeta/%s/icon0.png", game->id);
+            }
         }
         else if (game->type == TYPE_EBOOT || game->type == TYPE_PSP_ISO)
         {

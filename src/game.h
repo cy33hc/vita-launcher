@@ -39,7 +39,7 @@ typedef struct {
 
 typedef struct {
     char id;
-    char title[16];
+    char title[32];
     char alt_title[32];
     std::vector<Folder> folders;
     Folder *current_folder;
@@ -94,50 +94,51 @@ typedef struct {
 
 #define FAVORITES 0
 #define VITA_GAMES 1
-#define PSP_GAMES 2
-#define PS1_GAMES 3
-#define PS_MIMI_GAMES 4
-#define PS_MOBILE_GAMES 5
-#define NES_GAMES 6
-#define SNES_GAMES 7
-#define GB_GAMES 8
-#define GBC_GAMES 9
-#define GBA_GAMES 10
-#define N64_GAMES 11
-#define NEOGEO_GAMES 12
-#define NEOGEO_CD_GAMES 13
-#define NEOGEO_PC_GAMES 14
-#define SEGA_SATURN_GAMES 15
-#define GAME_GEAR_GAMES 16
-#define MASTER_SYSTEM_GAMES 17
-#define MEGA_DRIVE_GAMES 18
-#define SEGA_32X_GAMES 19
-#define SEGA_CD_GAMES 20
-#define SEGA_DREAMCAST_GAMES 21
-#define NEC_GAMES 22
-#define ATARI_2600_GAMES 23
-#define ATARI_5200_GAMES 24
-#define ATARI_7800_GAMES 25
-#define ATARI_LYNX_GAMES 26
-#define AMIGA_GAMES 27
-#define BANDAI_GAMES 28
-#define C64_GAMES 29
-#define MSX1_GAMES 30
-#define MSX2_GAMES 31
-#define T_GRAFX_GAMES 32
-#define VECTREX_GAMES 33
-#define GAW_GAMES 34
-#define MAME_2000_GAMES 35
-#define MAME_2003_GAMES 36
-#define SCUMMVM_GAMES 37
-#define PORT_GAMES 38
-#define ORIGINAL_GAMES 39
-#define UTILITIES 40
-#define EMULATORS 41
-#define HOMEBREWS 42
-#define CATEGORY 43
+#define SYSTEM_APPS 2
+#define PSP_GAMES 3
+#define PS1_GAMES 4
+#define PS_MIMI_GAMES 5
+#define PS_MOBILE_GAMES 6
+#define NES_GAMES 7
+#define SNES_GAMES 8
+#define GB_GAMES 9
+#define GBC_GAMES 10
+#define GBA_GAMES 11
+#define N64_GAMES 12
+#define NEOGEO_GAMES 13
+#define NEOGEO_CD_GAMES 14
+#define NEOGEO_PC_GAMES 15
+#define SEGA_SATURN_GAMES 16
+#define GAME_GEAR_GAMES 17
+#define MASTER_SYSTEM_GAMES 18
+#define MEGA_DRIVE_GAMES 19
+#define SEGA_32X_GAMES 20
+#define SEGA_CD_GAMES 21
+#define SEGA_DREAMCAST_GAMES 22
+#define NEC_GAMES 23
+#define ATARI_2600_GAMES 24
+#define ATARI_5200_GAMES 25
+#define ATARI_7800_GAMES 26
+#define ATARI_LYNX_GAMES 27
+#define AMIGA_GAMES 28
+#define BANDAI_GAMES 29
+#define C64_GAMES 30
+#define MSX1_GAMES 31
+#define MSX2_GAMES 32
+#define T_GRAFX_GAMES 33
+#define VECTREX_GAMES 34
+#define GAW_GAMES 35
+#define MAME_2000_GAMES 36
+#define MAME_2003_GAMES 37
+#define SCUMMVM_GAMES 38
+#define PORT_GAMES 39
+#define ORIGINAL_GAMES 40
+#define UTILITIES 41
+#define EMULATORS 42
+#define HOMEBREWS 43
+#define CATEGORY 44
 
-#define TOTAL_CATEGORY 43
+#define TOTAL_CATEGORY 44
 #define TOTAL_ROM_CATEGORY 32
 
 #define TYPE_BUBBLE 0

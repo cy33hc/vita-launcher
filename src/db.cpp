@@ -80,11 +80,11 @@ namespace DB {
         int rc = sqlite3_open(VITA_APP_DB_FILE, &db);
         std::string sql = std::string("select titleId,val,folder_id ") +
             "from tbl_appinfo left join app_folders on tbl_appinfo.titleId = app_folders.id " +
-            "where tbl_appinfo.key=572932585 and tbl_appinfo.titleID not like 'NPXS%'";
+            "where tbl_appinfo.key=572932585 and (tbl_appinfo.titleID not like 'NPXS%' or tbl_appinfo.titleId = 'NPXS10000' or tbl_appinfo.titleId = 'NPXS10001' or tbl_appinfo.titleId = 'NPXS10002' or tbl_appinfo.titleId = 'NPXS10003' or tbl_appinfo.titleId = 'NPXS10004' or tbl_appinfo.titleId = 'NPXS10006' or tbl_appinfo.titleId = 'NPXS10008' or tbl_appinfo.titleId = 'NPXS10009' or tbl_appinfo.titleId = 'NPXS10010' or tbl_appinfo.titleId = 'NPXS10014' or tbl_appinfo.titleId = 'NPXS10015' or tbl_appinfo.titleId = 'NPXS10026' or tbl_appinfo.titleId = 'NPXS10031' or tbl_appinfo.titleId = 'NPXS10072' or tbl_appinfo.titleId = 'NPXS10091' or tbl_appinfo.titleId = 'NPXS10098' or tbl_appinfo.titleId = 'NPXS10094')";
         bool app_folder_exists = TableExists(db, APP_FOLDERS_TABLE);
         if (!app_folder_exists)
         {
-            sql = "select titleId,val from tbl_appinfo where key=572932585 and titleID not like 'NPXS%'";
+            sql = "select titleId,val from tbl_appinfo where key=572932585 and (tbl_appinfo.titleID not like 'NPXS%' or tbl_appinfo.titleId = 'NPXS10000' or tbl_appinfo.titleId = 'NPXS10001' or tbl_appinfo.titleId = 'NPXS10002' or tbl_appinfo.titleId = 'NPXS10003' or tbl_appinfo.titleId = 'NPXS10004' or tbl_appinfo.titleId = 'NPXS10006' or tbl_appinfo.titleId = 'NPXS10008' or tbl_appinfo.titleId = 'NPXS10009' or tbl_appinfo.titleId = 'NPXS10010' or tbl_appinfo.titleId = 'NPXS10014' or tbl_appinfo.titleId = 'NPXS10015' or tbl_appinfo.titleId = 'NPXS10026' or tbl_appinfo.titleId = 'NPXS10031' or tbl_appinfo.titleId = 'NPXS10072' or tbl_appinfo.titleId = 'NPXS10091' or tbl_appinfo.titleId = 'NPXS10098' or tbl_appinfo.titleId = 'NPXS10094')";
         }
         rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
     
@@ -137,7 +137,7 @@ namespace DB {
         sqlite3_stmt *res;
 
         int rc = sqlite3_open(VITA_APP_DB_FILE, &db);
-        std::string sql = "select count(distinct(titleId)) from tbl_appinfo where key=572932585 and titleID not like 'NPXS%'";
+        std::string sql = "select count(distinct(titleId)) from tbl_appinfo where key=572932585 and (tbl_appinfo.titleID not like 'NPXS%' or tbl_appinfo.titleId = 'NPXS10000' or tbl_appinfo.titleId = 'NPXS10001' or tbl_appinfo.titleId = 'NPXS10002' or tbl_appinfo.titleId = 'NPXS10003' or tbl_appinfo.titleId = 'NPXS10004' or tbl_appinfo.titleId = 'NPXS10006' or tbl_appinfo.titleId = 'NPXS10008' or tbl_appinfo.titleId = 'NPXS10009' or tbl_appinfo.titleId = 'NPXS10010' or tbl_appinfo.titleId = 'NPXS10014' or tbl_appinfo.titleId = 'NPXS10015' or tbl_appinfo.titleId = 'NPXS10026' or tbl_appinfo.titleId = 'NPXS10031' or tbl_appinfo.titleId = 'NPXS10072' or tbl_appinfo.titleId = 'NPXS10091' or tbl_appinfo.titleId = 'NPXS10098' or tbl_appinfo.titleId = 'NPXS10094')";
         rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
     
         int step = sqlite3_step(res);

@@ -147,12 +147,13 @@ namespace Windows {
                         game = GAME::FindGame(&game_categories[i], selected_game);
                         if (game != nullptr)
                         {
+                            game->favorite = false;
                             break;
                         }
                     }
+                    game = selected_game;
                     if (game != nullptr)
                     {
-                        game->favorite = false;
                         DB::DeleteFavorite(nullptr, selected_game);
                         GAME::RemoveGameFromCategory(&game_categories[FAVORITES], selected_game);
                         GAME::SetMaxPage(&game_categories[FAVORITES]);
@@ -1330,7 +1331,8 @@ namespace Windows {
                     {
                         ImGui::SameLine();
                         ImGui::Text("Order:"); ImGui::SameLine();
-                        if (ImGui::Selectable(txt_category_order, false, ImGuiSelectableFlags_DontClosePopups, ImVec2(30, 0)) && !parental_control)
+                        std::string display_order = std::string(txt_category_order) + "##order";
+                        if (ImGui::Selectable(display_order.c_str(), false, ImGuiSelectableFlags_DontClosePopups, ImVec2(30, 0)) && !parental_control)
                         {
                             ime_single_field = txt_category_order;
                             ime_before_update = nullptr;
