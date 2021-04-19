@@ -1709,6 +1709,58 @@ namespace Windows {
                     ImGui::EndChild();
                     ImGui::Separator();
 
+                    ImGui::Text("BG Music:"); ImGui::SameLine();
+                    if (ImGui::SmallButton("Add##bg_music") && !parental_control)
+                    {
+                        ime_multi_field = &bg_music_list;
+                        ime_before_update = nullptr;
+                        ime_after_update = nullptr;
+                        ime_callback = MultiValueImeCallback;
+                        Dialog::initImeDialog("Music Path", "", 64, SCE_IME_TYPE_DEFAULT, 0, 0);
+                        gui_mode = GUI_MODE_IME;
+                    }
+                    ImGui::SameLine();
+                    if (bg_music_list.size()>1)
+                        ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(280,47));
+                    else
+                        ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(280,23));
+                    ImGui::BeginChild("BG Music");
+                    ImGui::Columns(2, "Path", true);
+                    for (std::vector<std::string>::iterator it=bg_music_list.begin(); 
+                        it!=bg_music_list.end(); )
+                    {
+                        ImGui::SetColumnWidth(-1,220);
+                        if (ImGui::Selectable(it->c_str(), false, ImGuiSelectableFlags_DontClosePopups, ImVec2(220, 0)) && !parental_control)
+                        {
+                            ime_multi_field = &bg_music_list;
+                            ime_before_update = nullptr;
+                            ime_after_update = nullptr;
+                            ime_callback = MultiValueImeCallback;
+                            Dialog::initImeDialog("Music Path", it->c_str(), 64, SCE_IME_TYPE_DEFAULT, 0, 0);
+                            gui_mode = GUI_MODE_IME;
+                        };
+                        ImGui::NextColumn();
+                        char buttonId[64];
+                        sprintf(buttonId, "Delete##%s", it->c_str());
+                        if (ImGui::SmallButton(buttonId) && !parental_control)
+                        {
+                            bg_music_list.erase(it);
+                        }
+                        else
+                        {
+                            ++it;
+                        }
+                        
+                        ImGui::NextColumn();               
+                        ImGui::Separator();
+                    }
+                    ImGui::Columns(1);
+                    ImGui::EndChild();
+                    ImGui::Separator();
+
+                    ImGui::Checkbox("Enable BG Music", &enable_backgrou_music);
+                    ImGui::Separator();
+
                     ImGui::EndTabItem();
                 }
 
@@ -1743,6 +1795,9 @@ namespace Windows {
                 WriteString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, pspemu_path);
                 WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, cb_style_name);
                 WriteString(CONFIG_GLOBAL, CONFIG_STARTUP_CATEGORY, cb_startup_category);
+                WriteString(CONFIG_GLOBAL, CONFIG_HIDE_TITLE_IDS, CONFIG::GetMultiValueString(hidden_title_ids).c_str());
+                WriteString(CONFIG_GLOBAL, CONFIG_BACKGROUD_MUSIC, CONFIG::GetMultiValueString(bg_music_list).c_str());
+                WriteBool(CONFIG_GLOBAL, CONFIG_ENABLE_BACKGROUND_MUSIC, enable_backgrou_music);
 
                 if (remove_from_cache && selected_game != nullptr)
                 {
@@ -1769,7 +1824,7 @@ namespace Windows {
                     GAME::ClearSelection(current_category);
                     selected_game = nullptr;
                 }
-                WriteString(CONFIG_GLOBAL, CONFIG_HIDE_TITLE_IDS, CONFIG::GetMultiValueString(hidden_title_ids).c_str());
+                
                 if (view_mode != current_category->view_mode)
                 {
                     current_category->view_mode = view_mode;

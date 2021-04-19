@@ -59,6 +59,9 @@
 #define CONFIG_CATEGORY_ICON "category_icon"
 #define CONFIG_STARTUP_CATEGORY "startup_category"
 #define CONFIG_DEFAULT_STARTUP_CATEGORY "default"
+#define CONFIG_BACKGROUD_MUSIC "backgroud_music"
+#define CONFIG_ENABLE_BACKGROUND_MUSIC "enable_backgroud_music"
+
 #define ICON_TYPE_BOXARTS "Boxarts"
 #define ICON_TYPE_TITLES "Titles"
 
@@ -216,6 +219,8 @@ extern bool new_icon_method;
 extern bool swap_xo;
 extern bool show_categories_as_tabs;
 extern char startup_category[];
+extern std::vector<std::string> bg_music_list;
+extern bool enable_backgrou_music;
 
 namespace CONFIG {
     void LoadConfig();

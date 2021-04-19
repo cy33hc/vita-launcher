@@ -19,6 +19,8 @@ bool new_icon_method;
 bool swap_xo;
 bool show_categories_as_tabs;
 char startup_category[10];
+std::vector<std::string> bg_music_list;
+bool enable_backgrou_music;
 
 namespace CONFIG {
 
@@ -179,6 +181,7 @@ namespace CONFIG {
     void LoadConfig()
     {
         const char* hidden_title_ids_str;
+        const char* bg_music_list_str;
 
 		OpenIniFile (CONFIG_INI_FILE);
 
@@ -242,6 +245,13 @@ namespace CONFIG {
         ParseMultiValueString(hidden_title_ids_str, hidden_title_ids, false);
         WriteString(CONFIG_GLOBAL, CONFIG_HIDE_TITLE_IDS, hidden_title_ids_str);
 
+        bg_music_list_str = ReadString(CONFIG_GLOBAL, CONFIG_BACKGROUD_MUSIC, "ux0:/app/SMLA00001/music.ogg");
+        ParseMultiValueString(bg_music_list_str, bg_music_list, false);
+        WriteString(CONFIG_GLOBAL, CONFIG_BACKGROUD_MUSIC, bg_music_list_str);
+
+        enable_backgrou_music = ReadBool(CONFIG_GLOBAL, CONFIG_ENABLE_BACKGROUND_MUSIC, true);
+        WriteBool(CONFIG_GLOBAL, CONFIG_ENABLE_BACKGROUND_MUSIC, enable_backgrou_music);
+        
         // Load adernaline config
         sprintf(adernaline_launcher_title_id, "%s", ReadString(CONFIG_GLOBAL, CONFIG_ADERNALINE_LAUNCHER_TITLE_ID, DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID));
         WriteString(CONFIG_GLOBAL, CONFIG_ADERNALINE_LAUNCHER_TITLE_ID, adernaline_launcher_title_id);

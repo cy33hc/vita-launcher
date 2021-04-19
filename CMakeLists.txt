@@ -13,7 +13,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "Launcher")
 set(VITA_TITLEID  "SMLA00001")
-set(VITA_VERSION  "02.92")
+set(VITA_VERSION  "03.00")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-psabi -Wunused-variable -Wwrite-strings -fpermissive -std=c++17 -Wimplicit-fallthrough")
@@ -44,10 +44,16 @@ add_executable(${PROJECT_NAME}
   src/style.cpp
   src/ime_dialog.cpp
   src/net.cpp
+  src/audio.c
+  src/ogg.c
+  src/vitaaudiolib.c
   sqlite-3.6.23.1/sqlite3.c
 )
 
 target_link_libraries(${PROJECT_NAME}
+  vorbisfile
+  vorbis
+  ogg
   vita2d
   png
   imgui_vita2d
@@ -172,4 +178,5 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE folder.png folder.png
   FILE selected.png selected.png
   FILE default_style.ini default_style.ini
+  FILE music.ogg music.ogg
 )

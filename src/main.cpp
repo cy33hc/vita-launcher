@@ -18,7 +18,9 @@
 #include "fs.h"
 #include "net.h"
 //#include "debugnet.h"
-
+extern "C" {
+	#include "audio.h"
+}
 namespace Services
 {
 	int InitImGui(void)
@@ -121,12 +123,23 @@ int main(int, char **)
 	Services::Init();
 	Services::InitImGui();
 
+	if (enable_backgrou_music)
+	{
+		srand(time(NULL));
+		int index = rand() % bg_music_list.size();
+		Audio_Init(bg_music_list[index].c_str());
+	}
+
 	GAME::Init();
 	GAME::StartScanGamesThread();
 
 	GUI::RenderLoop();
 
 	GAME::Exit();
+	if (enable_backgrou_music)
+	{
+		Audio_Term();
+	}
 	Services::ExitImGui();
 	Services::Exit();
 	Net::Exit();
