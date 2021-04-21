@@ -1,4 +1,3 @@
-#include <vitasdk.h>
 #include <string>
 #include <cstring>
 #include <map>

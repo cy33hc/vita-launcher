@@ -4,7 +4,10 @@
 #include <algorithm>
 #include <vector>
 #include <map>
-#include <vitasdk.h>
+#include <psp2/appmgr.h>
+#include <psp2/sysmodule.h>
+#include <psp2/promoterutil.h>
+#include <psp2/shellsvc.h>
 #include <cstring>
 
 #include "game.h"

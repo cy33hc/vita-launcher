@@ -2,7 +2,6 @@
 #ifndef _ISO_H_
 #define _ISO_H_
 
-#include <vitasdk.h>
 #include <string>
 #include <vector>
 #include <fstream>

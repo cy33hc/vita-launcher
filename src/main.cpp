@@ -7,8 +7,10 @@
 // See imgui_impl_sdl.cpp for details.
 
 #include <imgui_vita2d/imgui_vita.h>
+#include <psp2/common_dialog.h>
+#include <psp2/apputil.h>
 #include <stdio.h>
-#include <vita2d.h>
+#include <vita2d_sys.h>
 
 #include "gui.h"
 #include "textures.h"
@@ -91,7 +93,8 @@ namespace Services
 		sceAppMgrUmount("app0:");
 		sceAppMgrUmount("savedata0:");
 
-		vita2d_init();
+		vita2d_init_with_msaa_and_memsize(0, 4 * 1024, 128 * 1024, 64 * 1024, 4 * 1024, 0);
+		vita2d_set_vblank_wait(0);
 		vita2d_set_clear_color(RGBA8(0x00, 0x00, 0x00, 0xFF));
 
 		initSceAppUtil();

@@ -1,6 +1,6 @@
 #include <imgui_vita2d/imgui_vita.h>
 #include <stdio.h>
-#include <vita2d.h>
+#include <vita2d_sys.h>
 #include "game.h"
 #include "windows.h"
 #include "gui.h"
@@ -51,8 +51,8 @@ namespace GUI {
 
 			vita2d_end_drawing();
 			vita2d_common_dialog_update();
-			vita2d_swap_buffers();
-			sceDisplayWaitVblankStart();
+			vita2d_wait_rendering_done();
+			vita2d_end_shfb();
 		}
 		
 		return 0;

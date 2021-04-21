@@ -1,6 +1,6 @@
-
-#include <vitasdk.h>
+#include <psp2/kernel/iofilemgr.h>
 #include <ios>
+#include <string.h>
 #include "cso.h"
 
 

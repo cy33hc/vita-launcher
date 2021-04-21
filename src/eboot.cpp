@@ -1,4 +1,4 @@
-#include <vitasdk.h>
+#include <psp2/kernel/iofilemgr.h>
 #include <cstdio>
 #include <cstdlib>
 #include "fs.h"

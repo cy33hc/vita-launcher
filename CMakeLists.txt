@@ -1,19 +1,24 @@
 cmake_minimum_required(VERSION 2.8)
 
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-  if(DEFINED ENV{VITASDK})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "toolchain file")
+  if(DEFINED ENV{DOLCESDK})
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{DOLCESDK}/share/dolce.toolchain.cmake" CACHE PATH "toolchain file")
   else()
-    message(FATAL_ERROR "Please define VITASDK to point to your SDK path!")
+    message(FATAL_ERROR "Please define DOLCESDK to point to your SDK path!")
   endif()
 endif()
 
 project(launcher)
-include("${VITASDK}/share/vita.cmake" REQUIRED)
+include("${DOLCESDK}/share/dolce.cmake" REQUIRED)
+
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin
+  COMMAND dolce-make-bootparam app_memsize 0xC000 attribute 0x08 ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin
+)
 
 set(VITA_APP_NAME "Launcher")
 set(VITA_TITLEID  "SMLA00001")
-set(VITA_VERSION  "03.00")
+set(VITA_VERSION  "03.10")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-psabi -Wunused-variable -Wwrite-strings -fpermissive -std=c++17 -Wimplicit-fallthrough")
@@ -54,7 +59,7 @@ target_link_libraries(${PROJECT_NAME}
   vorbisfile
   vorbis
   ogg
-  vita2d
+  vita2d_sys
   png
   imgui_vita2d
   stdc++
@@ -76,16 +81,28 @@ target_link_libraries(${PROJECT_NAME}
   ScePspnetAdhoc_stub
   ScePromoterUtil_stub
   SceShellSvc_stub
+  SceShellUtil_stub
   m
   SceAppMgr_stub
   SceAppUtil_stub
-  SceShaccCg_stub
+  SceAppMgrUser_stub
+  SceSharedFb_stub
+  SceDbg_stub
+  SceGxmInternalForVsh_stub
+  SceDmacmgr_stub
+  SceFios2_stub
+  SceDisplayUser_stub
 )
 
-vita_create_self(eboot.bin ${PROJECT_NAME} UNSAFE)
-vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
+set(DOLCE_MKSFOEX_FLAGS "${DOLCE_MKSFOEX_FLAGS} -d ATTRIBUTE=17338760 -s CATEGORY=gdc")
+set(DOLCE_ELF_CREATE_FLAGS "${DOLCE_ELF_CREATE_FLAGS} -h 544288")
+
+dolce_create_self(eboot.bin ${PROJECT_NAME} UNSAFE BOOT_PARAM ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin)
+
+dolce_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   VERSION ${VITA_VERSION}
   NAME ${VITA_APP_NAME}
+  CONTENT_ID_LABEL "VITLAUNCHR000000"
   FILE sce_sys/icon0.png sce_sys/icon0.png
   FILE sce_sys/livearea/contents/bg.png sce_sys/livearea/contents/bg.png
   FILE sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/startup.png

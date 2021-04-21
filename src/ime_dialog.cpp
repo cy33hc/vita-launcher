@@ -15,8 +15,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#include <vitasdk.h>
+#include <psp2/ime_dialog.h>
 #include "ime_dialog.h"
 
 static int ime_dialog_running = 0;

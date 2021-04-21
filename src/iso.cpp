@@ -1,3 +1,4 @@
+#include <psp2/kernel/iofilemgr.h>
 #include <stdlib.h>
 #include <string>
 #include <vector>

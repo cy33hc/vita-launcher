@@ -15,7 +15,13 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <vitasdk.h>
+#include <psp2/kernel/iofilemgr.h>
+#include <psp2/libhttp.h>
+#include <psp2/sysmodule.h>
+#include <psp2/pspnet_adhoc.h>
+#include <psp2/libnetctl.h>
+#include <string.h>
+
 #include <cstdlib>
 #include "certs.h"
 //#include "debugnet.h"

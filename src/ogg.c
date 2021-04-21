@@ -1,4 +1,4 @@
-#include <psp2/io/fcntl.h>
+#include <psp2/kernel/iofilemgr.h>
 #include <string.h>
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>

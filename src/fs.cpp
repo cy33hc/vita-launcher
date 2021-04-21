@@ -1,10 +1,9 @@
 #include "fs.h"
 
-#include <psp2/io/dirent.h>
-#include <psp2/io/fcntl.h>
-#include <psp2/io/stat.h>
-#include <psp2/net/net.h>
-
+#include <sys/dirent.h>
+#include <sys/fcntl.h>
+#include <sys/stat.h>
+#include <sys/dirent.h>
 #include <algorithm>
 
 #define ERRNO_EEXIST (int)(0x80010000 + SCE_NET_EEXIST)
@@ -54,9 +53,12 @@ namespace FS {
 
     bool FolderExists(const std::string& path)
     {
-        SceIoStat stat;
-        sceIoGetstat(path.c_str(), &stat);
-        return stat.st_mode & SCE_S_IFDIR;
+        SceUID dfd = sceIoDopen(path.c_str());
+        if (dfd < 0)
+            return false;
+
+        sceIoDclose(dfd);
+        return true;
     }
 
     void Rename(const std::string& from, const std::string& to)
@@ -204,7 +206,7 @@ namespace FS {
             else if (ret == 0)
                 break;
 
-            if (SCE_S_ISDIR(dirent.d_stat.st_mode))
+            if (SCE_STM_ISDIR(dirent.d_stat.st_mode))
             {
                 std::vector<std::string> files = FS::ListFiles(path + "/" + dirent.d_name);
                 for (std::vector<std::string>::iterator it=files.begin(); it!=files.end(); )

@@ -1,4 +1,6 @@
 #include <imgui_vita2d/imgui_vita.h>
+#include <psp2/ctrl.h>
+#include <psp2/ime_dialog.h>
 #include <stdio.h>
 #include <algorithm> 
 #include "windows.h"

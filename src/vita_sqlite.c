@@ -10,8 +10,10 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <psp2/io/fcntl.h>
-#include <psp2/io/stat.h>
+#include <sys/fcntl.h>
+#include <sys/stat.h>
+#include <psp2common/kernel/iofilemgr.h>
+#include <sys/dirent.h>
 #include <psp2/kernel/threadmgr.h>
 #include <psp2/rtc.h>
 
