@@ -45,3 +45,7 @@ Use in conjuction with the CopyIcons app to get icons not created by psvita. htt
    
 ## Build
 To build this app, you will need to build the dependency imgui-vita2d (https://github.com/cy33hc/imgui-vita2d).
+
+## Credits
+1. Borrowed some audio code from ELEVENMPV
+2. Borrowed some code from VitaShell for the ime_dialog and net download
