@@ -1404,23 +1404,9 @@ namespace GAME {
         }
     }
 
-	static int LoadScePaf() {
-		static int argp[] = { 0x180000, -1, -1, 1, -1, -1 };
-
-		int result = -1;
-
-		uint32_t buf[4];
-		buf[0] = sizeof(buf);
-		buf[1] = (uint32_t)&result;
-		buf[2] = -1;
-		buf[3] = -1;
-
-		return sceSysmoduleLoadModuleInternalWithArg(SCE_SYSMODULE_INTERNAL_PAF, sizeof(argp), argp, buf);
-	}
-
 	static int UnloadScePaf() {
-		uint32_t buf = 0;
-		return sceSysmoduleUnloadModuleInternalWithArg(SCE_SYSMODULE_INTERNAL_PAF, 0, NULL, &buf);
+		SceSysmoduleOpt option;
+		return sceSysmoduleUnloadModuleInternalWithArg(SCE_SYSMODULE_INTERNAL_PAF, 0, NULL, &option);
 	}
 
 	int DeleteApp(const char *titleid)
@@ -1430,33 +1416,9 @@ namespace GAME {
 		
 		sceAppMgrDestroyOtherApp();
 
-		res = LoadScePaf();
-		if (res < 0)
-			goto exit;
-
-		res = sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_PROMOTER_UTIL);
-		if (res < 0)
-			goto exit;
-
-		res = scePromoterUtilityInit();
-		if (res < 0)
-			goto exit;
-
 		res = scePromoterUtilityDeletePkg(titleid);
-		if (res < 0)
-			goto exit;
 
-		res = scePromoterUtilityExit();
-		if (res < 0)
-			goto exit;
-
-		res = sceSysmoduleUnloadModuleInternal(SCE_SYSMODULE_INTERNAL_PROMOTER_UTIL);
-		if (res < 0)
-			goto exit;
-
-exit:
 		sceShellUtilUnlock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN);
-		res = UnloadScePaf();
 
 		return res;
 	}

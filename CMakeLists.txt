@@ -15,9 +15,7 @@ set(VITA_APP_NAME "Launcher")
 set(VITA_TITLEID  "SMLA00001")
 set(VITA_VERSION  "03.00")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-psabi -Wunused-variable -Wwrite-strings -fpermissive -std=c++17 -Wimplicit-fallthrough")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fpermissive")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 
 add_definitions(-DSQLITE_OS_OTHER=1 -DSQLITE_TEMP_STORE=3 -DSQLITE_THREADSAFE=0)
 

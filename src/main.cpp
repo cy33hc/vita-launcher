@@ -83,6 +83,15 @@ namespace Services
 		sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_LANG, (int *)&config.language);
 		sceAppUtilSystemParamGetInt(SCE_SYSTEM_PARAM_ID_ENTER_BUTTON, (int *)&config.enterButtonAssign);
 		sceCommonDialogSetConfigParam(&config);
+
+		uint32_t scepaf_argp[] = { 0x400000, 0xEA60, 0x40000, 0, 0 };
+
+		SceSysmoduleOpt option;
+        option.flags = 0;
+        option.result = (int *)&option.flags;
+		sceSysmoduleLoadModuleInternalWithArg(SCE_SYSMODULE_INTERNAL_PAF, sizeof(scepaf_argp), scepaf_argp, &option);
+		sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_PROMOTER_UTIL);
+		scePromoterUtilityInit();
 	}
 
 	int Init(void)
@@ -107,6 +116,8 @@ namespace Services
 	{
 		// Shutdown AppUtil
 		sceAppUtilShutdown();
+		scePromoterUtilityExit();
+		sceSysmoduleUnloadModuleInternal(SCE_SYSMODULE_INTERNAL_PROMOTER_UTIL);
 		vita2d_fini();
 	}
 } // namespace Services
