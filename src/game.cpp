@@ -1404,11 +1404,6 @@ namespace GAME {
         }
     }
 
-	static int UnloadScePaf() {
-		SceSysmoduleOpt option;
-		return sceSysmoduleUnloadModuleInternalWithArg(SCE_SYSMODULE_INTERNAL_PAF, 0, NULL, &option);
-	}
-
 	int DeleteApp(const char *titleid)
 	{
 		int res;
