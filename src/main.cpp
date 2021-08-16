@@ -17,7 +17,8 @@
 #include "style.h"
 #include "fs.h"
 #include "net.h"
-//#include "debugnet.h"
+#include "ftpclient.h"
+#include "debugnet.h"
 extern "C" {
 	#include "audio.h"
 }
@@ -127,13 +128,19 @@ namespace Services
 
 int main(int, char **)
 {
-	//debugNetInit(ip_server,port_server,DEBUG);
-	//debugNetPrintf(DEBUG,"Start debug\n");
+	debugNetInit(ip_server,port_server,DEBUG);
 
 	Net::Init();
 	Services::Init();
 	Services::InitImGui();
 
+	FtpClient *client = new FtpClient();
+	int res = client->Connect("192.168.100.14", 21);
+	if (res > 0)
+	{
+		debugNetPrintf(DEBUG,"Success connect to 192.168.100.14\n");
+	}
+	
 	if (enable_backgrou_music)
 	{
 		srand(time(NULL));

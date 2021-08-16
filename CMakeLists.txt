@@ -42,6 +42,7 @@ add_executable(${PROJECT_NAME}
   src/style.cpp
   src/ime_dialog.cpp
   src/net.cpp
+  src/ftpclient.cpp
   src/audio.c
   src/ogg.c
   src/vitaaudiolib.c
@@ -49,6 +50,7 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
+  debugnet
   vorbisfile
   vorbis
   ogg
