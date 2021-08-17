@@ -406,7 +406,7 @@ int FtpClient::FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode 
 	int on=1;
 	ftphandle *ctrl;
 	char *cp;
-	unsigned char v[6];
+	int v[6];
 	int ret;
 
 	if (nControl->dir != FTPLIB_CONTROL) return -1;
@@ -428,7 +428,7 @@ int FtpClient::FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode 
 	cp = strchr(nControl->response,'(');
 	if (cp == NULL) return -1;
 	cp++;
-	sscanf(cp,"%hhu,%hhu,%hhu,%hhu,%hhu,%hhu",&v[2],&v[3],&v[4],&v[5],&v[0],&v[1]);
+	sscanf(cp, "%u,%u,%u,%u,%u,%u", &v[2], &v[3], &v[4], &v[5], &v[0], &v[1]);
 	if (nControl->correctpasv) if (!CorrectPasvResponse(v)) return -1;
 	sin.sa.sa_data[2] = v[2];
 	sin.sa.sa_data[3] = v[3];
@@ -474,6 +474,7 @@ int FtpClient::FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode 
 		return -1;
 	}
 
+    debugNetPrintf(DEBUG, "Start  sceNetConnect\n");
 	if (sceNetConnect(sData, &sin.sa, sizeof(sin.sa)) == -1)
 	{
 		debugNetPrintf(ERROR, "sceNetConnect data error\n");
@@ -641,7 +642,7 @@ int FtpClient::FtpOpenPort(ftphandle *nControl, ftphandle **nData, transfermode 
 	return 1;
 }
 
-int FtpClient::CorrectPasvResponse(unsigned char *v)
+int FtpClient::CorrectPasvResponse(int *v)
 {
 	SceNetSockaddr ipholder;
 	uint32_t ipholder_size = sizeof(ipholder);
@@ -883,4 +884,28 @@ int FtpClient::Quit()
 		sceNetSocketClose(mp_ftphandle->handle);
 		return 1;
 	}
+}
+
+ftphandle* FtpClient::RawOpen(const char *path, accesstype type, transfermode mode)
+{
+	int ret;
+	ftphandle* datahandle;
+	ret = FtpAccess(path, type, mode, mp_ftphandle, &datahandle); 
+	if (ret) return datahandle;
+	else return NULL;
+}
+
+int FtpClient::RawClose(ftphandle* handle)
+{
+	return FtpClose(handle);
+} 
+
+int FtpClient::RawWrite(void* buf, int len, ftphandle* handle)
+{
+	return FtpWrite(buf, len, handle);
+}
+
+int FtpClient::RawRead(void* buf, int max, ftphandle* handle)
+{
+	return FtpRead(buf, max, handle);
 }

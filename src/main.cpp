@@ -135,7 +135,6 @@ int main(int, char **)
 	Services::InitImGui();
 
 	FtpClient *client = new FtpClient();
-	client->SetConnmode(FtpClient::port);
 	int res = client->Connect("192.168.100.14", 21);
 	if (res > 0)
 	{

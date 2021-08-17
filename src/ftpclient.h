@@ -60,6 +60,10 @@ public:
 	int Login(const char *user, const char *pass);
 	int Nlst(const char *outputfile, const char *path);
 	int Dir(const char *outputfile, const char *path);
+	ftphandle* RawOpen(const char *path, accesstype type, transfermode mode);
+	int RawClose(ftphandle* handle);
+	int RawWrite(void* buf, int len, ftphandle* handle);
+	int RawRead(void* buf, int max, ftphandle* handle);
 	int Quit();
 
 private:
@@ -73,7 +77,7 @@ private:
 	int FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode mode, int dir, char *cmd);
 	int FtpOpenPort(ftphandle *nControl, ftphandle **nData, transfermode mode, int dir, char *cmd);
 	int FtpAcceptConnection(ftphandle *nData, ftphandle *nControl);
-	int CorrectPasvResponse(unsigned char *v);
+	int CorrectPasvResponse(int *v);
 	int FtpAccess(const char *path, accesstype type, transfermode mode, ftphandle *nControl, ftphandle **nData);
 	int FtpXfer(const char *localfile, const char *path, ftphandle *nControl, accesstype type, transfermode mode);
 	int FtpWrite(void *buf, int len, ftphandle *nData);
