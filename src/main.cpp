@@ -141,12 +141,11 @@ int main(int, char **)
 		debugNetPrintf(DEBUG,"Success connect to 192.168.100.14\n");
 	}
 
-	res = client->Login("anonymous", "");
+	res = client->Login("cyee", "kramer");
 	if (res > 0)
 	{
 		debugNetPrintf(DEBUG,"Success Login to 192.168.100.14\n");
 	}
-	client->Dir("ux0:data/dir.txt", "/");
 	client->Quit();
 
 	if (enable_backgrou_music)

@@ -292,7 +292,7 @@ int FtpClient::FtpAccess(const char *path, accesstype type, transfermode mode, f
 		dir = FTPLIB_READ;
 		break;
 	case FtpClient::dirverbose:
-		strcpy(buf,"LIST -aL");
+		strcpy(buf,"LIST");
 		dir = FTPLIB_READ;
 		break;
 	case FtpClient::filereadappend:
@@ -908,4 +908,222 @@ int FtpClient::RawWrite(void* buf, int len, ftphandle* handle)
 int FtpClient::RawRead(void* buf, int max, ftphandle* handle)
 {
 	return FtpRead(buf, max, handle);
+}
+
+/*
+ * FtpSite - send a SITE command
+ *
+ * return 1 if command successful, 0 otherwise
+ */
+int FtpClient::Site(const char *cmd)
+{
+	char buf[256];
+
+	if ((strlen(cmd) + 7) > sizeof(buf)) return 0;
+	sprintf(buf,"SITE %s",cmd);
+	if (!FtpSendCmd(buf,'2',mp_ftphandle)) return 0;
+	return 1;
+}
+
+/*
+ * FtpRaw - send a raw string string
+ *
+ * return 1 if command successful, 0 otherwise
+ */
+
+int FtpClient::Raw(const char *cmd)
+{
+	char buf[256];
+	strncpy(buf, cmd, 256);
+	if (!FtpSendCmd(buf,'2',mp_ftphandle)) return 0;
+	return 1;
+}
+
+/*
+ * FtpSysType - send a SYST command
+ *
+ * Fills in the user buffer with the remote system type.  If more
+ * information from the response is required, the user can parse
+ * it out of the response buffer returned by FtpLastResponse().
+ *
+ * return 1 if command successful, 0 otherwise
+ */
+int FtpClient::SysType(char *buf, int max)
+{
+	int l = max;
+	char *b = buf;
+	char *s;
+	if (!FtpSendCmd("SYST",'2',mp_ftphandle)) return 0;
+	s = &mp_ftphandle->response[4];
+	while ((--l) && (*s != ' ')) *b++ = *s++;
+	*b++ = '\0';
+	return 1;
+}
+
+/*
+ * FtpMkdir - create a directory at server
+ *
+ * return 1 if successful, 0 otherwise
+ */
+int FtpClient::Mkdir(const char *path)
+{
+	char buf[256];
+
+	if ((strlen(path) + 6) > sizeof(buf)) return 0;
+	sprintf(buf,"MKD %s",path);
+	if (!FtpSendCmd(buf,'2', mp_ftphandle)) return 0;
+	return 1;
+}
+
+/*
+ * FtpChdir - change path at remote
+ *
+ * return 1 if successful, 0 otherwise
+ */
+int FtpClient::Chdir(const char *path)
+{
+	char buf[256];
+
+	if ((strlen(path) + 6) > sizeof(buf)) return 0;
+	sprintf(buf,"CWD %s",path);
+	if (!FtpSendCmd(buf,'2',mp_ftphandle)) return 0;
+	return 1;
+}
+
+/*
+ * FtpCDUp - move to parent directory at remote
+ *
+ * return 1 if successful, 0 otherwise
+ */
+int FtpClient::Cdup()
+{
+	if (!FtpSendCmd("CDUP",'2',mp_ftphandle)) return 0;
+	return 1;
+}
+
+/*
+ * FtpRmdir - remove directory at remote
+ *
+ * return 1 if successful, 0 otherwise
+ */
+int FtpClient::Rmdir(const char *path)
+{
+	char buf[256];
+
+	if ((strlen(path) + 6) > sizeof(buf)) return 0;
+	sprintf(buf,"RMD %s",path);
+	if (!FtpSendCmd(buf,'2',mp_ftphandle)) return 0;
+	return 1;
+}
+
+/*
+ * FtpPwd - get working directory at remote
+ *
+ * return 1 if successful, 0 otherwise
+ */
+int FtpClient::Pwd(char *path, int max)
+{
+	int l = max;
+	char *b = path;
+	char *s;
+
+ 	if (!FtpSendCmd("PWD",'2',mp_ftphandle)) return 0;
+	s = strchr(mp_ftphandle->response, '"');
+	if (s == NULL) return 0;
+   s++;
+	while ((--l) && (*s) && (*s != '"')) *b++ = *s++;
+	*b = '\0';
+	return 1;
+}
+
+/*
+ * FtpSize - determine the size of a remote file
+ *
+ * return 1 if successful, 0 otherwise
+ */
+int FtpClient::Size(const char *path, int *size, transfermode mode)
+{
+   char cmd[256];
+   int resp,sz,rv=1;
+
+   if ((strlen(path) + 7) > sizeof(cmd)) return 0;
+
+	sprintf(cmd, "TYPE %c", mode);
+   if (!FtpSendCmd(cmd, '2', mp_ftphandle)) return 0;
+
+	sprintf(cmd,"SIZE %s",path);
+   if (!FtpSendCmd(cmd,'2',mp_ftphandle)) rv = 0;
+   else
+   {
+		if (sscanf(mp_ftphandle->response, "%d %d", &resp, &sz) == 2) *size = sz;
+		else rv = 0;
+   }
+   return rv;
+}
+
+/*
+ * FtpModDate - determine the modification date of a remote file
+ *
+ * return 1 if successful, 0 otherwise
+ */
+int FtpClient::ModDate(const char *path, char *dt, int max)
+{
+	char buf[256];
+	int rv = 1;
+
+	if ((strlen(path) + 7) > sizeof(buf)) return 0;
+	sprintf(buf,"MDTM %s",path);
+   if (!FtpSendCmd(buf,'2',mp_ftphandle)) rv = 0;
+	else strncpy(dt, &mp_ftphandle->response[4], max);
+	return rv;
+}
+
+/*
+ * FtpGet - issue a GET command and write received data to output
+ *
+ * return 1 if successful, 0 otherwise
+ */
+
+int FtpClient::Get(const char *outputfile, const char *path, transfermode mode, int64_t offset)
+{
+	mp_ftphandle->offset = offset;
+	if (offset == 0) return FtpXfer(outputfile, path, mp_ftphandle, FtpClient::fileread, mode);
+	else return FtpXfer(outputfile, path, mp_ftphandle, FtpClient::filereadappend, mode);
+}
+
+/*
+ * FtpPut - issue a PUT command and send data from input
+ *
+ * return 1 if successful, 0 otherwise
+ */
+
+int FtpClient::Put(const char *inputfile, const char *path, transfermode mode, int64_t offset)
+{
+	mp_ftphandle->offset = offset;
+	if (offset == 0) return FtpXfer(inputfile, path, mp_ftphandle, FtpClient::filewrite, mode);
+	else return FtpXfer(inputfile, path, mp_ftphandle, FtpClient::filewriteappend, mode);
+}
+
+
+int FtpClient::Rename(const char *src, const char *dst)
+{
+	char cmd[256];
+
+	if (((strlen(src) + 7) > sizeof(cmd)) || ((strlen(dst) + 7) > sizeof(cmd))) return 0;
+	sprintf(cmd,"RNFR %s",src);
+	if (!FtpSendCmd(cmd,'3',mp_ftphandle)) return 0;
+	sprintf(cmd,"RNTO %s",dst);
+	if (!FtpSendCmd(cmd,'2',mp_ftphandle)) return 0;
+
+	return 1;
+}
+
+int FtpClient::Delete(const char *path)
+{
+	char cmd[256];
+
+	if ((strlen(path) + 7) > sizeof(cmd)) return 0;
+   	sprintf(cmd,"DELE %s",path);
+   	if (!FtpSendCmd(cmd,'2', mp_ftphandle)) return 0;
+   	return 1;
 }
