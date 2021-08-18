@@ -6,20 +6,7 @@
 #include <string>
 #include <vector>
 
-#define FTP_CLIENT_BUFSIZ 1024
-#define ACCEPT_TIMEOUT 30
-
-/* io types */
-#define FTP_CLIENT_CONTROL 0
-#define FTP_CLIENT_READ 1
-#define FTP_CLIENT_WRITE 2
-
-#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
-
 #define FTP_CLIENT_MAX_FILENAME_LEN 128
- /**
-  * @brief File attributes
-  **/
 
 struct ftphandle {
 	char *cput,*cget;
@@ -30,11 +17,9 @@ struct ftphandle {
 	ftphandle *ctrl;
 	int cmode;
 	int64_t xfered;
-	int64_t cbbytes;
 	int64_t xfered1;
-	char response[FTP_CLIENT_BUFSIZ];
+	char response[512];
 	int64_t offset;
-	struct timeval idletime;
 	bool correctpasv;
 };
 
@@ -109,8 +94,6 @@ public:
 	int Cdup();
 	int Rmdir(const char *path);
 	int Pwd(char *path, int max);
-	int Nlst(const char *outputfile, const char *path);
-	int Dir(const char *outputfile, const char *path);
 	int Size(const char *path, int *size, transfermode mode);
 	int ModDate(const char *path, char *dt, int max);
 	int Get(const char *outputfile, const char *path, transfermode mode, int64_t offset = 0);
@@ -121,8 +104,8 @@ public:
 	int RawClose(ftphandle* handle);
 	int RawWrite(void* buf, int len, ftphandle* handle);
 	int RawRead(void* buf, int max, ftphandle* handle);
-	std::vector<std::string> ListFiles(char *path, bool includeSubDir=false);
-	std::vector<FtpDirEntry> ListDir(char *path);
+	std::vector<std::string> ListFiles(const char *path, bool includeSubDir=false);
+	std::vector<FtpDirEntry> ListDir(const char *path);
 	int Quit();
 
 private:

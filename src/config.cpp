@@ -7,6 +7,8 @@
 #include "game.h"
 #include "fs.h"
 #include "style.h"
+#include "ftpclient.h"
+
 //#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
@@ -21,6 +23,12 @@ bool show_categories_as_tabs;
 char startup_category[10];
 std::vector<std::string> bg_music_list;
 bool enable_backgrou_music;
+char ftp_server_ip[18];
+char ftp_server_user[32];
+char ftp_server_password[32];
+int ftp_server_port;
+char ftp_cache_path[128];
+FtpClient *ftpclient;
 
 namespace CONFIG {
 
@@ -31,7 +39,8 @@ namespace CONFIG {
         const char* valid_title_prefixes;
         const char* file_filters;
         const char* alt_cores;
-
+        ftpclient = new FtpClient();
+        
 		category->id = category_id;
         sprintf(category->category, "%s", category_name);
 		sprintf(category->title, "%s", title);
@@ -256,6 +265,21 @@ namespace CONFIG {
         sprintf(adernaline_launcher_title_id, "%s", ReadString(CONFIG_GLOBAL, CONFIG_ADERNALINE_LAUNCHER_TITLE_ID, DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID));
         WriteString(CONFIG_GLOBAL, CONFIG_ADERNALINE_LAUNCHER_TITLE_ID, adernaline_launcher_title_id);
         sprintf(adernaline_launcher_boot_bin_path, "ux0:app/%s/data/boot.bin", adernaline_launcher_title_id);
+
+        sprintf(ftp_server_ip, "%s", ReadString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_IP, "192.168.100.14"));
+        WriteString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_IP, ftp_server_ip);
+
+        ftp_server_port = ReadInt(CONFIG_GLOBAL, CONFIG_FTP_SERVER_PORT, 21);
+        WriteInt(CONFIG_GLOBAL, CONFIG_FTP_SERVER_PORT, ftp_server_port);
+
+        sprintf(ftp_server_user, "%s", ReadString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_USER, "anonymous"));
+        WriteString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_USER, ftp_server_user);
+
+        sprintf(ftp_server_password, "%s", ReadString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_PASSWORD, "anonymous"));
+        WriteString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_PASSWORD, ftp_server_password);
+
+        sprintf(ftp_cache_path, "%s", ReadString(CONFIG_GLOBAL, CONFIG_FTP_CACHE_PATH, "ux0:/app/SMLA00001/cache"));
+        WriteString(CONFIG_GLOBAL, CONFIG_FTP_CACHE_PATH, ftp_cache_path);
 
         SetupCategory(&game_categories[VITA_GAMES], VITA_GAMES, "vita", "Vita", nullptr, nullptr, VITA_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
         SetupCategory(&game_categories[SYSTEM_APPS], SYSTEM_APPS, "system", "System Apps", nullptr, nullptr, SYSTEM_APP_ID_PREFIXES, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);

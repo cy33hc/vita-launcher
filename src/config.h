@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include "game.h"
+#include "ftpclient.h"
 
 #define CONFIG_INI_FILE "ux0:data/SMLA00001/config.ini"
 #define THUMBNAIL_BASE_PATH "ux0:app/SMLA00001/thumbnails"
@@ -61,6 +62,11 @@
 #define CONFIG_DEFAULT_STARTUP_CATEGORY "default"
 #define CONFIG_BACKGROUD_MUSIC "backgroud_music"
 #define CONFIG_ENABLE_BACKGROUND_MUSIC "enable_backgroud_music"
+#define CONFIG_FTP_SERVER_IP "ftp_server_ip"
+#define CONFIG_FTP_SERVER_PORT "ftp_server_ip"
+#define CONFIG_FTP_SERVER_USER "ftp_server_user"
+#define CONFIG_FTP_SERVER_PASSWORD "ftp_server_password"
+#define CONFIG_FTP_CACHE_PATH "ftp_cache_path"
 
 #define ICON_TYPE_BOXARTS "Boxarts"
 #define ICON_TYPE_TITLES "Titles"
@@ -221,6 +227,12 @@ extern bool show_categories_as_tabs;
 extern char startup_category[];
 extern std::vector<std::string> bg_music_list;
 extern bool enable_backgrou_music;
+extern char ftp_server_ip[];
+extern char ftp_server_user[];
+extern char ftp_server_password[];
+extern int ftp_server_port;
+extern char ftp_cache_path[];
+extern FtpClient *ftpclient;
 
 namespace CONFIG {
     void LoadConfig();

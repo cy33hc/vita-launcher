@@ -19,6 +19,7 @@
 #include "iso.h"
 #include "cso.h"
 #include "net.h"
+#include "ftpclient.h"
 
 //#include "debugnet.h"
 extern "C" {
@@ -317,6 +318,23 @@ namespace GAME {
             {
                 games_to_scan--;
             }
+        }
+    }
+
+    std::vector<std::string> GetRetroRomFiles(const std::string path)
+    {
+        if (strncmp(path.c_str(), "ftp0:", 5) == 0)
+        {
+            ftpclient->Connect(ftp_server_ip, ftp_server_port);
+            ftpclient->Login(ftp_server_user, ftp_server_password);
+            std::vector<std::string> files =  ftpclient->ListFiles(path.c_str(), true);
+            ftpclient->Quit();
+
+            return files;
+        }
+        else
+        {
+            FS::ListFiles(path);
         }
     }
 
