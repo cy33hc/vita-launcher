@@ -1,6 +1,7 @@
 #include <psp2/net/net.h>
 #include <cstring>
 #include <stdio.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <inttypes.h>
 #include <ftpclient.h>
@@ -11,7 +12,7 @@ FtpClient::FtpClient()
 {
     mp_ftphandle = static_cast<ftphandle *>(calloc(1,sizeof(ftphandle)));
 	if (mp_ftphandle == NULL) perror("calloc");
-	mp_ftphandle->buf = static_cast<char *>(malloc(FTPLIB_BUFSIZ));
+	mp_ftphandle->buf = static_cast<char *>(malloc(FTP_CLIENT_BUFSIZ));
 	if (mp_ftphandle->buf == NULL)
 	{
 		perror("calloc");
@@ -34,7 +35,7 @@ int FtpClient::Connect(const char *host, unsigned short port)
     int on = 1; /* used in Setsockopt function */
     int32_t retval; /* return value */
 
-    mp_ftphandle->dir = FTPLIB_CONTROL;
+    mp_ftphandle->dir = FTP_CLIENT_CONTROL;
     mp_ftphandle->ctrl = NULL;
     mp_ftphandle->xfered = 0;
     mp_ftphandle->xfered1 = 0;
@@ -87,11 +88,11 @@ int FtpClient::Connect(const char *host, unsigned short port)
  */
 int FtpClient::FtpSendCmd(const char *cmd, char expected_resp, ftphandle *nControl)
 {
-	char buf[FTPLIB_BUFSIZ];
+	char buf[FTP_CLIENT_BUFSIZ];
 	int x;
 
 	if (!nControl->handle) return 0;
-    if (nControl->dir != FTPLIB_CONTROL) return 0;
+    if (nControl->dir != FTP_CLIENT_CONTROL) return 0;
 
 	sprintf(buf, "%s\r\n", cmd);
     x = sceNetSend(nControl->handle, buf, strlen(buf), 0);
@@ -114,7 +115,7 @@ int FtpClient::ReadResponse(char c, ftphandle *nControl)
 {
 	char match[5];
 	
-	if (Readline(nControl->response, FTPLIB_BUFSIZ, nControl) == -1)
+	if (Readline(nControl->response, FTP_CLIENT_BUFSIZ, nControl) == -1)
 	{
 		debugNetPrintf(ERROR,"Readline error\n");
 		return 0;
@@ -127,7 +128,7 @@ int FtpClient::ReadResponse(char c, ftphandle *nControl)
 		match[4] = '\0';
 		do
 		{
-			if (Readline(nControl->response, FTPLIB_BUFSIZ, nControl) == -1)
+			if (Readline(nControl->response, FTP_CLIENT_BUFSIZ, nControl) == -1)
 			{
 				debugNetPrintf(ERROR,"Readline error\n");
 				return 0;
@@ -188,7 +189,7 @@ int FtpClient::Readline(char *buf, int max, ftphandle *nControl)
 		{
 			nControl->cput = nControl->cget = nControl->buf;
 			nControl->cavail = 0;
-			nControl->cleft = FTPLIB_BUFSIZ;
+			nControl->cleft = FTP_CLIENT_BUFSIZ;
 		}
 
 		if (eof)
@@ -241,13 +242,13 @@ int FtpClient::Login(const char *user, const char *pass)
  */
 char* FtpClient::LastResponse()
 {
-	if ((mp_ftphandle) && (mp_ftphandle->dir == FTPLIB_CONTROL)) return mp_ftphandle->response;
+	if ((mp_ftphandle) && (mp_ftphandle->dir == FTP_CLIENT_CONTROL)) return mp_ftphandle->response;
 	return NULL;
 }
 
 void FtpClient::ClearHandle()
 {
-	mp_ftphandle->dir = FTPLIB_CONTROL;
+	mp_ftphandle->dir = FTP_CLIENT_CONTROL;
 	mp_ftphandle->ctrl = NULL;
 	mp_ftphandle->cmode = FtpClient::pasv;
     mp_ftphandle->idletime.tv_sec = mp_ftphandle->idletime.tv_usec = 0;
@@ -271,7 +272,7 @@ void FtpClient::SetConnmode(connmode mode)
  */
 int FtpClient::FtpAccess(const char *path, accesstype type, transfermode mode, ftphandle *nControl, ftphandle **nData)
 {
-	char buf[FTPLIB_BUFSIZ];
+	char buf[FTP_CLIENT_BUFSIZ];
 	int dir;
 
 	if ((path == NULL) && ((type == FtpClient::filewrite)
@@ -289,21 +290,21 @@ int FtpClient::FtpAccess(const char *path, accesstype type, transfermode mode, f
 	{
 	case FtpClient::dir:
 		strcpy(buf,"NLST");
-		dir = FTPLIB_READ;
+		dir = FTP_CLIENT_READ;
 		break;
 	case FtpClient::dirverbose:
 		strcpy(buf,"LIST");
-		dir = FTPLIB_READ;
+		dir = FTP_CLIENT_READ;
 		break;
 	case FtpClient::filereadappend:
 	case FtpClient::fileread:
 		strcpy(buf,"RETR");
-		dir = FTPLIB_READ;
+		dir = FTP_CLIENT_READ;
 		break;
     case FtpClient::filewriteappend:
 	case FtpClient::filewrite:
 		strcpy(buf,"STOR");
-		dir = FTPLIB_WRITE;
+		dir = FTP_CLIENT_WRITE;
 		break;
 	default:
 		sprintf(nControl->response, "Invalid open type %d\n", type);
@@ -409,8 +410,8 @@ int FtpClient::FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode 
 	int v[6];
 	int ret;
 
-	if (nControl->dir != FTPLIB_CONTROL) return -1;
-	if ((dir != FTPLIB_READ) && (dir != FTPLIB_WRITE))
+	if (nControl->dir != FTP_CLIENT_CONTROL) return -1;
+	if ((dir != FTP_CLIENT_READ) && (dir != FTP_CLIENT_WRITE))
 	{
 		sprintf(nControl->response, "Invalid direction %d\n", dir);
 		return -1;
@@ -439,7 +440,7 @@ int FtpClient::FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode 
 
 	if (mp_ftphandle->offset != 0)
 	{
-		char buf[FTPLIB_BUFSIZ];
+		char buf[FTP_CLIENT_BUFSIZ];
         sprintf(buf, "REST %lld", mp_ftphandle->offset);
 		if (!FtpSendCmd(buf,'3',nControl)) return 0;
 	}
@@ -465,7 +466,7 @@ int FtpClient::FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode 
 		return -1;
 	}
 
-	if (nControl->dir != FTPLIB_CONTROL) return -1;
+	if (nControl->dir != FTP_CLIENT_CONTROL) return -1;
 	memcpy(cmd + strlen(cmd), "\r\n\0", 3);
 	ret = sceNetSend(nControl->handle, cmd, strlen(cmd), 0);
 	if (ret <= 0)
@@ -494,7 +495,7 @@ int FtpClient::FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode 
 		sceNetSocketClose(sData);
 		return -1;
 	}
-	if ((mode == 'A') && ((ctrl->buf = static_cast<char*>(malloc(FTPLIB_BUFSIZ))) == NULL))
+	if ((mode == 'A') && ((ctrl->buf = static_cast<char*>(malloc(FTP_CLIENT_BUFSIZ))) == NULL))
 	{
 		debugNetPrintf(ERROR, "calloc ctrl-buf error\n");
 		sceNetSocketClose(sData);
@@ -531,8 +532,8 @@ int FtpClient::FtpOpenPort(ftphandle *nControl, ftphandle **nData, transfermode 
 	ftphandle *ctrl;
 	char buf[256];
 
-	if (nControl->dir != FTPLIB_CONTROL) return -1;
-	if ((dir != FTPLIB_READ) && (dir != FTPLIB_WRITE))
+	if (nControl->dir != FTP_CLIENT_CONTROL) return -1;
+	if ((dir != FTP_CLIENT_READ) && (dir != FTP_CLIENT_WRITE))
 	{
 		sprintf(nControl->response, "Invalid direction %d\n", dir);
 		return -1;
@@ -599,7 +600,7 @@ int FtpClient::FtpOpenPort(ftphandle *nControl, ftphandle **nData, transfermode 
 
 	if (mp_ftphandle->offset != 0)
 	{
-	char buf[FTPLIB_BUFSIZ];
+	char buf[FTP_CLIENT_BUFSIZ];
     sprintf(buf, "REST %lld", mp_ftphandle->offset);
 	if (!FtpSendCmd(buf,'3',nControl))
 	{
@@ -615,7 +616,7 @@ int FtpClient::FtpOpenPort(ftphandle *nControl, ftphandle **nData, transfermode 
 		sceNetSocketClose(sData);
 		return -1;
 	}
-	if ((mode == 'A') && ((ctrl->buf = static_cast<char*>(malloc(FTPLIB_BUFSIZ))) == NULL))
+	if ((mode == 'A') && ((ctrl->buf = static_cast<char*>(malloc(FTP_CLIENT_BUFSIZ))) == NULL))
 	{
 		debugNetPrintf(ERROR, "calloc buf error\n");
 		sceNetSocketClose(sData);
@@ -696,10 +697,10 @@ int FtpClient::FtpXfer(const char *localfile, const char *path, ftphandle *nCont
         return 0;
     }
 
-	dbuf = static_cast<char*>(malloc(FTPLIB_BUFSIZ));
+	dbuf = static_cast<char*>(malloc(FTP_CLIENT_BUFSIZ));
 	if ((type == FtpClient::filewrite) || (type == FtpClient::filewriteappend))
 	{
-		while ((l = fread(dbuf, 1, FTPLIB_BUFSIZ, local)) > 0)
+		while ((l = fread(dbuf, 1, FTP_CLIENT_BUFSIZ, local)) > 0)
 		{
 			if ((c = FtpWrite(dbuf, l, nData)) < l)
 			{
@@ -710,7 +711,7 @@ int FtpClient::FtpXfer(const char *localfile, const char *path, ftphandle *nCont
 	}
 	else
 	{
-		while ((l = FtpRead(dbuf, FTPLIB_BUFSIZ, nData)) > 0)
+		while ((l = FtpRead(dbuf, FTP_CLIENT_BUFSIZ, nData)) > 0)
 		{
 			if (fwrite(dbuf, 1, l, local) <= 0)
 			{
@@ -732,7 +733,7 @@ int FtpClient::FtpWrite(void *buf, int len, ftphandle *nData)
 {
 	int i;
 
-	if (nData->dir != FTPLIB_WRITE) return 0;
+	if (nData->dir != FTP_CLIENT_WRITE) return 0;
 	if (nData->buf) i = Writeline(static_cast<char*>(buf), len, nData);
 	else
 	{
@@ -751,7 +752,7 @@ int FtpClient::FtpRead(void *buf, int max, ftphandle *nData)
 {
 	int i;
 
-	if (nData->dir != FTPLIB_READ)
+	if (nData->dir != FTP_CLIENT_READ)
 	return 0;
 	if (nData->buf) i = Readline(static_cast<char*>(buf), max, nData);
 	else
@@ -774,17 +775,17 @@ int FtpClient::Writeline(char *buf, int len, ftphandle *nData)
 	char *ubp = buf, *nbp;
 	char lc=0;
 
-	if (nData->dir != FTPLIB_WRITE)
+	if (nData->dir != FTP_CLIENT_WRITE)
 	return -1;
 	nbp = nData->buf;
 	for (x=0; x < len; x++)
 	{
 		if ((*ubp == '\n') && (lc != '\r'))
 		{
-			if (nb == FTPLIB_BUFSIZ)
+			if (nb == FTP_CLIENT_BUFSIZ)
 			{
-				w = sceNetSend(nData->handle, nbp, FTPLIB_BUFSIZ, 0);
-				if (w != FTPLIB_BUFSIZ)
+				w = sceNetSend(nData->handle, nbp, FTP_CLIENT_BUFSIZ, 0);
+				if (w != FTP_CLIENT_BUFSIZ)
 				{
 					debugNetPrintf(ERROR, "write(1) returned %d, errno = %d\n", w, errno);
 					return(-1);
@@ -793,10 +794,10 @@ int FtpClient::Writeline(char *buf, int len, ftphandle *nData)
 			}
 			nbp[nb++] = '\r';
 		}
-		if (nb == FTPLIB_BUFSIZ)
+		if (nb == FTP_CLIENT_BUFSIZ)
 		{
-			w = sceNetSend(nData->handle, nbp, FTPLIB_BUFSIZ, 0);
-			if (w != FTPLIB_BUFSIZ)
+			w = sceNetSend(nData->handle, nbp, FTP_CLIENT_BUFSIZ, 0);
+			if (w != FTP_CLIENT_BUFSIZ)
 			{
 				debugNetPrintf(ERROR, "write(2) returned %d, errno = %d\n", w, errno);
 				return(-1);
@@ -824,11 +825,11 @@ int FtpClient::FtpClose(ftphandle *nData)
 {
 	ftphandle *ctrl;
 
-	if (nData->dir == FTPLIB_WRITE)
+	if (nData->dir == FTP_CLIENT_WRITE)
 	{
 		if (nData->buf != NULL) Writeline(NULL, 0, nData);
 	}
-	else if (nData->dir != FTPLIB_READ) return 0;
+	else if (nData->dir != FTP_CLIENT_READ) return 0;
 	if (nData->buf) free(nData->buf);
 	sceNetShutdown(nData->handle, 2);
 	sceNetSocketClose(nData->handle);
@@ -868,7 +869,7 @@ int FtpClient::Dir(const char *outputfile, const char *path)
  */
 int FtpClient::Quit()
 {
-	if (mp_ftphandle->dir != FTPLIB_CONTROL) return 0;
+	if (mp_ftphandle->dir != FTP_CLIENT_CONTROL) return 0;
 	if (mp_ftphandle->handle == 0)
 	{
 		strcpy(mp_ftphandle->response, "error: no anwser from server\n");
@@ -1127,3 +1128,285 @@ int FtpClient::Delete(const char *path)
    	if (!FtpSendCmd(cmd,'2', mp_ftphandle)) return 0;
    	return 1;
 }
+
+/**
+  * @brief Parse directory entry
+  * @param[in] line NULL-terminated string
+  * @param[out] dirEntry Pointer to a directory entry
+  * @return -1 on error or 1 on success
+  **/
+  
+int FtpClient::ParseDirEntry(char *line, FtpDirEntry *dirEntry)
+{
+    unsigned int i;
+    size_t n;
+    char *p;
+    char *token;
+  
+    //Abbreviated months
+    static const char months[13][4] =
+    {
+       "   ",
+       "Jan",
+       "Feb",
+       "Mar",
+       "Apr",
+       "May",
+       "Jun",
+       "Jul",
+       "Aug",
+       "Sep",
+       "Oct",
+       "Nov",
+       "Dec"
+    };
+  
+    //Read first field
+    token = strtok_r(line, " \t", &p);
+
+    //Invalid directory entry?
+    if(token == NULL)
+       return -1;
+  
+    //MS-DOS listing format?
+    if(isdigit(token[0]))
+    {
+       //Check modification date format
+       if(strlen(token) == 8 && token[2] == '-' && token[5] == '-')
+       {
+          //The format of the date is mm-dd-yy
+          dirEntry->modified.month = (uint8_t) strtoul(token, NULL, 10);
+          dirEntry->modified.day = (uint8_t) strtoul(token + 3, NULL, 10);
+          dirEntry->modified.year = (uint16_t) strtoul(token + 6, NULL, 10) + 2000;
+       }
+       else if(strlen(token) == 10 && token[2] == '/' && token[5] == '/')
+       {
+          //The format of the date is mm/dd/yyyy
+          dirEntry->modified.month = (uint8_t) strtoul(token, NULL, 10);
+          dirEntry->modified.day = (uint8_t) strtoul(token + 3, NULL, 10);
+          dirEntry->modified.year = (uint16_t) strtoul(token + 6, NULL, 10);
+       }
+       else
+       {
+          //Invalid time format
+          return -1;
+       }
+  
+       //Read modification time
+       token = strtok_r(NULL, " ", &p);
+       //Invalid directory entry?
+       if(token == NULL)
+          return -1;
+  
+       //Check modification time format
+       if(strlen(token) >= 5 && token[2] == ':')
+       {
+          //The format of the time hh:mm
+          dirEntry->modified.hours = (uint8_t) strtoul(token, NULL, 10);
+          dirEntry->modified.minutes = (uint8_t) strtoul(token + 3, NULL, 10);
+  
+          //The PM period covers the 12 hours from noon to midnight
+          if(strstr(token, "PM") != NULL)
+          {
+             dirEntry->modified.hours += 12;
+          }
+       }
+       else
+       {
+          //Invalid time format
+          return -1;
+       }
+  
+       //Read next field
+       token = strtok_r(NULL, " ", &p);
+       //Invalid directory entry?
+       if(token == NULL)
+          return -1;
+  
+       //Check whether the current entry is a directory
+       if(!strcmp(token, "<DIR>"))
+       {
+          //Update attributes
+          dirEntry->isDir |= true;
+       }
+       else
+       {
+          //Save the size of the file
+          dirEntry->size = strtoul(token, NULL, 10);
+       }
+  
+       //Read filename field
+       token = strtok_r(NULL, " \r\n", &p);
+       //Invalid directory entry?
+       if(token == NULL)
+          return -1;
+  
+       //Retrieve the length of the filename
+       n = strlen(token);
+       //Limit the number of characters to copy
+       n = MIN(n, FTP_CLIENT_MAX_FILENAME_LEN);
+  
+       //Copy the filename
+       strncpy(dirEntry->name, token, n);
+       //Properly terminate the string with a NULL character
+       dirEntry->name[n] = '\0';
+    }
+    //Unix listing format?
+    else
+    {
+       //Check file permissions
+       if(strchr(token, 'd') != NULL)
+       {
+          dirEntry->isDir = true;
+       }
+  
+       //Read next field
+       token = strtok_r(NULL, " ", &p);
+       //Invalid directory entry?
+       if(token == NULL)
+          return -1;
+  
+       //Discard owner field
+       token = strtok_r(NULL, " ", &p);
+       //Invalid directory entry?
+       if(token == NULL)
+          return -1;
+  
+       //Discard group field
+       token = strtok_r(NULL, " ", &p);
+       //Invalid directory entry?
+       if(token == NULL)
+          return -1;
+  
+       //Read size field
+       token = strtok_r(NULL, " ", &p);
+       //Invalid directory entry?
+       if(token == NULL)
+          return -1;
+  
+       //Save the size of the file
+       dirEntry->size = strtoul(token, NULL, 10);
+  
+       //Read modification time (month)
+       token = strtok_r(NULL, " ", &p);
+       //Invalid directory entry?
+       if(token == NULL)
+          return -1;
+  
+       //Decode the 3-letter month name
+       for(i = 1; i <= 12; i++)
+       {
+          //Compare month name
+          if(!strcmp(token, months[i]))
+          {
+             //Save month number
+             dirEntry->modified.month = i;
+             break;
+          }
+       }
+  
+       //Read modification time (day)
+       token = strtok_r(NULL, " ", &p);
+       //Invalid directory entry?
+       if(token == NULL)
+          return -1;
+  
+       //Save day number
+       dirEntry->modified.day = (uint8_t) strtoul(token, NULL, 10);
+  
+       //Read next field
+       token = strtok_r(NULL, " ", &p);
+       //Invalid directory entry?
+       if(token == NULL)
+          return -1;
+  
+       //Check modification time format
+       if(strlen(token) == 4)
+       {
+          //The format of the year is yyyy
+          dirEntry->modified.year = (uint16_t) strtoul(token, NULL, 10);
+  
+       }
+       else if(strlen(token) == 5)
+       {
+          //The format of the time hh:mm
+          token[2] = '\0';
+          dirEntry->modified.hours = (uint8_t) strtoul(token, NULL, 10);
+          dirEntry->modified.minutes = (uint8_t) strtoul(token + 3, NULL, 10);
+       }
+       else
+       {
+          //Invalid time format
+          return -1;
+       }
+  
+       //Read filename field
+       token = strtok_r(NULL, " \r\n", &p);
+       //Invalid directory entry?
+       if(token == NULL)
+          return -1;
+  
+       //Retrieve the length of the filename
+       n = strlen(token);
+       //Limit the number of characters to copy
+       n = MIN(n, FTP_CLIENT_MAX_FILENAME_LEN);
+  
+       //Copy the filename
+       strncpy(dirEntry->name, token, n);
+       //Properly terminate the string with a NULL character
+       dirEntry->name[n] = '\0';
+    }
+  
+    //The directory entry is valid
+    return 1;
+ }
+
+std::vector<std::string> FtpClient::ListFiles(char *path, bool includeSubDir)
+{
+	std::vector<std::string> out;
+	std::vector<FtpDirEntry> list = ListDir(path);
+	for (int i=0; i<list.size(); i++)
+	{
+		if (list[i].isDir && includeSubDir)
+		{
+			std::string new_path = std::string(path) + "/" + list[i].name;
+			std::vector<std::string> files = ListFiles(new_path.c_str(), includeSubDir);
+			for (std::vector<std::string>::iterator it=files.begin(); it!=files.end(); )
+			{
+				out.push_back(std::string(list[i].name) + "/" + *it);
+				++it;
+			}
+		}
+		else
+		{
+			out.push_back(std::string(list[i].name));
+		}
+	}
+	return out;
+}
+
+std::vector<FtpDirEntry> FtpClient::ListDir(char *path)
+{
+	std::vector<FtpDirEntry> out;
+	ftphandle *nData;
+	char buf[FTP_CLIENT_BUFSIZ];
+	int ret;
+	mp_ftphandle->offset = 0;
+
+	nData = RawOpen(path, FtpClient::dirverbose, FtpClient::ascii);
+	ret = FtpRead(buf, FTP_CLIENT_BUFSIZ, nData);
+	while (ret > 0)
+	{
+		FtpDirEntry entry;
+		memset(&entry, 0, sizeof(entry));
+		if (ParseDirEntry(buf, &entry) > 0)
+		{
+			out.push_back(entry);
+		}
+		ret = FtpRead(buf, FTP_CLIENT_BUFSIZ, nData);
+	}
+	FtpClose(nData);
+
+	return out;
+}
+

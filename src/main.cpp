@@ -134,20 +134,6 @@ int main(int, char **)
 	Services::Init();
 	Services::InitImGui();
 
-	FtpClient *client = new FtpClient();
-	int res = client->Connect("192.168.100.14", 21);
-	if (res > 0)
-	{
-		debugNetPrintf(DEBUG,"Success connect to 192.168.100.14\n");
-	}
-
-	res = client->Login("cyee", "kramer");
-	if (res > 0)
-	{
-		debugNetPrintf(DEBUG,"Success Login to 192.168.100.14\n");
-	}
-	client->Quit();
-
 	if (enable_backgrou_music)
 	{
 		srand(time(NULL));

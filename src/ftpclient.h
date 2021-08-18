@@ -2,14 +2,24 @@
 #define FTPCLIENT_H
 
 #include <psp2/net/net.h>
+#include <time.h>
+#include <string>
+#include <vector>
 
-#define FTPLIB_BUFSIZ 1024
+#define FTP_CLIENT_BUFSIZ 1024
 #define ACCEPT_TIMEOUT 30
 
 /* io types */
-#define FTPLIB_CONTROL 0
-#define FTPLIB_READ 1
-#define FTPLIB_WRITE 2
+#define FTP_CLIENT_CONTROL 0
+#define FTP_CLIENT_READ 1
+#define FTP_CLIENT_WRITE 2
+
+#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+
+#define FTP_CLIENT_MAX_FILENAME_LEN 128
+ /**
+  * @brief File attributes
+  **/
 
 struct ftphandle {
 	char *cput,*cget;
@@ -22,11 +32,38 @@ struct ftphandle {
 	int64_t xfered;
 	int64_t cbbytes;
 	int64_t xfered1;
-	char response[FTPLIB_BUFSIZ];
+	char response[FTP_CLIENT_BUFSIZ];
 	int64_t offset;
 	struct timeval idletime;
 	bool correctpasv;
 };
+
+/**
+  * @brief Date and time representation
+**/
+  
+typedef struct
+{
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t dayOfWeek;
+    uint8_t hours;
+    uint8_t minutes;
+    uint8_t seconds;
+    uint16_t milliseconds;
+} DateTime;
+
+/**
+  * @brief Directory entry
+  **/
+typedef struct
+{
+    char name[FTP_CLIENT_MAX_FILENAME_LEN + 1];
+    bool isDir;
+    uint32_t size;
+    DateTime modified;
+} FtpDirEntry;
 
 class FtpClient {
 public:
@@ -52,6 +89,12 @@ public:
 		port
 	};
 	
+	enum attributes
+	{
+       directory = 1,
+       readonly = 2
+	};
+
     FtpClient();
     ~FtpClient();
     int Connect(const char *host, unsigned short port);
@@ -78,6 +121,8 @@ public:
 	int RawClose(ftphandle* handle);
 	int RawWrite(void* buf, int len, ftphandle* handle);
 	int RawRead(void* buf, int max, ftphandle* handle);
+	std::vector<std::string> ListFiles(char *path, bool includeSubDir=false);
+	std::vector<FtpDirEntry> ListDir(char *path);
 	int Quit();
 
 private:
@@ -97,7 +142,7 @@ private:
 	int FtpWrite(void *buf, int len, ftphandle *nData);
 	int FtpRead(void *buf, int max, ftphandle *nData);
 	int FtpClose(ftphandle *nData);
-
+	int ParseDirEntry(char *line, FtpDirEntry *dirEntry);
 };
 
 #endif
