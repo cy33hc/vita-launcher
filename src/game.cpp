@@ -443,7 +443,16 @@ namespace GAME {
                     {
                         retro_core = category->core;
                     }
-                    sprintf(uri, "psgm:play?titleid=%s&param=%s&param2=%s", RETROARCH_TITLE_ID, retro_core, game->rom_path);
+                    std::string game_path = std::string(game->rom_path);
+                    if (game_path.rfind("ftp0:", 0) == 0)
+                    {
+                        if (!IsGameInFtpCache(game))
+                        {
+                            DownloadGameToFtpCache(game);   
+                        }
+                        game_path = std::string(ftp_cache_path) + "/" + game->category + "/" + game_path.substr(5);
+                    }
+                    sprintf(uri, "psgm:play?titleid=%s&param=%s&param2=%s", RETROARCH_TITLE_ID, retro_core, game_path.c_str());
                     sceAppMgrLaunchAppByUri(0xFFFFF, uri);
                     sceKernelDelayThread(1000);
                     sceKernelExitProcess(0);
@@ -1576,5 +1585,34 @@ namespace GAME {
             }
         }
         return list;
+    }
+
+    bool IsGameInFtpCache(Game *game)
+    {
+        std::string game_path = std::string(game->rom_path);
+        if (game_path.rfind("ftp0:", 0) == 0)
+        {
+            return FS::FileExists(std::string(ftp_cache_path) + "/" + game->category + "/" + game_path.substr(5));
+        }
+        else
+        {
+            true;
+        }
+    }
+
+    void DownloadGameToFtpCache(Game *game)
+    {
+        std::string path = std::string(game->rom_path);
+        if (path.rfind("ftp0:", 0) == 0)
+        {
+            ftpclient->Connect(ftp_server_ip, ftp_server_port);
+            if (ftpclient->Login(ftp_server_user, ftp_server_password) > 0)
+            {
+                std::string cache_path = std::string(ftp_cache_path) + "/" + game->category + "/" + path.substr(5);
+                FS::MkDirs(cache_path.substr(0, cache_path.find_last_of("/")));
+                ftpclient->Get(cache_path.c_str(), path.substr(5).c_str(), FtpClient::image, 0);
+            }
+            ftpclient->Quit();
+        }
     }
 }

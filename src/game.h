@@ -263,6 +263,8 @@ namespace GAME {
     void SortGameCategories();
     void HideCategories();
     void ShowAllCategories();
+    bool IsGameInFtpCache(Game *game);
+    void DownloadGameToFtpCache(Game *game);
 
     static int LoadScePaf();
     static int UnloadScePaf();

@@ -40,7 +40,7 @@ namespace CONFIG {
         const char* file_filters;
         const char* alt_cores;
         ftpclient = new FtpClient();
-        
+
 		category->id = category_id;
         sprintf(category->category, "%s", category_name);
 		sprintf(category->title, "%s", title);
@@ -278,7 +278,7 @@ namespace CONFIG {
         sprintf(ftp_server_password, "%s", ReadString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_PASSWORD, "anonymous"));
         WriteString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_PASSWORD, ftp_server_password);
 
-        sprintf(ftp_cache_path, "%s", ReadString(CONFIG_GLOBAL, CONFIG_FTP_CACHE_PATH, "ux0:/app/SMLA00001/cache"));
+        sprintf(ftp_cache_path, "%s", ReadString(CONFIG_GLOBAL, CONFIG_FTP_CACHE_PATH, "ux0:/data/SMLA00001/cache"));
         WriteString(CONFIG_GLOBAL, CONFIG_FTP_CACHE_PATH, ftp_cache_path);
 
         SetupCategory(&game_categories[VITA_GAMES], VITA_GAMES, "vita", "Vita", nullptr, nullptr, VITA_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
