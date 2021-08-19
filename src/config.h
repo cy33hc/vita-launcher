@@ -63,7 +63,7 @@
 #define CONFIG_BACKGROUD_MUSIC "backgroud_music"
 #define CONFIG_ENABLE_BACKGROUND_MUSIC "enable_backgroud_music"
 #define CONFIG_FTP_SERVER_IP "ftp_server_ip"
-#define CONFIG_FTP_SERVER_PORT "ftp_server_ip"
+#define CONFIG_FTP_SERVER_PORT "ftp_server_port"
 #define CONFIG_FTP_SERVER_USER "ftp_server_user"
 #define CONFIG_FTP_SERVER_PASSWORD "ftp_server_password"
 #define CONFIG_FTP_CACHE_PATH "ftp_cache_path"

@@ -21,7 +21,7 @@
 #include "net.h"
 #include "ftpclient.h"
 
-//#include "debugnet.h"
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -323,25 +323,28 @@ namespace GAME {
 
     std::vector<std::string> GetRetroRomFiles(const std::string path)
     {
+        std::vector<std::string> files;
         if (strncmp(path.c_str(), "ftp0:", 5) == 0)
         {
             ftpclient->Connect(ftp_server_ip, ftp_server_port);
-            ftpclient->Login(ftp_server_user, ftp_server_password);
-            std::vector<std::string> files =  ftpclient->ListFiles(path.c_str(), true);
+            if (ftpclient->Login(ftp_server_user, ftp_server_password) > 0)
+            {
+                files =  ftpclient->ListFiles(path.substr(5).c_str(), true);
+            }
             ftpclient->Quit();
-
-            return files;
         }
         else
         {
-            FS::ListFiles(path);
+            files = FS::ListFiles(path);
         }
+
+        return files;
     }
 
     void ScanRetroCategory(sqlite3 *db, GameCategory *category)
     {
         sprintf(scan_message, "Scanning for %s games in the %s folder", category->title, category->roms_path);
-        std::vector<std::string> files = FS::ListFiles(category->roms_path);
+        std::vector<std::string> files = GetRetroRomFiles(category->roms_path);
         games_to_scan = files.size();
         games_scanned = 0;
         int rom_path_length = strlen(category->roms_path);

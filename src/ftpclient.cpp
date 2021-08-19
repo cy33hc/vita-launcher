@@ -1207,7 +1207,7 @@ int FtpClient::ParseDirEntry(char *line, FtpDirEntry *dirEntry)
        }
   
        //Read filename field
-       token = strtok_r(NULL, " \r\n", &p);
+       token = strtok_r(NULL, "\r\n", &p);
        //Invalid directory entry?
        if(token == NULL)
           return -1;
@@ -1312,7 +1312,7 @@ int FtpClient::ParseDirEntry(char *line, FtpDirEntry *dirEntry)
        }
   
        //Read filename field
-       token = strtok_r(NULL, " \r\n", &p);
+       token = strtok_r(NULL, "\r\n", &p);
        //Invalid directory entry?
        if(token == NULL)
           return -1;
@@ -1360,12 +1360,12 @@ std::vector<FtpDirEntry> FtpClient::ListDir(const char *path)
 {
 	std::vector<FtpDirEntry> out;
 	ftphandle *nData;
-	char buf[FTP_CLIENT_BUFSIZ];
+	char buf[1024];
 	int ret;
 	mp_ftphandle->offset = 0;
 
 	nData = RawOpen(path, FtpClient::dirverbose, FtpClient::ascii);
-	ret = FtpRead(buf, FTP_CLIENT_BUFSIZ, nData);
+	ret = FtpRead(buf, 1024, nData);
 	while (ret > 0)
 	{
 		FtpDirEntry entry;
@@ -1374,7 +1374,7 @@ std::vector<FtpDirEntry> FtpClient::ListDir(const char *path)
 		{
 			out.push_back(entry);
 		}
-		ret = FtpRead(buf, FTP_CLIENT_BUFSIZ, nData);
+		ret = FtpRead(buf, 1024, nData);
 	}
 	FtpClose(nData);
 
