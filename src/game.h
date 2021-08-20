@@ -9,6 +9,7 @@
 #include <map>
 #include "textures.h"
 #include "sqlite3.h"
+#include "ftpclient.h"
 
 typedef struct {
     char id[20];
@@ -173,6 +174,9 @@ extern char pspemu_iso_path[];
 extern char pspemu_eboot_path[];
 extern char game_uninstalled;
 extern std::vector<Game*> selected_games;
+extern FtpClient *ftpclient;
+extern int64_t bytes_transfered;
+extern int64_t bytes_to_download;
 
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;
@@ -181,6 +185,7 @@ static SceUID load_image_thid = -1;
 static SceUID delete_images_thid = -1;
 static SceUID download_images_thid = -1;
 static SceUID uninstall_game_thid = -1;
+static SceUID download_game_thid = -1;
 
 typedef struct LoadImagesParams {
   int category;
@@ -265,7 +270,9 @@ namespace GAME {
     void ShowAllCategories();
     bool IsGameInFtpCache(Game *game);
     void DownloadGameToFtpCache(Game *game);
-
+    void StartDownloadGameThread(Game *game);
+    int DownloadGameThread(SceSize args, Game *game);
+    static int DownloadGameCallback(int64_t xfered, void* arg);
     static int LoadScePaf();
     static int UnloadScePaf();
 }

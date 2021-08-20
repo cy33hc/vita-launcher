@@ -8,6 +8,8 @@
 
 #define FTP_CLIENT_MAX_FILENAME_LEN 128
 
+typedef int (*FtpCallbackXfer)(int64_t xfered, void *arg);
+
 struct ftphandle {
 	char *cput,*cget;
 	int handle;
@@ -18,9 +20,12 @@ struct ftphandle {
 	int cmode;
 	int64_t xfered;
 	int64_t xfered1;
+	int64_t cbbytes;
 	char response[512];
 	int64_t offset;
 	bool correctpasv;
+	FtpCallbackXfer xfercb;
+	void *cbarg;
 };
 
 /**
@@ -94,7 +99,7 @@ public:
 	int Cdup();
 	int Rmdir(const char *path);
 	int Pwd(char *path, int max);
-	int Size(const char *path, int *size, transfermode mode);
+	int Size(const char *path, int64_t *size, transfermode mode);
 	int ModDate(const char *path, char *dt, int max);
 	int Get(const char *outputfile, const char *path, transfermode mode, int64_t offset = 0);
 	int Put(const char *inputfile, const char *path, transfermode mode, int64_t offset = 0);
@@ -106,6 +111,9 @@ public:
 	int RawRead(void* buf, int max, ftphandle* handle);
 	std::vector<std::string> ListFiles(const char *path, bool includeSubDir=false);
 	std::vector<FtpDirEntry> ListDir(const char *path);
+	void SetCallbackXferFunction(FtpCallbackXfer pointer);
+	void SetCallbackArg(void *arg);
+	void SetCallbackBytes(int64_t bytes);
 	int Quit();
 
 private:

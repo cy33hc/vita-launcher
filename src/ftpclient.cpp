@@ -45,7 +45,13 @@ int FtpClient::Connect(const char *host, unsigned short port)
     int on = 1; /* used in Setsockopt function */
     int32_t retval; /* return value */
 
-	ClearHandle();
+	mp_ftphandle->dir = FTP_CLIENT_CONTROL;
+	mp_ftphandle->ctrl = NULL;
+	mp_ftphandle->xfered = 0;
+	mp_ftphandle->xfered1 = 0;
+	mp_ftphandle->offset = 0;
+	mp_ftphandle->handle = 0;
+	memset(&mp_ftphandle->response, 0, sizeof(mp_ftphandle->response));
 
     memset(&server_addr, 0, sizeof(server_addr));
     sceNetInetPton(SCE_NET_AF_INET, host, (void*)&dst_addr);
@@ -256,10 +262,13 @@ void FtpClient::ClearHandle()
 	mp_ftphandle->dir = FTP_CLIENT_CONTROL;
 	mp_ftphandle->ctrl = NULL;
 	mp_ftphandle->cmode = FtpClient::pasv;
+	mp_ftphandle->cbarg = NULL;
+	mp_ftphandle->cbbytes = 0;
 	mp_ftphandle->xfered = 0;
 	mp_ftphandle->xfered1 = 0;
 	mp_ftphandle->offset = 0;
 	mp_ftphandle->handle = 0;
+	mp_ftphandle->xfercb = NULL;
 	mp_ftphandle->correctpasv = false;
 	memset(&mp_ftphandle->response, 0, sizeof(mp_ftphandle->response));
 }
@@ -511,6 +520,16 @@ int FtpClient::FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode 
 	ctrl->ctrl = (nControl->cmode == FtpClient::pasv) ? nControl : NULL;
 	ctrl->xfered = 0;
 	ctrl->xfered1 = 0;
+	ctrl->cbarg = nControl->cbarg;
+	ctrl->cbbytes = nControl->cbbytes;
+	if (ctrl->cbbytes)
+	{
+		ctrl->xfercb = nControl->xfercb;
+	}
+	else
+	{
+		ctrl->xfercb = NULL;
+	}
 	*nData = ctrl;
 
 	return 1;
@@ -638,6 +657,16 @@ int FtpClient::FtpOpenPort(ftphandle *nControl, ftphandle **nData, transfermode 
 	ctrl->ctrl = (nControl->cmode == FtpClient::pasv) ? nControl : NULL;
 	ctrl->xfered = 0;
 	ctrl->xfered1 = 0;
+	ctrl->cbarg = nControl->cbarg;
+	ctrl->cbbytes = nControl->cbbytes;
+	if (ctrl->cbbytes)
+	{
+		ctrl->xfercb = nControl->xfercb;
+	}
+	else
+	{
+		ctrl->xfercb = NULL;
+	}
 	*nData = ctrl;
 
 	return 1;
@@ -742,6 +771,16 @@ int FtpClient::FtpWrite(void *buf, int len, ftphandle *nData)
 	if (i == -1) return 0;
 	nData->xfered += i;
 
+	if (nData->xfercb && nData->cbbytes)
+	{
+		nData->xfered1 += i;
+		if (nData->xfered1 >= nData->cbbytes)
+		{
+			if (nData->xfercb(nData->xfered, nData->cbarg) == 0) return 0;
+			nData->xfered1 = 0;
+		}
+	}
+
 	return i;
 }
 
@@ -761,6 +800,15 @@ int FtpClient::FtpRead(void *buf, int max, ftphandle *nData)
 	}
 	if (i == -1) return 0;
 	nData->xfered += i;
+	if (nData->xfercb && nData->cbbytes)
+	{
+		nData->xfered1 += i;
+		if (nData->xfered1 >= nData->cbbytes)
+		{
+			if (nData->xfercb(nData->xfered, nData->cbarg) == 0) return 0;
+			nData->xfered1 = 0;
+		}
+	}
 	return i;
 }
 
@@ -1013,7 +1061,7 @@ int FtpClient::Pwd(char *path, int max)
  *
  * return 1 if successful, 0 otherwise
  */
-int FtpClient::Size(const char *path, int *size, transfermode mode)
+int FtpClient::Size(const char *path, int64_t *size, transfermode mode)
 {
    char cmd[512];
    int resp,sz,rv=1;
@@ -1381,3 +1429,17 @@ std::vector<FtpDirEntry> FtpClient::ListDir(const char *path)
 	return out;
 }
 
+void FtpClient::SetCallbackXferFunction(FtpCallbackXfer pointer)
+{
+	mp_ftphandle->xfercb = pointer;
+}
+
+void FtpClient::SetCallbackArg(void *arg)
+{
+	mp_ftphandle->cbarg = arg;
+}
+
+void FtpClient::SetCallbackBytes(int64_t bytes)
+{
+	mp_ftphandle->cbbytes = bytes;
+}

@@ -7,7 +7,6 @@
 #include "game.h"
 #include "fs.h"
 #include "style.h"
-#include "ftpclient.h"
 
 //#include "debugnet.h"
 extern "C" {
@@ -28,7 +27,6 @@ char ftp_server_user[32];
 char ftp_server_password[32];
 int ftp_server_port;
 char ftp_cache_path[128];
-FtpClient *ftpclient;
 
 namespace CONFIG {
 
@@ -39,7 +37,6 @@ namespace CONFIG {
         const char* valid_title_prefixes;
         const char* file_filters;
         const char* alt_cores;
-        ftpclient = new FtpClient();
 
 		category->id = category_id;
         sprintf(category->category, "%s", category_name);

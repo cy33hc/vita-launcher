@@ -55,12 +55,17 @@ int ROM_CATEGORIES[TOTAL_ROM_CATEGORY] = {PS1_GAMES, NES_GAMES, SNES_GAMES, GB_G
 char adernaline_launcher_boot_bin_path[32];
 char adernaline_launcher_title_id[12];
 BootSettings defaul_boot_settings;
-
+FtpClient *ftpclient;
+int64_t bytes_transfered;
+int64_t bytes_to_download;
 bool use_game_db = true;
 
 namespace GAME {
 
     void Init() {
+        ftpclient = new FtpClient();
+        ftpclient->SetCallbackBytes(1);
+        ftpclient->SetCallbackXferFunction(DownloadGameCallback);
     }
 
     void Scan()
@@ -794,6 +799,7 @@ namespace GAME {
     }
 
     void Exit() {
+        free(ftpclient);
     }
 
 	void StartLoadImagesThread(int category, int prev_page_num, int page, int games_per_page)
@@ -1602,6 +1608,7 @@ namespace GAME {
 
     void DownloadGameToFtpCache(Game *game)
     {
+        bytes_transfered = 0;
         std::string path = std::string(game->rom_path);
         if (path.rfind("ftp0:", 0) == 0)
         {
@@ -1610,9 +1617,29 @@ namespace GAME {
             {
                 std::string cache_path = std::string(ftp_cache_path) + "/" + game->category + "/" + path.substr(5);
                 FS::MkDirs(cache_path.substr(0, cache_path.find_last_of("/")));
+                ftpclient->Size(path.substr(5).c_str(), &bytes_to_download, FtpClient::image);
                 ftpclient->Get(cache_path.c_str(), path.substr(5).c_str(), FtpClient::image, 0);
             }
             ftpclient->Quit();
         }
+    }
+
+	void StartDownloadGameThread(Game *game)
+    {
+        download_game_thid = sceKernelCreateThread("download_game_thread", (SceKernelThreadEntry)GAME::DownloadGameThread, 0x10000100, 0x4000, 0, 0, NULL);
+		if (download_game_thid >= 0)
+			sceKernelStartThread(download_game_thid, sizeof(Game), game);
+    }
+
+	int DownloadGameThread(SceSize args, Game *game)
+	{
+		DownloadGameToFtpCache(game);
+		return sceKernelExitDeleteThread(0);
+	}
+
+    static int DownloadGameCallback(int64_t xfered, void* arg)
+    {
+        bytes_transfered = xfered;
+        return 1;
     }
 }
