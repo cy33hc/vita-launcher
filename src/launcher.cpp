@@ -51,6 +51,7 @@ static int move_location = 0;
 static Folder temp_folder;
 static std::vector<CategorySelection> categories_selection;
 static char txt_category_order[4];
+static char txt_server_port[6];
 
 GameCategory *tmp_category;
 
@@ -69,6 +70,7 @@ bool handle_search_game = false;
 bool handle_uninstall_game = false;
 bool handle_new_folder = false;
 bool handle_edit_delete_folder = false;
+bool handle_download_rom = false;
 bool selection_mode = false;
 bool show_all_categories_setting = show_all_categories;
 bool show_categories_as_tabs_settings = show_categories_as_tabs;
@@ -561,15 +563,24 @@ namespace Windows {
                         }
                         else if (game->type == TYPE_ROM)
                         {
-                            GameCategory *cat = categoryMap[game->category];
-                            if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                            if (GAME::IsGameInFtpCache(game))
                             {
-                                GAME::Launch(game);
+                                GameCategory *cat = categoryMap[game->category];
+                                if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                                {
+                                    GAME::Launch(game);
+                                }
+                                handle_boot_rom_game = true;
+                                game_to_boot = game;
+                                sprintf(retro_core, "%s", cat->core);
+                                DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
                             }
-                            handle_boot_rom_game = true;
-                            game_to_boot = game;
-                            sprintf(retro_core, "%s", cat->core);
-                            DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
+                            else
+                            {
+                                handle_download_rom = true;
+                                game_to_boot = game;
+                                GAME::StartDownloadGameThread(game);
+                            }
                         }
                         else
                         {
@@ -723,15 +734,24 @@ namespace Windows {
                 }
                 else if (game->type == TYPE_ROM)
                 {
-                    GameCategory *cat = categoryMap[game->category];
-                    if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                    if (GAME::IsGameInFtpCache(game))
                     {
-                        GAME::Launch(game);
+                        GameCategory *cat = categoryMap[game->category];
+                        if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                        {
+                            GAME::Launch(game);
+                        }
+                        handle_boot_rom_game = true;
+                        game_to_boot = game;
+                        sprintf(retro_core, "%s", cat->core);
+                        DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
                     }
-                    handle_boot_rom_game = true;
-                    game_to_boot = game;
-                    sprintf(retro_core, "%s", cat->core);
-                    DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
+                    else
+                    {
+                        handle_download_rom = true;
+                        game_to_boot = game;
+                        GAME::StartDownloadGameThread(game);
+                    }
                 }
                 else
                 {
@@ -951,16 +971,24 @@ namespace Windows {
                 }
                 else if (game->type == TYPE_ROM)
                 {
-                    GameCategory *cat = categoryMap[game->category];
-                    if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                    if (GAME::IsGameInFtpCache(game))
                     {
-                        GAME::Launch(game);
+                        GameCategory *cat = categoryMap[game->category];
+                        if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                        {
+                            GAME::Launch(game);
+                        }
+                        handle_boot_rom_game = true;
+                        game_to_boot = game;
+                        sprintf(retro_core, "%s", cat->core);
+                        DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
                     }
-                    handle_boot_rom_game = true;
-                    game_to_boot = game;
-                    sprintf(retro_core, "%s", cat->core);
-                    DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
-                    
+                    else
+                    {
+                        handle_download_rom = true;
+                        game_to_boot = game;
+                        GAME::StartDownloadGameThread(game);
+                    }                    
                 }
                 else
                 {
@@ -1076,6 +1104,11 @@ namespace Windows {
             HandleBootRomGame();
         }
 
+        if (handle_download_rom)
+        {
+            HandleDownloadRom();
+        }
+
         if (handle_move_game)
         {
             HandleMoveGame();
@@ -1154,6 +1187,7 @@ namespace Windows {
             show_categories_as_tabs_settings = show_categories_as_tabs;
             show_all_categories_setting = show_all_categories;
             sprintf(txt_category_order, "%d", current_category->order);
+            sprintf(txt_server_port, "%d", ftp_server_port);
             ImGui::OpenPopup("Settings and Actions");
         }
 
@@ -1764,6 +1798,82 @@ namespace Windows {
                     ImGui::EndTabItem();
                 }
 
+                if (ImGui::BeginTabItem("Ftp"))
+                {
+                    ImGui::PushID("ftp_server_ip");
+                    ImGui::Text("Server IP:"); ImGui::SameLine();
+                    if (ImGui::Selectable(ftp_server_ip, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                    {
+                        ime_single_field = ftp_server_ip;
+                        ime_before_update = nullptr;
+                        ime_after_update = nullptr;
+                        ime_callback = SingleValueImeCallback;
+                        Dialog::initImeDialog("Server IP", ftp_server_ip, 15, SCE_IME_TYPE_EXTENDED_NUMBER, 0, 0);
+                        gui_mode = GUI_MODE_IME;
+                    }
+                    ImGui::PopID();
+                    ImGui::Separator();
+
+                    ImGui::PushID("ftp_server_port");
+                    ImGui::Text("Server Port:"); ImGui::SameLine();
+                    std::string server_port = std::string(txt_server_port) + "##server_port";
+                    if (ImGui::Selectable(server_port.c_str(), false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                    {
+                        ime_single_field = txt_server_port;
+                        ime_before_update = nullptr;
+                        ime_after_update = nullptr;
+                        ime_callback = SingleValueImeCallback;
+                        Dialog::initImeDialog("Server Port", txt_server_port, 5, SCE_IME_TYPE_NUMBER, 0, 0);
+                        gui_mode = GUI_MODE_IME;
+                    }
+                    ImGui::PopID();
+                    ImGui::Separator();
+
+                    ImGui::PushID("ftp_server_user");
+                    ImGui::Text("Username:"); ImGui::SameLine();
+                    if (ImGui::Selectable(ftp_server_user, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                    {
+                        ime_single_field = ftp_server_user;
+                        ime_before_update = nullptr;
+                        ime_after_update = nullptr;
+                        ime_callback = SingleValueImeCallback;
+                        Dialog::initImeDialog("Username", ftp_server_user, 31, SCE_IME_TYPE_DEFAULT, 0, 0);
+                        gui_mode = GUI_MODE_IME;
+                    }
+                    ImGui::PopID();
+                    ImGui::Separator();
+
+                    ImGui::PushID("ftp_server_password");
+                    ImGui::Text("Password:"); ImGui::SameLine();
+                    if (ImGui::Selectable(ftp_server_password, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                    {
+                        ime_single_field = ftp_server_password;
+                        ime_before_update = nullptr;
+                        ime_after_update = nullptr;
+                        ime_callback = SingleValueImeCallback;
+                        Dialog::initImeDialog("Password", ftp_server_password, 31, SCE_IME_TYPE_DEFAULT, 0, 0);
+                        gui_mode = GUI_MODE_IME;
+                    }
+                    ImGui::PopID();
+                    ImGui::Separator();
+
+                    ImGui::PushID("ftp_cache_path");
+                    ImGui::Text("Cache Path:"); ImGui::SameLine();
+                    if (ImGui::Selectable(ftp_cache_path, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                    {
+                        ime_single_field = ftp_cache_path;
+                        ime_before_update = nullptr;
+                        ime_after_update = nullptr;
+                        ime_callback = SingleValueImeCallback;
+                        Dialog::initImeDialog("Cache Path", ftp_cache_path, 127, SCE_IME_TYPE_DEFAULT, 0, 0);
+                        gui_mode = GUI_MODE_IME;
+                    }
+                    ImGui::PopID();
+                    ImGui::Separator();
+
+                    ImGui::EndTabItem();
+                }
+
                 if (ImGui::BeginTabItem("Help"))
                 {
                     ImGui::Text("1. Title ids can be full 9 characters or partial. A");
@@ -1798,6 +1908,13 @@ namespace Windows {
                 WriteString(CONFIG_GLOBAL, CONFIG_HIDE_TITLE_IDS, CONFIG::GetMultiValueString(hidden_title_ids).c_str());
                 WriteString(CONFIG_GLOBAL, CONFIG_BACKGROUD_MUSIC, CONFIG::GetMultiValueString(bg_music_list).c_str());
                 WriteBool(CONFIG_GLOBAL, CONFIG_ENABLE_BACKGROUND_MUSIC, enable_backgrou_music);
+
+                WriteString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_IP, ftp_server_ip);
+                ftp_server_port = atoi(txt_server_port);
+                WriteInt(CONFIG_GLOBAL, CONFIG_FTP_SERVER_PORT, ftp_server_port);
+                WriteString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_USER, ftp_server_user);
+                WriteString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_PASSWORD, ftp_server_password);
+                WriteString(CONFIG_GLOBAL, CONFIG_FTP_CACHE_PATH, ftp_cache_path);
 
                 if (remove_from_cache && selected_game != nullptr)
                 {
@@ -2212,6 +2329,56 @@ namespace Windows {
                 handle_boot_rom_game = false;
                 retro_cores.clear();
                 ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+    }
+
+    void HandleDownloadRom()
+    {
+        SetModalMode(true);
+
+        ImGui::OpenPopup("Download Rom");
+        ImGui::SetNextWindowPos(ImVec2(300, 150));
+        ImGui::SetNextWindowSize(ImVec2(400,140));
+        if (ImGui::BeginPopupModal("Download Rom", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+        {
+            ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(400,140));
+            static float progress = 0.0f;
+            progress = (float)bytes_transfered / (float)bytes_to_download;
+            ImGui::Text("Download %s to cache", game_to_boot->title);
+            ImGui::ProgressBar(progress, ImVec2(380, 0));
+            if (download_error)
+            {
+                ImGui::Text("%s", download_error_message);
+            }
+            ImGui::Separator();
+            if (bytes_transfered == bytes_to_download)
+            {
+                if (ImGui::Button("Launch"))
+                {
+                    GameCategory *cat = categoryMap[game_to_boot->category];
+                    if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                    {
+                        GAME::Launch(game_to_boot);
+                    }
+                    handle_boot_rom_game = true;
+                    handle_download_rom = false;
+                    sprintf(retro_core, "%s", cat->core);
+                    DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
+                    SetModalMode(false);
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            if (bytes_transfered == bytes_to_download || download_error)
+            {
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel"))
+                {
+                    SetModalMode(false);
+                    handle_download_rom = false;
+                    ImGui::CloseCurrentPopup();
+                }
             }
             ImGui::EndPopup();
         }
@@ -3341,4 +3508,5 @@ namespace Windows {
         CONFIG::rtrim(str, " ");
         sprintf(ime_single_field, "%s", str.c_str());
     }
+
 }

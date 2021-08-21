@@ -177,7 +177,8 @@ extern std::vector<Game*> selected_games;
 extern FtpClient *ftpclient;
 extern int64_t bytes_transfered;
 extern int64_t bytes_to_download;
-
+extern bool download_error;
+extern char download_error_message[512];
 static SceUID load_images_thid = -1;
 static SceUID scan_games_thid = -1;
 static SceUID scan_games_category_thid = -1;

@@ -58,6 +58,8 @@ BootSettings defaul_boot_settings;
 FtpClient *ftpclient;
 int64_t bytes_transfered;
 int64_t bytes_to_download;
+bool download_error;
+char download_error_message[512];
 bool use_game_db = true;
 
 namespace GAME {
@@ -451,10 +453,6 @@ namespace GAME {
                     std::string game_path = std::string(game->rom_path);
                     if (game_path.rfind("ftp0:", 0) == 0)
                     {
-                        if (!IsGameInFtpCache(game))
-                        {
-                            DownloadGameToFtpCache(game);   
-                        }
                         game_path = std::string(ftp_cache_path) + "/" + game->category + "/" + game_path.substr(5);
                     }
                     sprintf(uri, "psgm:play?titleid=%s&param=%s&param2=%s", RETROARCH_TITLE_ID, retro_core, game_path.c_str());
@@ -1609,16 +1607,42 @@ namespace GAME {
     void DownloadGameToFtpCache(Game *game)
     {
         bytes_transfered = 0;
+        bytes_to_download = 1000;
+        download_error = false;
         std::string path = std::string(game->rom_path);
         if (path.rfind("ftp0:", 0) == 0)
         {
-            ftpclient->Connect(ftp_server_ip, ftp_server_port);
-            if (ftpclient->Login(ftp_server_user, ftp_server_password) > 0)
+            if (ftpclient->Connect(ftp_server_ip, ftp_server_port) > 0)
             {
-                std::string cache_path = std::string(ftp_cache_path) + "/" + game->category + "/" + path.substr(5);
-                FS::MkDirs(cache_path.substr(0, cache_path.find_last_of("/")));
-                ftpclient->Size(path.substr(5).c_str(), &bytes_to_download, FtpClient::image);
-                ftpclient->Get(cache_path.c_str(), path.substr(5).c_str(), FtpClient::image, 0);
+                if (ftpclient->Login(ftp_server_user, ftp_server_password) > 0)
+                {
+                    std::string cache_path = std::string(ftp_cache_path) + "/" + game->category + "/" + path.substr(5);
+                    FS::MkDirs(cache_path.substr(0, cache_path.find_last_of("/")));
+                    if (ftpclient->Size(path.substr(5).c_str(), &bytes_to_download, FtpClient::image) > 0)
+                    {
+                        if (ftpclient->Get(cache_path.c_str(), path.substr(5).c_str(), FtpClient::image, 0) == 0)
+                        {
+                            download_error = true;
+                        }
+                    }
+                    else
+                    {
+                        download_error = true;
+                    }
+                }
+                else
+                {
+                    download_error = true;
+                }
+            }
+            else
+            {
+                download_error = true;
+            }
+            
+            if (download_error)
+            {
+                strncpy(download_error_message, ftpclient->LastResponse(), strlen(ftpclient->LastResponse()));
             }
             ftpclient->Quit();
         }

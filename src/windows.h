@@ -46,6 +46,7 @@ namespace Windows {
     void HandleAddNewEbootGame();
     void HandleAdrenalineGame();
     void HandleBootRomGame();
+    void HandleDownloadRom();
     void HandleImeInput();
     void HandleMoveGame();
     void HandleSearchGame();

@@ -114,6 +114,7 @@ public:
 	void SetCallbackXferFunction(FtpCallbackXfer pointer);
 	void SetCallbackArg(void *arg);
 	void SetCallbackBytes(int64_t bytes);
+	char* LastResponse();
 	int Quit();
 
 private:
@@ -122,7 +123,6 @@ private:
 	int ReadResponse(char c, ftphandle *nControl);
 	int Readline(char *buf, int max, ftphandle *nControl);
 	int Writeline(char *buf, int len, ftphandle *nData);
-	char* LastResponse();
 	void ClearHandle();
 	int FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode mode, int dir, char *cmd);
 	int FtpOpenPort(ftphandle *nControl, ftphandle **nData, transfermode mode, int dir, char *cmd);
