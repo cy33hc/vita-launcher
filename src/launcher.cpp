@@ -10,7 +10,7 @@
 #include "config.h"
 #include "ime_dialog.h"
 #include "gui.h"
-//##include "debugnet.h"
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -150,6 +150,7 @@ namespace Windows {
                         if (game != nullptr)
                         {
                             game->favorite = false;
+                            game->cache_state = selected_game->cache_state;
                             break;
                         }
                     }
@@ -563,7 +564,7 @@ namespace Windows {
                         }
                         else if (game->type == TYPE_ROM)
                         {
-                            if (GAME::IsGameInFtpCache(game))
+                            if (GAME::GetCacheState(game) > 0)
                             {
                                 GameCategory *cat = categoryMap[game->category];
                                 if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
@@ -579,7 +580,7 @@ namespace Windows {
                             {
                                 handle_download_rom = true;
                                 game_to_boot = game;
-                                GAME::StartDownloadGameThread(game);
+                                GAME::StartDownloadGameThread(game_to_boot);
                             }
                         }
                         else
@@ -610,6 +611,18 @@ namespace Windows {
                     ImGui::SetCursorPosY(pos.y+(i*grid_size)+current_category->normal_thumbnail_size.y+8);
                     ImGui::SetCursorPosX(pos.x+(j*grid_size));
                     int text_clip = 0;
+                    if (game->visible && GAME::GetCacheState(game) == 0)
+                    {
+                        ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
+                        ImGui::Image(reinterpret_cast<ImTextureID>(redbar_icon.id), ImVec2(3,16));
+                        ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-3);
+                    }
+                    else if (game->visible && GAME::GetCacheState(game) == 1)
+                    {
+                        ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
+                        ImGui::Image(reinterpret_cast<ImTextureID>(greenbar_icon.id), ImVec2(3,16));
+                        ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-3);
+                    }
                     if (game->selected)
                     {
                         ImGui::Image(reinterpret_cast<ImTextureID>(selected_icon.id), ImVec2(16,16));
@@ -734,7 +747,7 @@ namespace Windows {
                 }
                 else if (game->type == TYPE_ROM)
                 {
-                    if (GAME::IsGameInFtpCache(game))
+                    if (GAME::GetCacheState(game) > 0)
                     {
                         GameCategory *cat = categoryMap[game->category];
                         if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
@@ -750,13 +763,13 @@ namespace Windows {
                     {
                         handle_download_rom = true;
                         game_to_boot = game;
-                        GAME::StartDownloadGameThread(game);
+                        GAME::StartDownloadGameThread(game_to_boot);
                     }
                 }
                 else
                 {
                     handle_boot_game = true;
-                    game_to_boot = selected_game;
+                    game_to_boot = game;
                     settings = defaul_boot_settings;
                     DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
                 }
@@ -818,6 +831,18 @@ namespace Windows {
             
             ImGui::SetCursorPosY(pos.y + current_category->normal_thumbnail_size.y+6);
             int text_clip = 0;
+            if (game->visible && GAME::GetCacheState(game) == 0)
+            {
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
+                ImGui::Image(reinterpret_cast<ImTextureID>(redbar_icon.id), ImVec2(3,16));
+                ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-3);
+            }
+            else if (game->visible && GAME::GetCacheState(game) == 1)
+            {
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
+                ImGui::Image(reinterpret_cast<ImTextureID>(greenbar_icon.id), ImVec2(3,16));
+                ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-3);
+            }
             if (game->selected)
             {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
@@ -971,7 +996,7 @@ namespace Windows {
                 }
                 else if (game->type == TYPE_ROM)
                 {
-                    if (GAME::IsGameInFtpCache(game))
+                    if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
                     {
                         GameCategory *cat = categoryMap[game->category];
                         if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
@@ -987,18 +1012,19 @@ namespace Windows {
                     {
                         handle_download_rom = true;
                         game_to_boot = game;
-                        GAME::StartDownloadGameThread(game);
+                        GAME::StartDownloadGameThread(game_to_boot);
                     }                    
                 }
                 else
                 {
                     handle_boot_game = true;
-                    game_to_boot = selected_game;
+                    game_to_boot = game;
                     settings = defaul_boot_settings;
                     DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
                 }
             }
             ImGui::PopID();
+            game->visible = ImGui::IsItemVisible();
             if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
             {
                 if (current_category->list_view_position == i && !folder_selected && !paused)

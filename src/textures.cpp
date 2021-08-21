@@ -13,6 +13,8 @@ Tex cross_icon;
 Tex start_icon;
 Tex folder_icon;
 Tex selected_icon;
+Tex redbar_icon;
+Tex greenbar_icon;
 
 namespace Textures {
 	
@@ -56,6 +58,8 @@ namespace Textures {
 		Textures::LoadImageFile("ux0:app/SMLA00001/start.png", &start_icon);
 		Textures::LoadImageFile("ux0:app/SMLA00001/folder.png", &folder_icon);
 		Textures::LoadImageFile("ux0:app/SMLA00001/selected.png", &selected_icon);
+		Textures::LoadImageFile("ux0:app/SMLA00001/redbar.png", &redbar_icon);
+		Textures::LoadImageFile("ux0:app/SMLA00001/greenbar.png", &greenbar_icon);
 	}
 
 	void Exit(void) {
@@ -68,6 +72,8 @@ namespace Textures {
 		vita2d_free_texture(start_icon.id);
 		vita2d_free_texture(folder_icon.id);
 		vita2d_free_texture(selected_icon.id);
+		vita2d_free_texture(redbar_icon.id);
+		vita2d_free_texture(greenbar_icon.id);
 	}
 
 	void Free(Tex *texture) {

@@ -19,6 +19,8 @@ extern Tex cross_icon;
 extern Tex start_icon;
 extern Tex folder_icon;
 extern Tex selected_icon;
+extern Tex redbar_icon;
+extern Tex greenbar_icon;
 
 namespace Textures {
     void LoadFonts(Tex *font_texture);

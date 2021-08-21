@@ -24,6 +24,7 @@ typedef struct {
     uint64_t visible_time = 0;
     bool thread_started = false;
     bool selected = false;
+    char cache_state = 2;
     Tex tex;
 } Game;
 
@@ -269,10 +270,11 @@ namespace GAME {
     void SortGameCategories();
     void HideCategories();
     void ShowAllCategories();
-    bool IsGameInFtpCache(Game *game);
+    char GetCacheState(Game *game);
+    bool IsRemoteGame(Game *game);
     void DownloadGameToFtpCache(Game *game);
     void StartDownloadGameThread(Game *game);
-    int DownloadGameThread(SceSize args, Game *game);
+    int DownloadGameThread(SceSize args, Game **game);
     static int DownloadGameCallback(int64_t xfered, void* arg);
     static int LoadScePaf();
     static int UnloadScePaf();

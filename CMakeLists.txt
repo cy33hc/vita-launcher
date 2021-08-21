@@ -179,4 +179,6 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE selected.png selected.png
   FILE default_style.ini default_style.ini
   FILE music.ogg music.ogg
+  FILE redbar.png redbar.png
+  FILE greenbar.png greenbar.png
 )

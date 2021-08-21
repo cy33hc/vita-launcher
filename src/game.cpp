@@ -188,6 +188,7 @@ namespace GAME {
 
         game->type = TYPE_PSP_ISO;
         game->tex = no_icon;
+        game->cache_state = 2;
         if (FS::FileExists(sfo_path))
         {
             const auto sfo = FS::Load(sfo_path);
@@ -277,6 +278,7 @@ namespace GAME {
         game->type = TYPE_EBOOT;
         sprintf(game->title, "%s", title.c_str());
         game->tex = no_icon;
+        game->cache_state = 2;
         if (strcmp(cat, "ME") ==0)
         {
             sprintf(game->category, "%s", game_categories[PS1_GAMES].category);
@@ -372,6 +374,7 @@ namespace GAME {
             {
                 Game game;
                 game.type = TYPE_ROM;
+                game.cache_state = 2;
                 sprintf(game.id, "%s", category->title);
                 sprintf(game.category, "%s", category->category);
                 sprintf(game.rom_path, "%s/%s", category->roms_path, files[j].c_str());
@@ -1591,17 +1594,33 @@ namespace GAME {
         return list;
     }
 
-    bool IsGameInFtpCache(Game *game)
+    char GetCacheState(Game *game)
+    {
+        debugNetPrintf(DEBUG, "%s cache_state %d\n", game->title, game->cache_state);
+        if (game->cache_state != 2)
+        {
+            return game->cache_state;
+        }
+        else if (IsRemoteGame(game))
+        {
+            std::string game_path = std::string(game->rom_path);
+            game->cache_state = FS::FileExists(std::string(ftp_cache_path) + "/" + game->category + "/" + game_path.substr(5));
+            return game->cache_state;
+        }
+        else
+        {
+            return game->cache_state;
+        }
+    }
+
+    bool IsRemoteGame(Game *game)
     {
         std::string game_path = std::string(game->rom_path);
         if (game_path.rfind("ftp0:", 0) == 0)
         {
-            return FS::FileExists(std::string(ftp_cache_path) + "/" + game->category + "/" + game_path.substr(5));
+            return true;
         }
-        else
-        {
-            true;
-        }
+        return false;
     }
 
     void DownloadGameToFtpCache(Game *game)
@@ -1624,6 +1643,7 @@ namespace GAME {
                         {
                             download_error = true;
                         }
+                        game->cache_state = 1;
                     }
                     else
                     {
@@ -1652,12 +1672,12 @@ namespace GAME {
     {
         download_game_thid = sceKernelCreateThread("download_game_thread", (SceKernelThreadEntry)GAME::DownloadGameThread, 0x10000100, 0x4000, 0, 0, NULL);
 		if (download_game_thid >= 0)
-			sceKernelStartThread(download_game_thid, sizeof(Game), game);
+			sceKernelStartThread(download_game_thid, sizeof(Game*), &game);
     }
 
-	int DownloadGameThread(SceSize args, Game *game)
+	int DownloadGameThread(SceSize args, Game **game)
 	{
-		DownloadGameToFtpCache(game);
+		DownloadGameToFtpCache(*game);
 		return sceKernelExitDeleteThread(0);
 	}
 
