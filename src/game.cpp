@@ -21,7 +21,7 @@
 #include "net.h"
 #include "ftpclient.h"
 
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -1596,7 +1596,7 @@ namespace GAME {
 
     char GetCacheState(Game *game)
     {
-        debugNetPrintf(DEBUG, "%s cache_state %d\n", game->title, game->cache_state);
+        //debugNetPrintf(DEBUG, "%s cache_state %d\n", game->title, game->cache_state);
         if (game->cache_state != 2)
         {
             return game->cache_state;

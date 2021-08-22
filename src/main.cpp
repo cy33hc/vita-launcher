@@ -18,7 +18,7 @@
 #include "fs.h"
 #include "net.h"
 #include "ftpclient.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "audio.h"
 }
@@ -128,7 +128,7 @@ namespace Services
 
 int main(int, char **)
 {
-	debugNetInit(ip_server,port_server,DEBUG);
+	//debugNetInit(ip_server,port_server,DEBUG);
 
 	Net::Init();
 	Services::Init();
