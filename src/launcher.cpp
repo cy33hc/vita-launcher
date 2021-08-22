@@ -1894,6 +1894,9 @@ namespace Windows {
                     ImGui::PopID();
                     ImGui::Separator();
 
+                    ImGui::Checkbox("Enable PASV mode:", &pasv_mode);
+                    ImGui::Separator();
+
                     ImGui::PushID("ftp_cache_path");
                     ImGui::Text("Cache Path:"); ImGui::SameLine();
                     if (ImGui::Selectable(ftp_cache_path, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
@@ -1951,6 +1954,8 @@ namespace Windows {
                 WriteInt(CONFIG_GLOBAL, CONFIG_FTP_SERVER_PORT, ftp_server_port);
                 WriteString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_USER, ftp_server_user);
                 WriteString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_PASSWORD, ftp_server_password);
+                WriteBool(CONFIG_GLOBAL, CONFIG_FTP_TRANSFER_MODE, pasv_mode);
+                ftpclient->SetConnmode(pasv_mode ? FtpClient::pasv : FtpClient::port);
                 WriteString(CONFIG_GLOBAL, CONFIG_FTP_CACHE_PATH, ftp_cache_path);
 
                 if (remove_from_cache && selected_game != nullptr)

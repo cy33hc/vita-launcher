@@ -26,6 +26,7 @@ char ftp_server_ip[18];
 char ftp_server_user[32];
 char ftp_server_password[32];
 int ftp_server_port;
+bool pasv_mode;
 char ftp_cache_path[128];
 
 namespace CONFIG {
@@ -269,6 +270,9 @@ namespace CONFIG {
         ftp_server_port = ReadInt(CONFIG_GLOBAL, CONFIG_FTP_SERVER_PORT, 21);
         WriteInt(CONFIG_GLOBAL, CONFIG_FTP_SERVER_PORT, ftp_server_port);
 
+        pasv_mode = ReadBool(CONFIG_GLOBAL, CONFIG_FTP_TRANSFER_MODE, true);
+        WriteBool(CONFIG_GLOBAL, CONFIG_FTP_TRANSFER_MODE, pasv_mode);
+        
         sprintf(ftp_server_user, "%s", ReadString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_USER, "anonymous"));
         WriteString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_USER, ftp_server_user);
 

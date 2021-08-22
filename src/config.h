@@ -66,6 +66,7 @@
 #define CONFIG_FTP_SERVER_USER "ftp_server_user"
 #define CONFIG_FTP_SERVER_PASSWORD "ftp_server_password"
 #define CONFIG_FTP_CACHE_PATH "ftp_cache_path"
+#define CONFIG_FTP_TRANSFER_MODE "ftp_transfer_mode"
 
 #define ICON_TYPE_BOXARTS "Boxarts"
 #define ICON_TYPE_TITLES "Titles"
@@ -231,6 +232,7 @@ extern char ftp_server_user[];
 extern char ftp_server_password[];
 extern int ftp_server_port;
 extern char ftp_cache_path[];
+extern bool pasv_mode;
 
 namespace CONFIG {
     void LoadConfig();

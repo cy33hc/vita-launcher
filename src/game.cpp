@@ -66,6 +66,7 @@ namespace GAME {
 
     void Init() {
         ftpclient = new FtpClient();
+        ftpclient->SetConnmode(pasv_mode ? FtpClient::pasv : FtpClient::port);
         ftpclient->SetCallbackBytes(1);
         ftpclient->SetCallbackXferFunction(DownloadGameCallback);
     }

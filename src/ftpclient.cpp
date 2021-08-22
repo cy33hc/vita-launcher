@@ -1413,18 +1413,21 @@ std::vector<FtpDirEntry> FtpClient::ListDir(const char *path)
 	mp_ftphandle->offset = 0;
 
 	nData = RawOpen(path, FtpClient::dirverbose, FtpClient::ascii);
-	ret = FtpRead(buf, 1024, nData);
-	while (ret > 0)
+	if (nData != NULL)
 	{
-		FtpDirEntry entry;
-		memset(&entry, 0, sizeof(entry));
-		if (ParseDirEntry(buf, &entry) > 0)
-		{
-			out.push_back(entry);
-		}
 		ret = FtpRead(buf, 1024, nData);
+		while (ret > 0)
+		{
+			FtpDirEntry entry;
+			memset(&entry, 0, sizeof(entry));
+			if (ParseDirEntry(buf, &entry) > 0)
+			{
+				out.push_back(entry);
+			}
+			ret = FtpRead(buf, 1024, nData);
+		}
+		FtpClose(nData);
 	}
-	FtpClose(nData);
 
 	return out;
 }
