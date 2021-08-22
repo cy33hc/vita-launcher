@@ -275,6 +275,7 @@ namespace GAME {
     void DownloadGameToFtpCache(Game *game);
     void StartDownloadGameThread(Game *game);
     int DownloadGameThread(SceSize args, Game **game);
+    std::vector<std::string> GetFilesFromCueFile(char *path);
     static int DownloadGameCallback(int64_t xfered, void* arg);
     static int LoadScePaf();
     static int UnloadScePaf();

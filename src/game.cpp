@@ -1358,6 +1358,7 @@ namespace GAME {
         sprintf(db_path, "%s/%s.db", THUMBNAIL_BASE_PATH, cat->category);
         sqlite3 *db;
         sqlite3_open(db_path, &db);
+        FS::MkDirs(cat->icon_path);
         for (int i=0; i<cat->current_folder->games.size(); i++)
         {
             if (cat->current_folder->games[i].type == TYPE_ROM || cat->current_folder->games[i].type == TYPE_SCUMMVM)
@@ -1637,14 +1638,50 @@ namespace GAME {
                 if (ftpclient->Login(ftp_server_user, ftp_server_password) > 0)
                 {
                     std::string cache_path = std::string(ftp_cache_path) + "/" + game->category + "/" + path.substr(5);
-                    FS::MkDirs(cache_path.substr(0, cache_path.find_last_of("/")));
-                    if (ftpclient->Size(path.substr(5).c_str(), &bytes_to_download, FtpClient::image) > 0)
+                    std::string cache_path_prefix = cache_path.substr(0, cache_path.find_last_of("/")+1);
+                    path = path.substr(5);
+                    std::string path_prefix = path.substr(0, path.find_last_of("/")+1);
+                    FS::MkDirs(cache_path_prefix);
+                    if (ftpclient->Size(path.c_str(), &bytes_to_download, FtpClient::image) > 0)
                     {
-                        if (ftpclient->Get(cache_path.c_str(), path.substr(5).c_str(), FtpClient::image, 0) == 0)
+                        if (ftpclient->Get(cache_path.c_str(), path.c_str(), FtpClient::image, 0) > 0)
+                        {
+                            game->cache_state = 1;
+                            if (cache_path.rfind(".cue") != std::string::npos)
+                            {
+                                std::vector<std::string> files = GetFilesFromCueFile(cache_path.c_str());
+                                for (int i=0; i<files.size(); i++)
+                                {
+                                    bytes_to_download = 1000;
+                                    bytes_transfered = 0;
+                                    std::string output_file = cache_path_prefix + files[i];
+                                    std::string input_file = path_prefix + files[i];
+                                    if (ftpclient->Size(input_file.c_str(), &bytes_to_download, FtpClient::image) > 0)
+                                    {
+                                        if (ftpclient->Get(output_file.c_str(), input_file.c_str(), FtpClient::image, 0) == 0)
+                                        {
+                                            download_error = true;
+                                            game->cache_state = 0;
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            game->cache_state = 1;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        download_error = true;
+                                        game->cache_state = 0;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        else
                         {
                             download_error = true;
                         }
-                        game->cache_state = 1;
                     }
                     else
                     {
@@ -1682,6 +1719,34 @@ namespace GAME {
 		return sceKernelExitDeleteThread(0);
 	}
 
+    std::vector<std::string> GetFilesFromCueFile(char *path)
+    {
+        std::vector<std::string> out;
+        FILE *fp = fopen(path, "r");
+        char buf[1024];
+        char *p;
+        char *token;
+
+        while (fgets(buf, 1024, fp) != NULL)
+        {
+            token = strtok_r(buf, " \t", &p);
+            if (token == NULL || strcmp(token, "FILE") != 0)
+            {
+                continue;
+            }
+
+            // read up to quote
+            token = strtok_r(NULL, "\"", &p);
+            if (token == NULL)
+            {
+                continue;
+            }
+            out.push_back(std::string(token));
+        }
+        fclose(fp);
+
+        return out;
+    }
     static int DownloadGameCallback(int64_t xfered, void* arg)
     {
         bytes_transfered = xfered;
