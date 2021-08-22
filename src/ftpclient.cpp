@@ -77,6 +77,7 @@ int FtpClient::Connect(const char *host, unsigned short port)
     if (retval == -1)
     {
         //debugNetPrintf(ERROR, "sceNetConnect error\n");
+		sprintf(mp_ftphandle->response, "Connection timeout\n");
         sceNetSocketClose(sControl);
         return 0;
     }
