@@ -1647,7 +1647,7 @@ namespace GAME {
                         if (ftpclient->Get(cache_path.c_str(), path.c_str(), FtpClient::image, 0) > 0)
                         {
                             game->cache_state = 1;
-                            if (cache_path.rfind(".cue") != std::string::npos)
+                            if (cache_path.rfind(".cue") != std::string::npos || cache_path.rfind(".CUE") != std::string::npos)
                             {
                                 std::vector<std::string> files = GetFilesFromCueFile(cache_path.c_str());
                                 for (int i=0; i<files.size(); i++)
