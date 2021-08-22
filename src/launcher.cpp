@@ -956,6 +956,17 @@ namespace Windows {
         {
             Game *game = &current_category->current_folder->games[i];
             ImGui::SetColumnWidth(-1, 760);
+            ImGui::Text(""); ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
+            if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 0)
+            {
+                ImGui::Image(reinterpret_cast<ImTextureID>(redbar_icon.id), ImVec2(3,16));
+                ImGui::SameLine();
+            }
+            else if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 1)
+            {
+                ImGui::Image(reinterpret_cast<ImTextureID>(greenbar_icon.id), ImVec2(3,16));
+                ImGui::SameLine();
+            }
             if (game->type == TYPE_FOLDER)
             {
                 ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
@@ -3301,7 +3312,19 @@ namespace Windows {
             ImGui::Columns(2, "search games list", true);
             for (int i = 0; i < games_selection.size(); i++)
             {
+                Game *game = &games_selection[i];
                 ImGui::SetColumnWidth(-1,450);
+                ImGui::Text(""); ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
+                if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 0)
+                {
+                    ImGui::Image(reinterpret_cast<ImTextureID>(redbar_icon.id), ImVec2(3,16));
+                    ImGui::SameLine();
+                }
+                else if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 1)
+                {
+                    ImGui::Image(reinterpret_cast<ImTextureID>(greenbar_icon.id), ImVec2(3,16));
+                    ImGui::SameLine();
+                }
                 if (games_selection[i].favorite)
                 {
                     ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
@@ -3311,22 +3334,30 @@ namespace Windows {
                 sprintf(title, "%s##%s%d%d", games_selection[i].title, games_selection[i].category, search_count, i);
                 if (ImGui::Selectable(title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_SpanAllColumns))
                 {
-                    Game *game = &games_selection[i];
                     if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                     {
                         GAME::Launch(game);
                     }
                     else if (game->type == TYPE_ROM)
                     {
-                        GameCategory *cat = categoryMap[game->category];
-                        if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                        if (GAME::GetCacheState(game) > 0)
                         {
-                            GAME::Launch(game);
+                            GameCategory *cat = categoryMap[game->category];
+                            if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                            {
+                                GAME::Launch(game);
+                            }
+                            handle_boot_rom_game = true;
+                            game_to_boot = game;
+                            sprintf(retro_core, "%s", cat->core);
+                            DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
                         }
-                        handle_boot_rom_game = true;
-                        game_to_boot = game;
-                        sprintf(retro_core, "%s", cat->core);
-                        DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
+                        else
+                        {
+                            handle_download_rom = true;
+                            game_to_boot = game;
+                            GAME::StartDownloadGameThread(game);
+                        }
                     }
                     else
                     {
