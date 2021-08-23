@@ -467,7 +467,12 @@ namespace GAME {
                 else if (strcmp(category->rom_launcher_title_id, "DEDALOX64") == 0)
                 {
                     char uri[512];
-                    sprintf(uri, "psgm:play?titleid=%s&param=%s", category->rom_launcher_title_id, game->rom_path);
+                    std::string game_path = std::string(game->rom_path);
+                    if (game_path.rfind("ftp0:", 0) == 0)
+                    {
+                        game_path = std::string(ftp_cache_path) + "/" + game->category + "/" + game_path.substr(5);
+                    }
+                    sprintf(uri, "psgm:play?titleid=%s&param=%s", category->rom_launcher_title_id, game_path.c_str());
                     sceAppMgrLaunchAppByUri(0xFFFFF, uri);
                     sceKernelDelayThread(1000);
                     sceKernelExitProcess(0);
