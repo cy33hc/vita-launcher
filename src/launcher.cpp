@@ -2442,7 +2442,7 @@ namespace Windows {
             {
                 if (games_on_filesystem.size() == 0)
                 {
-                    games_on_filesystem = FS::ListFiles(current_category->roms_path);
+                    games_on_filesystem = GAME::GetRetroRomFiles(current_category->roms_path);
                     for (std::vector<std::string>::iterator it=games_on_filesystem.begin(); 
                         it!=games_on_filesystem.end(); )
                     {
