@@ -51,7 +51,14 @@ namespace Services
 		ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE);
 		if (!show_categories_as_tabs)
 		{
-			ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CIRCLE);
+			if (swap_xo)
+			{
+				ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CROSS);
+			}
+			else
+			{
+				ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CIRCLE);
+			}
 		}
 		ImGui_ImplVita2D_SwapXO(swap_xo);
 
