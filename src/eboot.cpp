@@ -19,7 +19,7 @@ int maxbuffer = 1024;
 
 namespace EBOOT {
 
-    void Extract(char* eboot_path, char* rom_folder)
+    int Extract(char* eboot_path, char* rom_folder)
     {
         void *infile;
         void *outfile;
@@ -29,6 +29,16 @@ namespace EBOOT {
 
         infile = FS::OpenRead(eboot_path);
         FS::Read(infile, &header, sizeof(HEADER));
+
+        if (header.signature[0] != 0x00 ||
+            header.signature[1] != 0x50 ||
+            header.signature[2] != 0x42 ||
+            header.signature[3] != 0x50 ||
+            header.offset[0] != 0x28)
+        {
+            // Invalid eboot
+            return -1;
+        }
 
         char buffer[maxbuffer];
         for (int i = 0; i < 2; i++)
@@ -68,5 +78,7 @@ namespace EBOOT {
         }
 
         FS::Close(infile);
+
+        return 0;
     }
 }

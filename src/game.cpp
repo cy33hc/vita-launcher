@@ -261,14 +261,18 @@ namespace GAME {
         }
     }
 
-    void PopulateEbootGameInfo(Game *game, std::string rom, int game_index)
+    int PopulateEbootGameInfo(Game *game, std::string rom, int game_index)
     {
         sprintf(game->rom_path, "%s/%s", pspemu_eboot_path, rom.c_str());
         char param_sfo[192];
         sprintf(game->id, "SMLAE%04d", game_index);
         sprintf(param_sfo, "ux0:data/SMLA00001/data/%s/param.sfo", game->id);
         
-        EBOOT::Extract(game->rom_path, game->id);
+        int ret = EBOOT::Extract(game->rom_path, game->id);
+        if (ret != 0)
+        {
+            return -1;
+        }
 
         const auto sfo = FS::Load(param_sfo);
         std::string title = std::string(SFO::GetString(sfo.data(), sfo.size(), "TITLE"));
@@ -295,6 +299,8 @@ namespace GAME {
             sprintf(game->category, "%s", game_categories[PS_MIMI_GAMES].category);
             game_categories[PS_MIMI_GAMES].current_folder->games.push_back(*game);
         }
+
+        return 0;
     }
 
     void ScanAdrenalineEbootGames(sqlite3 *db)
@@ -313,9 +319,12 @@ namespace GAME {
                 Game game;
                 try
                 {
-                    PopulateEbootGameInfo(&game, files[j], games_scanned);
-                    DB::InsertGame(db, &game);
-                    game_scan_inprogress = game;
+                    int ret = PopulateEbootGameInfo(&game, files[j], games_scanned);
+                    if (ret == 0)
+                    {
+                        DB::InsertGame(db, &game);
+                        game_scan_inprogress = game;
+                    }
                     games_scanned++;
                 }
                 catch(const std::exception& e)
