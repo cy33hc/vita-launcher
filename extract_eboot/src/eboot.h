@@ -2,7 +2,7 @@
 #define LAUNCHER_EBOOT_H
 
 namespace EBOOT {
-    int Extract(char* path, char* title_id);
+    int Extract(const char* path, const char* title_id);
 }
 
 #endif

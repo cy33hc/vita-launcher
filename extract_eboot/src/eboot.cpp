@@ -17,7 +17,7 @@ int maxbuffer = 1024;
 
 namespace EBOOT {
 
-    int Extract(char* eboot_path, char* rom_folder)
+    int Extract(const char* eboot_path, const char* rom_folder)
     {
         void *infile;
         void *outfile;
