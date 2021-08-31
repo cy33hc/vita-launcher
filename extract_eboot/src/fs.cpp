@@ -23,7 +23,11 @@ namespace FS {
 
             char last = *ptr;
             *ptr = 0;
-            int err = mkdir(path.c_str(), 0777);
+            #ifdef _WIN64
+                int err = mkdir(path.c_str());
+            #else
+                int err = mkdir(path.c_str(), 0777);
+            #endif
             *ptr = last;
             ++ptr;
         }
@@ -193,7 +197,11 @@ namespace FS {
                 return out;
             }
             std::string full_path = path + "/" + dent->d_name;
-            lstat(full_path.c_str(), &stats);
+            #ifdef _WIN64
+                stat(full_path.c_str(), &stats);
+            #else
+                lstat(full_path.c_str(), &stats);
+            #endif
             if (S_ISDIR(stats.st_mode))
             {
                 if (strcmp(dent->d_name, ".") != 0 && strcmp(dent->d_name, "..") != 0 )
