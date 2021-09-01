@@ -15,8 +15,11 @@ add_executable(${PROJECT_NAME}
   src/main.cpp
   src/fs.cpp
   src/eboot.cpp
+  src/cso.cpp
+  src/iso.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
   stdc++
+  z
 )
