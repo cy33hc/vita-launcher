@@ -1,5 +1,4 @@
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
 #include "fs.h"
 
 typedef struct {
@@ -13,30 +12,18 @@ char *filename[2] = {
    "icon0.png"
 };
 
-size_t maxbuffer = 1024;
+int maxbuffer = 1024;
 
 namespace EBOOT {
 
-    void swapbytes(void *inp, size_t len)
-    {
-        unsigned int i;
-        unsigned char *in=(unsigned char *)inp,tmp;
-
-        for(i=0;i<len/2;i++) {
-            tmp=*(in+i);
-            *(in+i)=*(in+len-i-1);
-            *(in+len-i-1)=tmp;
-        }
-    }
-
     int Extract(const char* eboot_path, const char* rom_folder)
     {
-        int infile;
-        int outfile;
+        FILE *infile;
+        FILE *outfile;
         HEADER header;
 
-        infile = FS::OpenRead(eboot_path);
-        FS::Read(infile, &header, sizeof(HEADER));
+        infile = fopen(eboot_path, "rb");
+        fread(&header, sizeof(HEADER), 1, infile);
 
         if (header.signature[0] != 0x00 ||
             header.signature[1] != 0x50 ||
@@ -51,29 +38,23 @@ namespace EBOOT {
         char buffer[maxbuffer];
         for (int i = 0; i < 2; i++)
         {
-            size_t size;
+            int size;
 
             // Get the size of param.sfo
-            off_t offset1 = header.offset[i];
-            off_t offset2 = header.offset[i+1];
-            printf("offset1=%ld\n", offset1);
-            printf("offset2=%ld\n", offset2);
-
+            int offset1 = header.offset[i];
+            int offset2 = header.offset[i+1];
             size = offset2 - offset1;
-            printf("size=%lld\n", size);
 
-            off_t ret = FS::Seek(infile, offset1);
-            printf("Seek %ld\n", ret);
+            int ret = fseek(infile, offset1, SEEK_SET);
 
             char output_file[512];
             FS::MkDirs(rom_folder);
             sprintf(output_file, "%s/%s", rom_folder, filename[i]);
-            printf("%s\n", output_file);
-            outfile = FS::Create(output_file);
+            outfile = fopen(output_file, "wb");
 
             do {
-                size_t readsize;
-                size_t bytes_read;
+                int readsize;
+                int bytes_read;
                 
                 // Make sure we don't exceed the maximum buffer size
                 if (size > maxbuffer)
@@ -85,20 +66,22 @@ namespace EBOOT {
                 size -= readsize;
                 
                 // Read in the data from the PBP
-                bytes_read = FS::Read(infile, buffer, readsize);
+                bytes_read = fread(buffer, 1, readsize, infile);
                 if (bytes_read != readsize)
                 {
                     printf("Bytes read is different %lld, %lld\n", bytes_read, readsize);
                 }
 
                 // Write the contents of the buffer to the output file
-                FS::Write(outfile, buffer, readsize);
+                fwrite(buffer, 1, readsize, outfile);
             } while (size);
 
-            FS::Close(outfile);
+            fflush(outfile);
+            fclose(outfile);
+            printf("Extracted %s\n", output_file);
         }
 
-        FS::Close(infile);
+        fclose(infile);
 
         return 0;
     }

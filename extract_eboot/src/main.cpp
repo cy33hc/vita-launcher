@@ -18,14 +18,12 @@ int main(int argc, char** argv)
 		printf("Usage: extract_ebbot <path_for_roms_folder>\n");
 		return 1;
 	}
-	printf("%s\n", argv[1]);
 	std::vector<std::string> files = FS::ListFiles(argv[1]);
 	for (int i=0; i<files.size(); i++)
 	{
 		std::string temp = std::string(files[i]);
 		std::transform(temp.begin(), temp.end(), temp.begin(),
                             [](unsigned char c){ return std::tolower(c); });
-		printf("%s\n", files[i].c_str());
 		if (ends_with(temp, "eboot.pbp"))
 		{
 			printf("Extracting param.sfo and icon0.png from %s\n", files[i].c_str());
