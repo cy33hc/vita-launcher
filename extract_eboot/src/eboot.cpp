@@ -13,17 +13,27 @@ char *filename[2] = {
    "icon0.png"
 };
 
-int maxbuffer = 1024;
+size_t maxbuffer = 1024;
 
 namespace EBOOT {
 
+    void swapbytes(void *inp, size_t len)
+    {
+        unsigned int i;
+        unsigned char *in=(unsigned char *)inp,tmp;
+
+        for(i=0;i<len/2;i++) {
+            tmp=*(in+i);
+            *(in+i)=*(in+len-i-1);
+            *(in+len-i-1)=tmp;
+        }
+    }
+
     int Extract(const char* eboot_path, const char* rom_folder)
     {
-        void *infile;
-        void *outfile;
+        int infile;
+        int outfile;
         HEADER header;
-        int loop0;
-        int total_size;
 
         infile = FS::OpenRead(eboot_path);
         FS::Read(infile, &header, sizeof(HEADER));
@@ -41,20 +51,29 @@ namespace EBOOT {
         char buffer[maxbuffer];
         for (int i = 0; i < 2; i++)
         {
-            int size;
+            size_t size;
 
             // Get the size of param.sfo
-            size = header.offset[i+1] - header.offset[i];
-            FS::Seek(infile, header.offset[i]);
+            off_t offset1 = header.offset[i];
+            off_t offset2 = header.offset[i+1];
+            printf("offset1=%ld\n", offset1);
+            printf("offset2=%ld\n", offset2);
 
-            char output_file[64];
-            sprintf(output_file, "ux0:data/SMLA00001/data/%s", rom_folder);
-            FS::MkDirs(output_file);
-            sprintf(output_file, "ux0:data/SMLA00001/data/%s/%s", rom_folder, filename[i]);
+            size = offset2 - offset1;
+            printf("size=%lld\n", size);
+
+            off_t ret = FS::Seek(infile, offset1);
+            printf("Seek %ld\n", ret);
+
+            char output_file[512];
+            FS::MkDirs(rom_folder);
+            sprintf(output_file, "%s/%s", rom_folder, filename[i]);
+            printf("%s\n", output_file);
             outfile = FS::Create(output_file);
 
             do {
-                int readsize;
+                size_t readsize;
+                size_t bytes_read;
                 
                 // Make sure we don't exceed the maximum buffer size
                 if (size > maxbuffer)
@@ -66,7 +85,11 @@ namespace EBOOT {
                 size -= readsize;
                 
                 // Read in the data from the PBP
-                FS::Read(infile, buffer, readsize);
+                bytes_read = FS::Read(infile, buffer, readsize);
+                if (bytes_read != readsize)
+                {
+                    printf("Bytes read is different %lld, %lld\n", bytes_read, readsize);
+                }
 
                 // Write the contents of the buffer to the output file
                 FS::Write(outfile, buffer, readsize);

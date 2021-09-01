@@ -69,52 +69,51 @@ namespace FS {
         int res = rename(from.c_str(), to.c_str());
     }
 
-    void* Create(const std::string& path)
+    int Create(const std::string& path)
     {
         int fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0777);
 
-        return (void*)(intptr_t)fd;
+        return fd;
     }
 
-    void* OpenRW(const std::string& path)
+    int OpenRW(const std::string& path)
     {
         int fd = open(path.c_str(), O_RDWR, 0777);
-        return (void*)(intptr_t)fd;
+        return fd;
     }
 
-    void* OpenRead(const std::string& path)
+    int OpenRead(const std::string& path)
     {
         int fd = open(path.c_str(), O_RDONLY, 0777);
-        return (void*)(intptr_t)fd;
+        return fd;
     }
 
-    void* Append(const std::string& path)
+    int Append(const std::string& path)
     {
         int fd = open(path.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0777);
-        return (void*)(intptr_t)fd;
+        return fd;
     }
 
-    int64_t Seek(void* f, uint64_t offset)
+    off_t Seek(int fd, off_t offset)
     {
-        auto const pos = lseek((intptr_t)f, offset, SEEK_SET);
+        off_t pos = lseek(fd, offset, SEEK_SET);
         return pos;
     }
 
-    int Read(void* f, void* buffer, uint32_t size)
+    ssize_t Read(int fd, void* buffer, size_t size)
     {
-        const auto ret = read((int)(intptr_t)f, buffer, size);
+        ssize_t ret = read(fd, buffer, size);
         return ret;
     }
 
-    int Write(void* f, const void* buffer, uint32_t size)
+    ssize_t Write(int fd, const void* buffer, size_t size)
     {
-        int ret = write((int)(intptr_t)f, buffer, size);
+        ssize_t ret = write(fd, buffer, size);
         return ret;
     }
 
-    void Close(void* f)
+    void Close(int fd)
     {
-        int fd = (int)(intptr_t)f;
         int err = close(fd);
     }
 
@@ -124,12 +123,12 @@ namespace FS {
         if (fd < 0)
             return std::vector<char>(0);
 
-        const auto size = lseek(fd, 0, SEEK_END);
+        off_t size = lseek(fd, 0, SEEK_END);
         lseek(fd, 0, SEEK_SET);
 
         std::vector<char> data(size);
 
-        const auto ret = read(fd, data.data(), data.size());
+        ssize_t ret = read(fd, data.data(), data.size());
         close(fd);
         if (ret < 0)
             return std::vector<char>(0);
@@ -216,7 +215,7 @@ namespace FS {
             }
             else
             {
-                out.push_back(dent->d_name);
+                out.push_back(full_path);
             }
         }
         closedir(dir);

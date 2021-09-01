@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <unistd.h>
 
 namespace FS {
     void MkDirs(const std::string& path);
@@ -18,22 +19,22 @@ namespace FS {
     void Rename(const std::string& from, const std::string& to);
 
     // creates file (if it exists, truncates size to 0)
-    void* Create(const std::string& path);
+    int Create(const std::string& path);
 
     // open existing file in read/write, fails if file does not exist
-    void* OpenRW(const std::string& path);
+    int OpenRW(const std::string& path);
  
     // open existing file in read/write, fails if file does not exist
-    void* OpenRead(const std::string& path);
+    int OpenRead(const std::string& path);
 
     // open file for writing, next write will append data to end of it
-    void* Append(const std::string& path);
+    int Append(const std::string& path);
 
-    void Close(void* f);
+    void Close(int fd);
 
-    int64_t Seek(void* f, uint64_t offset);
-    int Read(void* f, void* buffer, uint32_t size);
-    int Write(void* f, const void* buffer, uint32_t size);
+    off_t Seek(int fd, off_t offset);
+    ssize_t Read(int fd, void* buffer, size_t size);
+    ssize_t Write(int fd, const void* buffer, size_t size);
 
     std::vector<char> Load(const std::string& path);
     void Save(const std::string& path, const void* data, uint32_t size);
