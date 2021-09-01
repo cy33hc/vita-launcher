@@ -215,7 +215,7 @@ namespace FS {
             }
             else
             {
-                out.push_back(full_path);
+                out.push_back(dent->d_name);
             }
         }
         closedir(dir);
