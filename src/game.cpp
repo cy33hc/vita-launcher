@@ -242,7 +242,6 @@ namespace GAME {
         std::vector<std::string> psp_iso_paths;
         psp_iso_paths.push_back(std::string(PSP_ISO_PATH));
         psp_iso_paths.push_back(std::string(pspemu_iso_path));
-        GameCategory *category = &game_categories[PSP_GAMES];
         int game_index = 0;
 
         if (!FS::FolderExists("ux0:data/SMLA00001/data"))
@@ -313,15 +312,49 @@ namespace GAME {
 
     int PopulateEbootGameInfo(Game *game, std::string rom, int game_index)
     {
-        sprintf(game->rom_path, "%s/%s", pspemu_eboot_path, rom.c_str());
         char param_sfo[192];
+        char icon_path[192];
+
         sprintf(game->id, "SMLAE%04d", game_index);
-        sprintf(param_sfo, "ux0:data/SMLA00001/data/%s/param.sfo", game->id);
-        
-        int ret = EBOOT::Extract(game->rom_path, game->id);
-        if (ret != 0)
+        sprintf(param_sfo, "ux0:data/SMLA00001/data/%s", game->id);
+        if (!FS::FolderExists(param_sfo))
         {
-            return -1;
+            FS::MkDirs(param_sfo);
+        }
+
+        sprintf(param_sfo, "ux0:data/SMLA00001/data/%s/param.sfo", game->id);
+        sprintf(icon_path, "ux0:data/SMLA00001/data/%s/icon0.png", game->id);
+        sprintf(game->rom_path, "%s", rom.c_str());
+        
+        if (rom.find_first_of("ftp0:") == 0)
+        {
+            int slash_index = rom.find_last_of("/");
+            std::string remote_sfo_path = rom.substr(5, slash_index-5) + "/param.sfo";
+            std::string remote_icon_path = rom.substr(5, slash_index-5) + "/icon0.png";
+            int64_t file_size;
+            if (ftpclient->Size(remote_sfo_path.c_str(), &file_size, FtpClient::image) > 0)
+            {
+                if (ftpclient->Get(param_sfo, remote_sfo_path.c_str(), FtpClient::image, 0) == 0)
+                {
+                    return -1;
+                }
+            }
+            else
+            {
+                return -1;
+            }
+            if (ftpclient->Size(remote_icon_path.c_str(), &file_size, FtpClient::image) > 0)
+            {
+                ftpclient->Get(icon_path, remote_icon_path.c_str(), FtpClient::image, 0);
+            }
+        }
+        else
+        {
+            int ret = EBOOT::Extract(game->rom_path, game->id);
+            if (ret != 0)
+            {
+                return -1;
+            }
         }
 
         const auto sfo = FS::Load(param_sfo);
@@ -355,37 +388,66 @@ namespace GAME {
 
     void ScanAdrenalineEbootGames(sqlite3 *db)
     {
-        sprintf(scan_message, "Scanning for %s games in the %s folder", "EBOOT", pspemu_eboot_path);
-        std::vector<std::string> files = FS::ListFiles(pspemu_eboot_path);
+        std::vector<std::string> psp_eboot_paths;
+        psp_eboot_paths.push_back(std::string(PSP_EBOOT_PATH));
+        psp_eboot_paths.push_back(std::string(pspemu_eboot_path));
+        int game_index = 0;
 
-        games_to_scan = files.size();
-        games_scanned = 0;
-
-        for(std::size_t j = 0; j < files.size(); ++j)
+        if (!FS::FolderExists("ux0:data/SMLA00001/data"))
         {
-            int index = files[j].find_last_of(".");
-            if (index != std::string::npos && IsRomExtension(files[j].substr(index), eboot_extensions))
+            FS::MkDirs("ux0:data/SMLA00001/data");
+        }
+
+        for (int eboot_path_index=0; eboot_path_index < psp_eboot_paths.size(); eboot_path_index++)
+        {
+            // if paths are the same, then don't continue
+            if (eboot_path_index > 0 && psp_eboot_paths[eboot_path_index] == psp_eboot_paths[eboot_path_index-1])
             {
-                Game game;
-                try
+                break;
+            }
+
+            sprintf(scan_message, "Scanning for %s games in the %s folder", "EBOOT", psp_eboot_paths[eboot_path_index].c_str());
+            std::vector<std::string> files = GetRomFiles(psp_eboot_paths[eboot_path_index]);
+
+            games_to_scan = files.size();
+            games_scanned = 0;
+
+            if (psp_eboot_paths[eboot_path_index].find_first_of("ftp0:") == 0)
+            {
+                int ret = ftpclient->Connect(ftp_server_ip, ftp_server_port);
+                if (ret > 0)
                 {
-                    int ret = PopulateEbootGameInfo(&game, files[j], games_scanned);
-                    if (ret == 0)
-                    {
-                        DB::InsertGame(db, &game);
-                        game_scan_inprogress = game;
-                    }
-                    games_scanned++;
+                    ftpclient->Login(ftp_server_user, ftp_server_password);
                 }
-                catch(const std::exception& e)
+            }
+
+            for(std::size_t j = 0; j < files.size(); ++j)
+            {
+                game_index++;
+                int index = files[j].find_last_of(".");
+                if (index != std::string::npos && IsRomExtension(files[j].substr(index), eboot_extensions) && files[j].find_first_of("_cache/") != 0)
+                {
+                    Game game;
+                    try
+                    {
+                        int ret = PopulateEbootGameInfo(&game, psp_eboot_paths[eboot_path_index] + "/" + files[j], game_index);
+                        if (ret == 0)
+                        {
+                            DB::InsertGame(db, &game);
+                            game_scan_inprogress = game;
+                        }
+                        games_scanned++;
+                    }
+                    catch(const std::exception& e)
+                    {
+                        games_to_scan--;
+                    }
+                    
+                }
+                else
                 {
                     games_to_scan--;
                 }
-                
-            }
-            else
-            {
-                games_to_scan--;
             }
         }
     }
@@ -579,7 +641,18 @@ namespace GAME {
             char rom_path_temp[192];
             if (rom_path.find_first_of("ftp0:") == 0)
             {
-                sprintf(rom_path_temp, "%s%s", PSP_ISO_CACHE_PATH, rom_path.substr(rom_path.find_last_of("/")).c_str());
+                if (game->type == TYPE_PSP_ISO)
+                {
+                    sprintf(rom_path_temp, "%s%s", PSP_ISO_CACHE_PATH, rom_path.substr(rom_path.find_last_of("/")).c_str());
+                }
+                else
+                {
+                    int last_slash = rom_path.find_last_of("/");
+                    std::string eboot_name = rom_path.substr(last_slash);
+                    std::string eboot_folder_name = rom_path.substr(0, last_slash);
+                    eboot_folder_name = eboot_folder_name.substr(eboot_folder_name.find_last_of("/"));
+                    sprintf(rom_path_temp, "%s%s%s", PSP_EBOOT_CACHE_PATH, eboot_folder_name.c_str(), eboot_name.c_str());
+                }
             }
             else
             {
@@ -1692,6 +1765,16 @@ namespace GAME {
                 game->cache_state = FS::FileExists(std::string(PSP_ISO_CACHE_PATH) + game_path.substr(game_path.find_last_of("/")));
                 return game->cache_state;
             }
+            else if (game->type == TYPE_EBOOT)
+            {
+                std::string game_path = std::string(game->rom_path);
+                int last_slash = game_path.find_last_of("/");
+                std::string eboot_name = game_path.substr(last_slash);
+                std::string eboot_folder_name = game_path.substr(0, last_slash);
+                eboot_folder_name = eboot_folder_name.substr(eboot_folder_name.find_last_of("/"));
+                game->cache_state = FS::FileExists(std::string(PSP_EBOOT_CACHE_PATH) + eboot_folder_name + eboot_name);
+                return game->cache_state;
+            }
         }
         else
         {
@@ -1781,6 +1864,35 @@ namespace GAME {
                             FS::MkDirs(PSP_ISO_CACHE_PATH);
                         }
                         std::string output_file = std::string(PSP_ISO_CACHE_PATH) + path.substr(path.find_last_of("/"));
+                        path = path.substr(5);
+                        if (ftpclient->Size(path.c_str(), &bytes_to_download, FtpClient::image) > 0)
+                        {
+                            if (ftpclient->Get(output_file.c_str(), path.c_str(), FtpClient::image, 0) > 0)
+                            {
+                                game->cache_state = 1;
+                            }
+                            else
+                            {
+                                download_error = true;
+                            }
+                        }
+                        else
+                        {
+                            download_error = true;
+                        }
+                    }
+                    else if (game->type == TYPE_EBOOT)
+                    {
+                        if (!FS::FolderExists(PSP_EBOOT_CACHE_PATH))
+                        {
+                            FS::MkDirs(PSP_EBOOT_CACHE_PATH);
+                        }
+                        int last_slash = path.find_last_of("/");
+                        std::string eboot_name = path.substr(last_slash);
+                        std::string eboot_folder_name = path.substr(0, last_slash);
+                        eboot_folder_name = eboot_folder_name.substr(eboot_folder_name.find_last_of("/"));
+                        FS::MkDirs(std::string(PSP_EBOOT_CACHE_PATH) + eboot_folder_name);
+                        std::string output_file = std::string(PSP_EBOOT_CACHE_PATH) + eboot_folder_name + eboot_name;
                         path = path.substr(5);
                         if (ftpclient->Size(path.c_str(), &bytes_to_download, FtpClient::image) > 0)
                         {

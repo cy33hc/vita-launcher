@@ -2437,7 +2437,7 @@ namespace Windows {
                         sprintf(retro_core, "%s", cat->core);
                         DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
                     }
-                    else if (game_to_boot->type == TYPE_PSP_ISO)
+                    else if (game_to_boot->type == TYPE_PSP_ISO || game_to_boot->type == TYPE_EBOOT)
                     {
                         handle_boot_game = true;
                         settings = defaul_boot_settings;
