@@ -564,7 +564,7 @@ namespace Windows {
                         }
                         else if (game->type == TYPE_ROM)
                         {
-                            if (GAME::GetCacheState(game) > 0)
+                            if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
                             {
                                 GameCategory *cat = categoryMap[game->category];
                                 if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
@@ -585,10 +585,19 @@ namespace Windows {
                         }
                         else
                         {
-                            handle_boot_game = true;
-                            game_to_boot = game;
-                            settings = defaul_boot_settings;
-                            DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                            if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                            {
+                                handle_boot_game = true;
+                                game_to_boot = game;
+                                settings = defaul_boot_settings;
+                                DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                            }
+                            else
+                            {
+                                handle_download_rom = true;
+                                game_to_boot = game;
+                                GAME::StartDownloadGameThread(game_to_boot);
+                            }
                         }
                     }
                     game->visible = ImGui::IsItemVisible() ? 1 : 0;
@@ -747,7 +756,7 @@ namespace Windows {
                 }
                 else if (game->type == TYPE_ROM)
                 {
-                    if (GAME::GetCacheState(game) > 0)
+                    if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
                     {
                         GameCategory *cat = categoryMap[game->category];
                         if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
@@ -768,10 +777,19 @@ namespace Windows {
                 }
                 else
                 {
-                    handle_boot_game = true;
-                    game_to_boot = game;
-                    settings = defaul_boot_settings;
-                    DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                    if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                    {
+                        handle_boot_game = true;
+                        game_to_boot = game;
+                        settings = defaul_boot_settings;
+                        DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                    }
+                    else
+                    {
+                        handle_download_rom = true;
+                        game_to_boot = game;
+                        GAME::StartDownloadGameThread(game_to_boot);
+                    }
                 }
             }
             if (ImGui::IsItemFocused())
@@ -1028,10 +1046,19 @@ namespace Windows {
                 }
                 else
                 {
-                    handle_boot_game = true;
-                    game_to_boot = game;
-                    settings = defaul_boot_settings;
-                    DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                    if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                    {
+                        handle_boot_game = true;
+                        game_to_boot = game;
+                        settings = defaul_boot_settings;
+                        DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                    }
+                    else
+                    {
+                        handle_download_rom = true;
+                        game_to_boot = game;
+                        GAME::StartDownloadGameThread(game_to_boot);
+                    }                    
                 }
             }
             ImGui::PopID();
@@ -1725,7 +1752,7 @@ namespace Windows {
                         ime_before_update = nullptr;
                         ime_after_update = AfterPspemuChangeCallback;
                         ime_callback = SingleValueImeCallback;
-                        Dialog::initImeDialog("Pspemu Path", pspemu_path, 11, SCE_IME_TYPE_DEFAULT, 0, 0);
+                        Dialog::initImeDialog("Pspemu Path", pspemu_path, 31, SCE_IME_TYPE_DEFAULT, 0, 0);
                         gui_mode = GUI_MODE_IME;
                     }
                     ImGui::PopID();
@@ -2399,15 +2426,24 @@ namespace Windows {
             {
                 if (ImGui::Button("Launch"))
                 {
-                    GameCategory *cat = categoryMap[game_to_boot->category];
-                    if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                    if (game_to_boot->type == TYPE_ROM)
                     {
-                        GAME::Launch(game_to_boot);
+                        GameCategory *cat = categoryMap[game_to_boot->category];
+                        if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                        {
+                            GAME::Launch(game_to_boot);
+                        }
+                        handle_boot_rom_game = true;
+                        sprintf(retro_core, "%s", cat->core);
+                        DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
                     }
-                    handle_boot_rom_game = true;
+                    else if (game_to_boot->type == TYPE_PSP_ISO)
+                    {
+                        handle_boot_game = true;
+                        settings = defaul_boot_settings;
+                        DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                    }
                     handle_download_rom = false;
-                    sprintf(retro_core, "%s", cat->core);
-                    DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
                     SetModalMode(false);
                     ImGui::CloseCurrentPopup();
                 }
@@ -2442,7 +2478,7 @@ namespace Windows {
             {
                 if (games_on_filesystem.size() == 0)
                 {
-                    games_on_filesystem = GAME::GetRetroRomFiles(current_category->roms_path);
+                    games_on_filesystem = GAME::GetRomFiles(current_category->roms_path);
                     for (std::vector<std::string>::iterator it=games_on_filesystem.begin(); 
                         it!=games_on_filesystem.end(); )
                     {
@@ -3345,7 +3381,7 @@ namespace Windows {
                     }
                     else if (game->type == TYPE_ROM)
                     {
-                        if (GAME::GetCacheState(game) > 0)
+                        if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
                         {
                             GameCategory *cat = categoryMap[game->category];
                             if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
@@ -3366,10 +3402,19 @@ namespace Windows {
                     }
                     else
                     {
-                        handle_boot_game = true;
-                        game_to_boot = game;
-                        settings = defaul_boot_settings;
-                        DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                        if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                        {
+                            handle_boot_game = true;
+                            game_to_boot = game;
+                            settings = defaul_boot_settings;
+                            DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                        }
+                        else
+                        {
+                            handle_download_rom = true;
+                            game_to_boot = game;
+                            GAME::StartDownloadGameThread(game);
+                        }
                     }
                     SetModalMode(false);
                     handle_search_game = false;

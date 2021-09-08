@@ -211,10 +211,10 @@ namespace GAME {
     int GameCategoryComparator(const void *v1, const void *v2);
     void Init();
     void Scan();
-    std::vector<std::string> GetRetroRomFiles(const std::string path);
+    std::vector<std::string> GetRomFiles(const std::string path);
     void ScanRetroCategory(sqlite3 *db, GameCategory *category);
     void ScanRetroGames(sqlite3 *db);
-    void PopulateIsoGameInfo(Game *game, std::string rom, int game_index);
+    int PopulateIsoGameInfo(Game *game, std::string rom, int game_index);
     void ScanAdrenalineIsoGames(sqlite3 *db);
     int PopulateEbootGameInfo(Game *game, std::string rom, int game_index);
     void ScanAdrenalineEbootGames(sqlite3 *db);

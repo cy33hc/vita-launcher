@@ -34,9 +34,9 @@ std::map<std::string, GameCategory*> categoryMap;
 std::vector<std::string> psp_iso_extensions;
 std::vector<std::string> eboot_extensions;
 std::vector<std::string> hidden_title_ids;
-char pspemu_path[16];
-char pspemu_iso_path[32];
-char pspemu_eboot_path[32];
+char pspemu_path[32];
+char pspemu_iso_path[36];
+char pspemu_eboot_path[41];
 char game_uninstalled = 0;
 
 GameCategory *current_category;
@@ -162,34 +162,51 @@ namespace GAME {
         }
     }
 
-    void PopulateIsoGameInfo(Game *game, std::string rom, int game_index)
+    int PopulateIsoGameInfo(Game *game, std::string rom, int game_index)
     {
-        int dot_index = rom.find_last_of(".");
         sprintf(game->id, "%s%04d", "SMLAP", game_index);
         char sfo_path[192];
         char icon_path[192];
         sprintf(sfo_path, "ux0:data/SMLA00001/data/%s", game->id);
         FS::MkDirs(sfo_path);
-        sprintf(game->rom_path, "%s/%s", pspemu_iso_path, rom.c_str());
+        sprintf(game->rom_path, "%s", rom.c_str());
         sprintf(sfo_path, "ux0:data/SMLA00001/data/%s/param.sfo", game->id);
         sprintf(icon_path, "ux0:data/SMLA00001/data/%s/icon0.png", game->id);
 
-        if (ISO::isISO(game->rom_path))
+        if (rom.find_first_of("ftp0:") == 0)
         {
-            ISO *iso = new ISO(game->rom_path);
-            iso->Extract(sfo_path, icon_path);
-            delete iso;
+            int dot_index = rom.find_last_of(".");
+            std::string remote_sfo_path = rom.substr(5, dot_index-5) + ".sfo";
+            std::string remote_icon_path = rom.substr(5, dot_index-5) + ".png";
+            int64_t file_size;
+            if (ftpclient->Size(remote_sfo_path.c_str(), &file_size, FtpClient::image) > 0)
+            {
+                ftpclient->Get(sfo_path, remote_sfo_path.c_str(), FtpClient::image, 0);
+            }
+            if (ftpclient->Size(remote_icon_path.c_str(), &file_size, FtpClient::image) > 0)
+            {
+                ftpclient->Get(icon_path, remote_icon_path.c_str(), FtpClient::image, 0);
+            }
         }
-        else if (CSO::isCSO(game->rom_path))
+        else
         {
-            CSO *cso = new CSO(game->rom_path);
-            cso->Extract(sfo_path, icon_path);
-            delete cso;
+            if (ISO::isISO(game->rom_path))
+            {
+                ISO *iso = new ISO(game->rom_path);
+                iso->Extract(sfo_path, icon_path);
+                delete iso;
+            }
+            else if (CSO::isCSO(game->rom_path))
+            {
+                CSO *cso = new CSO(game->rom_path);
+                cso->Extract(sfo_path, icon_path);
+                delete cso;
+            }
+            game->cache_state = 2;
         }
 
         game->type = TYPE_PSP_ISO;
         game->tex = no_icon;
-        game->cache_state = 2;
         if (FS::FileExists(sfo_path))
         {
             const auto sfo = FS::Load(sfo_path);
@@ -214,50 +231,83 @@ namespace GAME {
         }
         else
         {
-            sprintf(game->title, "%s", rom.substr(0, dot_index).c_str());
-            sprintf(game->category, "%s", game_categories[PSP_GAMES].category);
-        }        
+            return -1;
+        }
+
+        return 0;
     }
 
     void ScanAdrenalineIsoGames(sqlite3 *db)
     {
-        sprintf(scan_message, "Scanning for %s games in the %s folder", "ISO", pspemu_iso_path);
+        std::vector<std::string> psp_iso_paths;
+        psp_iso_paths.push_back(std::string(PSP_ISO_PATH));
+        psp_iso_paths.push_back(std::string(pspemu_iso_path));
         GameCategory *category = &game_categories[PSP_GAMES];
-        std::vector<std::string> files = FS::ListFiles(pspemu_iso_path);
-
-        games_to_scan = files.size();
-        games_scanned = 0;
+        int game_index = 0;
 
         if (!FS::FolderExists("ux0:data/SMLA00001/data"))
         {
             FS::MkDirs("ux0:data/SMLA00001/data");
         }
 
-        for(std::size_t j = 0; j < files.size(); ++j)
+        for (int iso_path_index=0; iso_path_index < psp_iso_paths.size(); iso_path_index++)
         {
-            int index = files[j].find_last_of(".");
-            if (index != std::string::npos && IsRomExtension(files[j].substr(index), psp_iso_extensions))
+            // if paths are the same, then don't continue
+            if (iso_path_index > 0 && psp_iso_paths[iso_path_index] == psp_iso_paths[iso_path_index-1])
             {
-                Game game;
-                try
+                break;
+            }
+
+            sprintf(scan_message, "Scanning for %s games in the %s folder", "ISO", psp_iso_paths[iso_path_index].c_str());
+            std::vector<std::string> files = GetRomFiles(psp_iso_paths[iso_path_index]);
+
+            games_to_scan = files.size();
+            games_scanned = 0;
+
+            if (psp_iso_paths[iso_path_index].find_first_of("ftp0:") == 0)
+            {
+                int ret = ftpclient->Connect(ftp_server_ip, ftp_server_port);
+                if (ret > 0)
                 {
-                    PopulateIsoGameInfo(&game, files[j], games_scanned);
-                    categoryMap[game.category]->current_folder->games.push_back(game);
-                    DB::InsertGame(db, &game);
-                    game_scan_inprogress = game;
-                    games_scanned++;
+                    ftpclient->Login(ftp_server_user, ftp_server_password);
                 }
-                catch(const std::exception& e)
+            }
+
+            for(std::size_t j = 0; j < files.size(); ++j)
+            {
+                game_index++;
+                int index = files[j].find_last_of(".");
+                if (index != std::string::npos && IsRomExtension(files[j].substr(index), psp_iso_extensions) && files[j].find_first_of("_cache/") != 0)
                 {
-                    games_to_scan--;
+                    Game game;
+                    try
+                    {
+                        int ret = PopulateIsoGameInfo(&game, psp_iso_paths[iso_path_index] + "/" + files[j], game_index);
+                        if (ret == 0)
+                        {
+                            categoryMap[game.category]->current_folder->games.push_back(game);
+                            DB::InsertGame(db, &game);
+                            game_scan_inprogress = game;
+                        }
+                        games_scanned++;
+                    }
+                    catch(const std::exception& e)
+                    {
+                        games_scanned++;
+                    }
+                    
+                }
+                else
+                {
+                    games_scanned++;
                 }
                 
             }
-            else
+
+            if (psp_iso_paths[iso_path_index].find_first_of("ftp0:") == 0)
             {
-                games_to_scan--;
+                ftpclient->Quit();
             }
-            
         }
     }
 
@@ -340,7 +390,7 @@ namespace GAME {
         }
     }
 
-    std::vector<std::string> GetRetroRomFiles(const std::string path)
+    std::vector<std::string> GetRomFiles(const std::string path)
     {
         std::vector<std::string> files;
         if (strncmp(path.c_str(), "ftp0:", 5) == 0)
@@ -363,7 +413,7 @@ namespace GAME {
     void ScanRetroCategory(sqlite3 *db, GameCategory *category)
     {
         sprintf(scan_message, "Scanning for %s games in the %s folder", category->title, category->roms_path);
-        std::vector<std::string> files = GetRetroRomFiles(category->roms_path);
+        std::vector<std::string> files = GetRomFiles(category->roms_path);
         games_to_scan = files.size();
         games_scanned = 0;
         int rom_path_length = strlen(category->roms_path);
@@ -525,9 +575,20 @@ namespace GAME {
             {
                 boot_data[12] = 0;
             }
-            for (int i=0; i<strlen(game->rom_path); i++)
+            std::string rom_path = std::string(game->rom_path);
+            char rom_path_temp[192];
+            if (rom_path.find_first_of("ftp0:") == 0)
             {
-                boot_data[64+i] = game->rom_path[i];
+                sprintf(rom_path_temp, "%s%s", PSP_ISO_CACHE_PATH, rom_path.substr(rom_path.find_last_of("/")).c_str());
+            }
+            else
+            {
+                sprintf(rom_path_temp, "%s", rom_path.c_str());
+            }
+
+            for (int i=0; i<strlen(rom_path_temp); i++)
+            {
+                boot_data[64+i] = rom_path_temp[i];
             }
             void* fd;
             if (FS::FileExists(adernaline_launcher_boot_bin_path))
@@ -1619,9 +1680,18 @@ namespace GAME {
         }
         else if (IsRemoteGame(game))
         {
-            std::string game_path = std::string(game->rom_path);
-            game->cache_state = FS::FileExists(std::string(ftp_cache_path) + "/" + game->category + "/" + game_path.substr(5));
-            return game->cache_state;
+            if (game->type == TYPE_ROM)
+            {
+                std::string game_path = std::string(game->rom_path);
+                game->cache_state = FS::FileExists(std::string(ftp_cache_path) + "/" + game->category + "/" + game_path.substr(5));
+                return game->cache_state;
+            }
+            else if (game->type == TYPE_PSP_ISO)
+            {
+                std::string game_path = std::string(game->rom_path);
+                game->cache_state = FS::FileExists(std::string(PSP_ISO_CACHE_PATH) + game_path.substr(game_path.find_last_of("/")));
+                return game->cache_state;
+            }
         }
         else
         {
@@ -1651,45 +1721,52 @@ namespace GAME {
             {
                 if (ftpclient->Login(ftp_server_user, ftp_server_password) > 0)
                 {
-                    std::string cache_path = std::string(ftp_cache_path) + "/" + game->category + "/" + path.substr(5);
-                    std::string cache_path_prefix = cache_path.substr(0, cache_path.find_last_of("/")+1);
-                    path = path.substr(5);
-                    std::string path_prefix = path.substr(0, path.find_last_of("/")+1);
-                    FS::MkDirs(cache_path_prefix);
-                    if (ftpclient->Size(path.c_str(), &bytes_to_download, FtpClient::image) > 0)
+                    if (game->type == TYPE_ROM)
                     {
-                        if (ftpclient->Get(cache_path.c_str(), path.c_str(), FtpClient::image, 0) > 0)
+                        std::string cache_path = std::string(ftp_cache_path) + "/" + game->category + "/" + path.substr(5);
+                        std::string cache_path_prefix = cache_path.substr(0, cache_path.find_last_of("/")+1);
+                        path = path.substr(5);
+                        std::string path_prefix = path.substr(0, path.find_last_of("/")+1);
+                        FS::MkDirs(cache_path_prefix);
+                        if (ftpclient->Size(path.c_str(), &bytes_to_download, FtpClient::image) > 0)
                         {
-                            game->cache_state = 1;
-                            if (cache_path.rfind(".cue") != std::string::npos || cache_path.rfind(".CUE") != std::string::npos)
+                            if (ftpclient->Get(cache_path.c_str(), path.c_str(), FtpClient::image, 0) > 0)
                             {
-                                std::vector<std::string> files = GetFilesFromCueFile(cache_path.c_str());
-                                for (int i=0; i<files.size(); i++)
+                                game->cache_state = 1;
+                                if (cache_path.rfind(".cue") != std::string::npos || cache_path.rfind(".CUE") != std::string::npos)
                                 {
-                                    bytes_to_download = 1000;
-                                    bytes_transfered = 0;
-                                    std::string output_file = cache_path_prefix + files[i];
-                                    std::string input_file = path_prefix + files[i];
-                                    if (ftpclient->Size(input_file.c_str(), &bytes_to_download, FtpClient::image) > 0)
+                                    std::vector<std::string> files = GetFilesFromCueFile(cache_path.c_str());
+                                    for (int i=0; i<files.size(); i++)
                                     {
-                                        if (ftpclient->Get(output_file.c_str(), input_file.c_str(), FtpClient::image, 0) == 0)
+                                        bytes_to_download = 1000;
+                                        bytes_transfered = 0;
+                                        std::string output_file = cache_path_prefix + files[i];
+                                        std::string input_file = path_prefix + files[i];
+                                        if (ftpclient->Size(input_file.c_str(), &bytes_to_download, FtpClient::image) > 0)
+                                        {
+                                            if (ftpclient->Get(output_file.c_str(), input_file.c_str(), FtpClient::image, 0) == 0)
+                                            {
+                                                download_error = true;
+                                                game->cache_state = 0;
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                game->cache_state = 1;
+                                            }
+                                        }
+                                        else
                                         {
                                             download_error = true;
                                             game->cache_state = 0;
                                             break;
                                         }
-                                        else
-                                        {
-                                            game->cache_state = 1;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        download_error = true;
-                                        game->cache_state = 0;
-                                        break;
                                     }
                                 }
+                            }
+                            else
+                            {
+                                download_error = true;
                             }
                         }
                         else
@@ -1697,9 +1774,29 @@ namespace GAME {
                             download_error = true;
                         }
                     }
-                    else
+                    else if (game->type == TYPE_PSP_ISO)
                     {
-                        download_error = true;
+                        if (!FS::FolderExists(PSP_ISO_CACHE_PATH))
+                        {
+                            FS::MkDirs(PSP_ISO_CACHE_PATH);
+                        }
+                        std::string output_file = std::string(PSP_ISO_CACHE_PATH) + path.substr(path.find_last_of("/"));
+                        path = path.substr(5);
+                        if (ftpclient->Size(path.c_str(), &bytes_to_download, FtpClient::image) > 0)
+                        {
+                            if (ftpclient->Get(output_file.c_str(), path.c_str(), FtpClient::image, 0) > 0)
+                            {
+                                game->cache_state = 1;
+                            }
+                            else
+                            {
+                                download_error = true;
+                            }
+                        }
+                        else
+                        {
+                            download_error = true;
+                        }
                     }
                 }
                 else

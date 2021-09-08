@@ -18,6 +18,8 @@
 #define PSP_EBOOT_PATH "ux0:pspemu/PSP/GAME"
 #define CONFIG_PSPEMU_PATH "pspemu_location"
 #define DEFAULT_PSPEMU_PATH "ux0:pspemu"
+#define PSP_ISO_CACHE_PATH "ux0:pspemu/ISO/_cache"
+#define PSP_EBOOT_CACHE_PATH "ux0:pspemu/PSP/GAME/_cache"
 
 #define CONFIG_VIEW_MODE "view_mode"
 #define CONFIG_ROMS_PATH "roms_path"
