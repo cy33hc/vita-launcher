@@ -449,6 +449,11 @@ namespace GAME {
                     games_to_scan--;
                 }
             }
+
+            if (psp_eboot_paths[eboot_path_index].find_first_of("ftp0:") == 0)
+            {
+                ftpclient->Quit();
+            }
         }
     }
 
