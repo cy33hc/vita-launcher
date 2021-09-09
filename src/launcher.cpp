@@ -1745,7 +1745,7 @@ namespace Windows {
                     ImGui::Separator();
 
                     ImGui::PushID("pspemu_location");
-                    ImGui::Text("Pspemu Path:"); ImGui::SameLine();
+                    ImGui::Text("Alternate Pspemu Path:"); ImGui::SameLine();
                     if (ImGui::Selectable(pspemu_path, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
                     {
                         ime_single_field = pspemu_path;
