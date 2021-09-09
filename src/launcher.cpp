@@ -2599,19 +2599,33 @@ namespace Windows {
             if (ImGui::BeginPopupModal("Select PSP ISO game", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
             {
                 if (games_on_filesystem.size() == 0)
-                {
-                    games_on_filesystem = FS::ListFiles(pspemu_iso_path);
-                    for (std::vector<std::string>::iterator it=games_on_filesystem.begin(); 
-                        it!=games_on_filesystem.end(); )
+                {                    
+                    std::vector<std::string> new_files = GAME::GetRomFiles(PSP_ISO_PATH);
+                    std::string rom_path_prefix = std::string(PSP_ISO_PATH);
+                    for (std::vector<std::string>::iterator it=new_files.begin(); 
+                        it!=new_files.end(); )
                     {
                         int index = it->find_last_of(".");
-                        if (index == std::string::npos || !GAME::IsRomExtension(it->substr(index), psp_iso_extensions))
+                        if (index != std::string::npos && GAME::IsRomExtension(it->substr(index), psp_iso_extensions) && it->find_first_of("_cache/") != 0)
                         {
-                            it = games_on_filesystem.erase(it);
+                            games_on_filesystem.push_back(rom_path_prefix + "/" + *it);
                         }
-                        else
+                        it = new_files.erase(it);
+                    }
+
+                    std::string alternate_rom_path_prefix = std::string(pspemu_iso_path);
+                    if (alternate_rom_path_prefix != rom_path_prefix)
+                    {
+                        new_files = GAME::GetRomFiles(alternate_rom_path_prefix);
+                        for (std::vector<std::string>::iterator it=new_files.begin(); 
+                            it!=new_files.end(); )
                         {
-                            ++it;
+                            int index = it->find_last_of(".");
+                            if (index != std::string::npos && GAME::IsRomExtension(it->substr(index), psp_iso_extensions) && it->find_first_of("_cache/") != 0)
+                            {
+                                games_on_filesystem.push_back(alternate_rom_path_prefix + "/" + *it);
+                            }
+                            it = new_files.erase(it);
                         }
                     }
                     std::sort(games_on_filesystem.begin(), games_on_filesystem.end());
@@ -2627,9 +2641,9 @@ namespace Windows {
                 {
                     if (ImGui::Selectable(games_on_filesystem[i].c_str()))
                     {
-                        if (strlen(pspemu_iso_path) + games_on_filesystem[i].length() + 1 < 192)
+                        if (games_on_filesystem[i].length() + 1 < 192)
                         {
-                            sprintf(game.rom_path, "%s/%s", pspemu_iso_path, games_on_filesystem[i].c_str());
+                            sprintf(game.rom_path, "%s", games_on_filesystem[i].c_str());
                             game.type = TYPE_PSP_ISO;
                             if (DB::GameExists(nullptr, &game))
                             {
@@ -2645,11 +2659,23 @@ namespace Windows {
                                     DB::GetMaxTitleIdByType(db, TYPE_PSP_ISO,title_id);
                                     std::string str = std::string(title_id);
                                     int game_id = std::stoi(str.substr(5))+1;
+                                    if (games_on_filesystem[i].find_first_of("ftp0:") == 0)
+                                    {
+                                        int ret = ftpclient->Connect(ftp_server_ip, ftp_server_port);
+                                        if (ret > 0)
+                                        {
+                                            ftpclient->Login(ftp_server_user, ftp_server_password);
+                                        }
+                                    }
                                     GAME::PopulateIsoGameInfo(&game, games_on_filesystem[i], game_id);
                                     categoryMap[game.category]->current_folder->games.push_back(game);
                                     DB::InsertGame(db, &game);
                                     GAME::SortGames(categoryMap[game.category]);
                                     GAME::SetMaxPage(categoryMap[game.category]);
+                                    if (games_on_filesystem[i].find_first_of("ftp0:") == 0)
+                                    {
+                                        ftpclient->Quit();
+                                    }
                                     sprintf(game_action_message, "The game has being added to the cache.");
                                 }
                                 catch(const std::exception& e)
@@ -2721,18 +2747,32 @@ namespace Windows {
             {
                 if (games_on_filesystem.size() == 0)
                 {
-                    games_on_filesystem = FS::ListFiles(pspemu_eboot_path);
-                    for (std::vector<std::string>::iterator it=games_on_filesystem.begin(); 
-                        it!=games_on_filesystem.end(); )
+                    std::string rom_path_prefix = std::string(PSP_EBOOT_PATH);
+                    std::vector<std::string> new_files = GAME::GetRomFiles(rom_path_prefix);
+                    for (std::vector<std::string>::iterator it=new_files.begin(); 
+                        it!=new_files.end(); )
                     {
                         int index = it->find_last_of(".");
-                        if (index == std::string::npos || !GAME::IsRomExtension(it->substr(index), eboot_extensions))
+                        if (index != std::string::npos && GAME::IsRomExtension(it->substr(index), eboot_extensions) && it->find_first_of("_cache/") != 0)
                         {
-                            it = games_on_filesystem.erase(it);
+                            games_on_filesystem.push_back(rom_path_prefix + "/" + *it);
                         }
-                        else
+                        it = new_files.erase(it);
+                    }
+
+                    std::string alternate_rom_path_prefix = std::string(pspemu_eboot_path);
+                    if (alternate_rom_path_prefix != rom_path_prefix)
+                    {
+                        new_files = GAME::GetRomFiles(alternate_rom_path_prefix);
+                        for (std::vector<std::string>::iterator it=new_files.begin(); 
+                            it!=new_files.end(); )
                         {
-                            ++it;
+                            int index = it->find_last_of(".");
+                            if (index != std::string::npos && GAME::IsRomExtension(it->substr(index), eboot_extensions) && it->find_first_of("_cache/") != 0)
+                            {
+                                games_on_filesystem.push_back(alternate_rom_path_prefix + "/" + *it);
+                            }
+                            it = new_files.erase(it);
                         }
                     }
                     std::sort(games_on_filesystem.begin(), games_on_filesystem.end());
@@ -2766,10 +2806,22 @@ namespace Windows {
                                     DB::GetMaxTitleIdByType(db, TYPE_EBOOT, title_id);
                                     std::string str = std::string(title_id);
                                     int game_id = std::stoi(str.substr(5))+1;
+                                    if (games_on_filesystem[i].find_first_of("ftp0:") == 0)
+                                    {
+                                        int ret = ftpclient->Connect(ftp_server_ip, ftp_server_port);
+                                        if (ret > 0)
+                                        {
+                                            ftpclient->Login(ftp_server_user, ftp_server_password);
+                                        }
+                                    }
                                     GAME::PopulateEbootGameInfo(&game, games_on_filesystem[i], game_id);
                                     DB::InsertGame(db, &game);
                                     GAME::SortGames(categoryMap[game.category]);
                                     GAME::SetMaxPage(categoryMap[game.category]);
+                                    if (games_on_filesystem[i].find_first_of("ftp0:") == 0)
+                                    {
+                                        ftpclient->Quit();
+                                    }
                                     sprintf(game_action_message, "The game has being added to the cache.");
                                 }
                                 catch(const std::exception& e)
