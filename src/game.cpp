@@ -977,6 +977,7 @@ namespace GAME {
 
     void StartScanGamesThread()
     {
+        gui_mode = GUI_MODE_SCAN;
         scan_games_thid = sceKernelCreateThread("scan_games_thread", (SceKernelThreadEntry)GAME::ScanGamesThread, 0x10000100, 0x4000, 0, 0, NULL);
 		if (scan_games_thid >= 0)
 			sceKernelStartThread(scan_games_thid, 0, NULL);
@@ -984,7 +985,6 @@ namespace GAME {
 
     int ScanGamesThread(SceSize args, void *argp)
     {
-        gui_mode = GUI_MODE_SCAN;
         sceKernelDelayThread(5000);
         for (int i=0; i < TOTAL_CATEGORY; i++)
         {
@@ -1789,8 +1789,7 @@ namespace GAME {
 
     bool IsRemoteGame(Game *game)
     {
-        std::string game_path = std::string(game->rom_path);
-        if (game_path.rfind("ftp0:", 0) == 0)
+        if (strncmp(game->rom_path, "ftp0:", 5) == 0)
         {
             return true;
         }
@@ -1975,6 +1974,33 @@ namespace GAME {
 
         return out;
     }
+
+    void StartGetCacheStateThread()
+    {
+        get_cachestate_thid = sceKernelCreateThread("get_cachestate_thid", (SceKernelThreadEntry)GAME::GetCacheStateThread, 0x10000100, 0x4000, 0, 0, NULL);
+		if (get_cachestate_thid >= 0)
+			sceKernelStartThread(get_cachestate_thid, 0, NULL);
+    }
+
+    int GetCacheStateThread(SceSize args, void *argp)
+    {
+        while (gui_mode == GUI_MODE_SCAN)
+        {
+            sceKernelDelayThread(5000);
+        }
+
+        for (int i=PSP_GAMES; i < TOTAL_CATEGORY; i++)
+        {
+            Folder *folder = game_categories[i].current_folder;
+            for (int j=0; j < folder->games.size(); j++)
+            {
+                GetCacheState(&folder->games[j]);
+            }
+        }
+
+        return sceKernelExitDeleteThread(0);
+    }
+
     static int DownloadGameCallback(int64_t xfered, void* arg)
     {
         bytes_transfered = xfered;

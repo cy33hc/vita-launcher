@@ -188,6 +188,7 @@ static SceUID delete_images_thid = -1;
 static SceUID download_images_thid = -1;
 static SceUID uninstall_game_thid = -1;
 static SceUID download_game_thid = -1;
+static SceUID get_cachestate_thid = -1;
 
 typedef struct LoadImagesParams {
   int category;
@@ -276,6 +277,8 @@ namespace GAME {
     void DownloadGameToFtpCache(Game *game);
     void StartDownloadGameThread(Game *game);
     int DownloadGameThread(SceSize args, Game **game);
+    void StartGetCacheStateThread();
+    int GetCacheStateThread(SceSize args, void *argp);
     std::vector<std::string> GetFilesFromCueFile(char *path);
     static int DownloadGameCallback(int64_t xfered, void* arg);
     static int LoadScePaf();
