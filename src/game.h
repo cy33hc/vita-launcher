@@ -279,6 +279,7 @@ namespace GAME {
     int DownloadGameThread(SceSize args, Game **game);
     void StartGetCacheStateThread();
     int GetCacheStateThread(SceSize args, void *argp);
+    void MigratePSPCache();
     std::vector<std::string> GetFilesFromCueFile(char *path);
     static int DownloadGameCallback(int64_t xfered, void* arg);
     static int LoadScePaf();

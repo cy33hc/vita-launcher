@@ -276,7 +276,7 @@ namespace GAME {
             {
                 game_index++;
                 int index = files[j].find_last_of(".");
-                if (index != std::string::npos && IsRomExtension(files[j].substr(index), psp_iso_extensions) && files[j].find_first_of("_cache/") != 0)
+                if (index != std::string::npos && IsRomExtension(files[j].substr(index), psp_iso_extensions) && files[j].find_first_of("cache_") != 0)
                 {
                     Game game;
                     try
@@ -648,7 +648,8 @@ namespace GAME {
             {
                 if (game->type == TYPE_PSP_ISO)
                 {
-                    sprintf(rom_path_temp, "%s%s", PSP_ISO_CACHE_PATH, rom_path.substr(rom_path.find_last_of("/")).c_str());
+                    rom_path = std::string(PSP_ISO_CACHE_PATH) + "/cache_" + rom_path.substr(rom_path.find_last_of("/")+1);
+                    sprintf(rom_path_temp, "%s", rom_path.c_str());
                 }
                 else
                 {
@@ -1767,7 +1768,7 @@ namespace GAME {
             else if (game->type == TYPE_PSP_ISO)
             {
                 std::string game_path = std::string(game->rom_path);
-                game->cache_state = FS::FileExists(std::string(PSP_ISO_CACHE_PATH) + game_path.substr(game_path.find_last_of("/")));
+                game->cache_state = FS::FileExists(std::string(PSP_ISO_CACHE_PATH) + "/cache_" + game_path.substr(game_path.find_last_of("/")+1));
                 return game->cache_state;
             }
             else if (game->type == TYPE_EBOOT)
@@ -1867,7 +1868,7 @@ namespace GAME {
                         {
                             FS::MkDirs(PSP_ISO_CACHE_PATH);
                         }
-                        std::string output_file = std::string(PSP_ISO_CACHE_PATH) + path.substr(path.find_last_of("/"));
+                        std::string output_file = std::string(PSP_ISO_CACHE_PATH) + "/cache_" + path.substr(path.find_last_of("/")+1);
                         path = path.substr(5);
                         if (ftpclient->Size(path.c_str(), &bytes_to_download, FtpClient::image) > 0)
                         {
@@ -2005,5 +2006,29 @@ namespace GAME {
     {
         bytes_transfered = xfered;
         return 1;
+    }
+
+    void MigratePSPCache()
+    {
+        std::string old_cache_path = std::string(PSP_ISO_PATH) + "/_cache";
+        if (FS::FolderExists(old_cache_path))
+        {
+            std::vector<std::string> files = GetRomFiles(old_cache_path);
+            for (int i=0; i<files.size(); i++)
+            {
+                std::string old_path = old_cache_path + "/" + files[i];
+                std::string new_path = std::string(PSP_ISO_CACHE_PATH) + "/cache_" + files[i];
+                if (!FS::FileExists(new_path))
+                {
+                    FS::Rename(old_path, new_path);
+                }
+                else
+                {
+                    FS::Rm(old_path);
+                }
+            }
+
+            FS::RmDir(old_cache_path);
+        }
     }
 }

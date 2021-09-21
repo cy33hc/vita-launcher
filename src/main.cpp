@@ -151,6 +151,7 @@ int main(int, char **)
 	GAME::Init();
 	GAME::StartScanGamesThread();
 	GAME::StartGetCacheStateThread();
+	GAME::MigratePSPCache();
 	
 	GUI::RenderLoop();
 

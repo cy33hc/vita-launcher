@@ -2606,7 +2606,7 @@ namespace Windows {
                         it!=new_files.end(); )
                     {
                         int index = it->find_last_of(".");
-                        if (index != std::string::npos && GAME::IsRomExtension(it->substr(index), psp_iso_extensions) && it->find_first_of("_cache/") != 0)
+                        if (index != std::string::npos && GAME::IsRomExtension(it->substr(index), psp_iso_extensions) && it->find_first_of("cache_") != 0)
                         {
                             games_on_filesystem.push_back(rom_path_prefix + "/" + *it);
                         }

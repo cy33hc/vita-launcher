@@ -35,6 +35,11 @@ namespace FS {
         int err = sceIoRemove(file.c_str());
     }
 
+    void RmDir(const std::string& path)
+    {
+        sceIoRmdir(path.c_str());
+    }
+
     int64_t GetSize(const std::string& path)
     {
         SceIoStat stat;
