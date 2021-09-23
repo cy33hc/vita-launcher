@@ -263,6 +263,7 @@ namespace CONFIG {
         sprintf(adernaline_launcher_title_id, "%s", ReadString(CONFIG_GLOBAL, CONFIG_ADERNALINE_LAUNCHER_TITLE_ID, DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID));
         WriteString(CONFIG_GLOBAL, CONFIG_ADERNALINE_LAUNCHER_TITLE_ID, adernaline_launcher_title_id);
         sprintf(adernaline_launcher_boot_bin_path, "ux0:app/%s/data/boot.bin", adernaline_launcher_title_id);
+        sprintf(adernaline_launcher_config_bin_path, "ux0:app/%s/data/config.bin", adernaline_launcher_title_id);
 
         sprintf(ftp_server_ip, "%s", ReadString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_IP, "192.168.100.14"));
         WriteString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_IP, ftp_server_ip);

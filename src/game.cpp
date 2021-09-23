@@ -53,6 +53,7 @@ int ROM_CATEGORIES[TOTAL_ROM_CATEGORY] = {PS1_GAMES, NES_GAMES, SNES_GAMES, GB_G
                          T_GRAFX_GAMES, VECTREX_GAMES, GAW_GAMES, MAME_2000_GAMES, MAME_2003_GAMES};
 
 char adernaline_launcher_boot_bin_path[32];
+char adernaline_launcher_config_bin_path[50];
 char adernaline_launcher_title_id[12];
 BootSettings defaul_boot_settings;
 FtpClient *ftpclient;
@@ -670,6 +671,11 @@ namespace GAME {
                 boot_data[64+i] = rom_path_temp[i];
             }
             void* fd;
+            if (FS::FileExists(adernaline_launcher_config_bin_path))
+            {
+                FS::Rm(adernaline_launcher_config_bin_path);
+            }
+
             if (FS::FileExists(adernaline_launcher_boot_bin_path))
             {
                 fd = FS::OpenRW(adernaline_launcher_boot_bin_path);

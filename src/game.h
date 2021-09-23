@@ -165,6 +165,7 @@ extern Game game_scan_inprogress;
 extern char scan_message[];
 extern int ROM_CATEGORIES[];
 extern char adernaline_launcher_boot_bin_path[];
+extern char adernaline_launcher_config_bin_path[];
 extern char adernaline_launcher_title_id[];
 extern BootSettings defaul_boot_settings;
 extern std::vector<std::string> psp_iso_extensions;
