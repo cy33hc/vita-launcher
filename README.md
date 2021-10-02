@@ -44,7 +44,7 @@ Use in conjuction with the CopyIcons app to get icons not created by PS Vita: ht
 6. How to setup application to Boot Adrenaline PSP ISO and EBOOT directly without bubbles: https://youtu.be/wkubbIsd8DY
 7. How to create folders: https://youtu.be/hVtAYvVsc-c
 8. How to play Retro games from FTP server: https://youtu.be/KmcWeG1qImk
-9. How to play PSP ISO/EBOOT from FTP server: https://youtu.be/Id-S5U_ZbJY
+9. How to play PSP ISO and EBOOT from FTP server: https://youtu.be/Id-S5U_ZbJY
    
 ## Build
 To build this app, you will need to build the dependency imgui-vita2d (https://github.com/cy33hc/imgui-vita2d).
