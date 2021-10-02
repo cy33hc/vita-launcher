@@ -30,10 +30,12 @@ Use in conjuction with the CopyIcons app to get icons not created by PS Vita: ht
 - left analog stick - for browsing your games
 - square - add the selected game to favorites
 - circle - un-select or back.
-- triangle - display settings to switch between Grid/List view.
+- triangle - display settings dialog.
 - cross - start the selected game/app
 - L-trigger - previous page
 - R-trigger - next page
+- Select - Toogle multi selection
+- Start - display the search dialog
 
 ## How to Guides
 1. How to change parental controls: https://youtu.be/bq6ZggMmocc
