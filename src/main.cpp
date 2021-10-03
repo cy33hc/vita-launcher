@@ -133,6 +133,8 @@ namespace Services
 #define ip_server "192.168.100.14"
 #define port_server 18194
 
+unsigned int _newlib_heap_size_user = 128 * 1024 * 1024;
+
 int main(int, char **)
 {
 	//debugNetInit(ip_server,port_server, DEBUG);

@@ -404,9 +404,9 @@ namespace CONFIG {
         {
             for (int i=0; i<multi_values.size()-1; i++)
             {
-                vts.append(multi_values[i].c_str()).append(",");
+                vts.append(multi_values[i]).append(",");
             }
-            vts.append(multi_values[multi_values.size()-1].c_str());
+            vts.append(multi_values[multi_values.size()-1]);
         }
         return vts;
     }
