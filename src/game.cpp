@@ -1843,16 +1843,13 @@ namespace GAME {
         GameCategory *cat = categoryMap[params->category];
         for (int i=0; i<cat->current_folder->games.size(); i++)
         {
-            if (cat->current_folder->games[i].type == TYPE_ROM || cat->current_folder->games[i].type == TYPE_SCUMMVM)
+            DeleteCachedRom(&cat->current_folder->games[i]);
+            Game *favorite_game = FindGame(&game_categories[FAVORITES], &cat->current_folder->games[i]);
+            if (favorite_game != nullptr)
             {
-                DeleteCachedRom(&cat->current_folder->games[i]);
-                Game *favorite_game = FindGame(&game_categories[FAVORITES], &cat->current_folder->games[i]);
-                if (favorite_game != nullptr)
-                {
-                    favorite_game->cache_state = 0;
-                }
-                game_scan_inprogress = cat->current_folder->games[i];
+                favorite_game->cache_state = 0;
             }
+            game_scan_inprogress = cat->current_folder->games[i];
             games_scanned++;
         }
         gui_mode = GUI_MODE_LAUNCHER;
