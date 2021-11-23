@@ -1067,10 +1067,16 @@ namespace GAME {
         sceKernelDelayThread(50000);
         sqlite3 *db;
         sqlite3_open(CACHE_DB_FILE, &db);
-        if (params->type == TYPE_ROM || strcmp(params->category, "ps1") == 0 || params->type == TYPE_SCUMMVM)
+        if (params->type == TYPE_ROM || params->type == TYPE_SCUMMVM)
         {
             GameCategory *category = categoryMap[params->category];
             RemoveGamesFromCategoryByType(db, category, params->type);
+        }
+
+        if (strcmp(params->category, "ps1") == 0)
+        {
+            GameCategory *category = categoryMap[params->category];
+            RemoveGamesFromCategoryByType(db, category, TYPE_ROM);
         }
         
         if (params->type == TYPE_EBOOT || params->type == TYPE_PSP_ISO)
