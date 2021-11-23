@@ -1800,6 +1800,75 @@ namespace GAME {
         }
     }
 
+    void DeleteCachedRoms(GameCategory *category)
+    {
+        gui_mode = GUI_MODE_SCAN;
+        games_to_scan = category->current_folder->games.size();
+        games_scanned = 0;
+        sprintf(game_scan_inprogress.title, "%s", "");
+        sprintf(scan_message, "Delete cached roms for %s games", category->title);
+        StartDeleteCachedRomsThread(category);
+    }
+
+    void DeleteCachedRom(Game *game)
+    {
+        if (IsRemoteGame(game))
+        {
+            if (game->type == TYPE_ROM)
+            {
+                std::string game_path = std::string(game->rom_path);
+                FS::Rm(std::string(ftp_cache_path) + "/" + game->category + "/" + game_path.substr(5));
+                game->cache_state = 0;
+            }
+            else if (game->type == TYPE_PSP_ISO)
+            {
+                std::string game_path = std::string(game->rom_path);
+                FS::Rm(std::string(PSP_ISO_CACHE_PATH) + "/cache_" + game_path.substr(game_path.find_last_of("/")+1));
+            }
+            else if (game->type == TYPE_EBOOT)
+            {
+                std::string game_path = std::string(game->rom_path);
+                int last_slash = game_path.find_last_of("/");
+                std::string eboot_name = game_path.substr(last_slash);
+                std::string eboot_folder_name = game_path.substr(0, last_slash);
+                eboot_folder_name = eboot_folder_name.substr(eboot_folder_name.find_last_of("/"));
+                FS::Rm(std::string(PSP_EBOOT_CACHE_PATH) + eboot_folder_name + eboot_name);
+            }
+            game->cache_state = 0;
+        }
+    }
+
+    int DeleteCachedRomsThread(SceSize args, ScanGamesParams *params)
+    {
+        GameCategory *cat = categoryMap[params->category];
+        for (int i=0; i<cat->current_folder->games.size(); i++)
+        {
+            if (cat->current_folder->games[i].type == TYPE_ROM || cat->current_folder->games[i].type == TYPE_SCUMMVM)
+            {
+                DeleteCachedRom(&cat->current_folder->games[i]);
+                Game *favorite_game = FindGame(&game_categories[FAVORITES], &cat->current_folder->games[i]);
+                if (favorite_game != nullptr)
+                {
+                    favorite_game->cache_state = 0;
+                }
+                game_scan_inprogress = cat->current_folder->games[i];
+            }
+            games_scanned++;
+        }
+        gui_mode = GUI_MODE_LAUNCHER;
+        return sceKernelExitDeleteThread(0);
+    }
+
+    void StartDeleteCachedRomsThread(GameCategory *category)
+    {
+        ScanGamesParams params;
+        params.type = category->rom_type;
+        params.category = category->category;
+        delete_cached_roms_thid = sceKernelCreateThread("delete_cached_roms_thread", (SceKernelThreadEntry)GAME::DeleteCachedRomsThread, 0x10000100, 0x4000, 0, 0, NULL);
+		if (delete_cached_roms_thid >= 0)
+			sceKernelStartThread(delete_cached_roms_thid, sizeof(ScanGamesParams), &params);
+    }
+
     bool IsRemoteGame(Game *game)
     {
         if (strncmp(game->rom_path, "ftp0:", 5) == 0)

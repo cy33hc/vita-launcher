@@ -190,6 +190,7 @@ static SceUID download_images_thid = -1;
 static SceUID uninstall_game_thid = -1;
 static SceUID download_game_thid = -1;
 static SceUID get_cachestate_thid = -1;
+static SceUID delete_cached_roms_thid = -1;
 
 typedef struct LoadImagesParams {
   int category;
@@ -281,7 +282,11 @@ namespace GAME {
     void StartGetCacheStateThread();
     int GetCacheStateThread(SceSize args, void *argp);
     void MigratePSPCache();
+    void DeleteCachedRom(Game *game);
     std::vector<std::string> GetFilesFromCueFile(char *path);
+    void StartDeleteCachedRomsThread(GameCategory *category);
+    int DeleteCachedRomsThread(SceSize args, ScanGamesParams *params);
+    void DeleteCachedRoms(GameCategory *category);
     static int DownloadGameCallback(int64_t xfered, void* arg);
     static int LoadScePaf();
     static int UnloadScePaf();
