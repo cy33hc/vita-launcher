@@ -92,6 +92,15 @@ typedef struct {
     NONPDRM nonpdrm;
     HIGH_MEMORY high_memory;
     CPU_SPEED cpu_speed;
+	bool bilinear;
+	bool gles1;
+	bool skip_splash;
+	bool compress_textures;
+	bool fake_win_mode;
+	bool debug_mode;
+	bool debug_shaders;
+	bool mem_extended;
+	bool newlib_extended;    
 } BootSettings;
 
 #define FAVORITES 0
@@ -169,11 +178,12 @@ extern int ROM_CATEGORIES[];
 extern char adernaline_launcher_boot_bin_path[];
 extern char adernaline_launcher_config_bin_path[];
 extern char adernaline_launcher_title_id[];
-extern BootSettings defaul_boot_settings;
+extern BootSettings default_boot_settings;
 extern std::vector<std::string> psp_iso_extensions;
 extern std::vector<std::string> eboot_extensions;
 extern std::vector<std::string> hidden_title_ids;
 extern char pspemu_path[];
+extern char gms_data_path[];
 extern char pspemu_iso_path[];
 extern char pspemu_eboot_path[];
 extern char game_uninstalled;
@@ -290,6 +300,9 @@ namespace GAME {
     void StartDeleteCachedRomsThread(GameCategory *category);
     int DeleteCachedRomsThread(SceSize args, ScanGamesParams *params);
     void DeleteCachedRoms(GameCategory *category);
+    void LoadYoYoSettings(Game *game, BootSettings *settings);
+    void SaveYoYoSettings(Game *game, BootSettings *settings);
+
     static int DownloadGameCallback(int64_t xfered, void* arg);
     static int LoadScePaf();
     static int UnloadScePaf();

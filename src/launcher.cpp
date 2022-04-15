@@ -10,7 +10,7 @@
 #include "config.h"
 #include "ime_dialog.h"
 #include "gui.h"
-//#include "debugnet.h"
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -64,6 +64,7 @@ bool game_added = false;
 bool game_moved = false;
 bool handle_boot_game = false;
 bool handle_boot_rom_game = false;
+bool handle_boot_yoyo_game = false;
 bool handle_add_iso_game = false;
 bool handle_add_eboot_game = false;
 bool handle_search_game = false;
@@ -558,9 +559,15 @@ namespace Windows {
                         {
                             game->selected = !game->selected;
                         }
-                        else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM || game->type == TYPE_GMS)
+                        else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                         {
                             GAME::Launch(game);
+                        }
+                        else if (game->type == TYPE_GMS)
+                        {
+                            handle_boot_yoyo_game = true;
+                            game_to_boot = game;
+                            GAME::LoadYoYoSettings(game_to_boot, &settings);
                         }
                         else if (game->type == TYPE_ROM)
                         {
@@ -589,7 +596,7 @@ namespace Windows {
                             {
                                 handle_boot_game = true;
                                 game_to_boot = game;
-                                settings = defaul_boot_settings;
+                                settings = default_boot_settings;
                                 DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
                             }
                             else
@@ -735,6 +742,7 @@ namespace Windows {
             ImGui::SetCursorPos(ImVec2(pos.x-5, pos.y));
             if (ImGui::Button(sel_id, current_category->button_size))
             {
+                debugNetPrintf(DEBUG, "game.type %d\n", game->type);
                 if (game->type == TYPE_CATEGORY)
                 {
                     new_category = categoryMap[game->category];
@@ -750,9 +758,15 @@ namespace Windows {
                 {
                     game->selected = !game->selected;
                 }
-                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM || game->type == TYPE_GMS)
+                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                 {
                     GAME::Launch(game);
+                }
+                else if (game->type == TYPE_GMS)
+                {
+                    handle_boot_yoyo_game = true;
+                    game_to_boot = game;
+                    GAME::LoadYoYoSettings(game_to_boot, &settings);
                 }
                 else if (game->type == TYPE_ROM)
                 {
@@ -781,7 +795,7 @@ namespace Windows {
                     {
                         handle_boot_game = true;
                         game_to_boot = game;
-                        settings = defaul_boot_settings;
+                        settings = default_boot_settings;
                         DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
                     }
                     else
@@ -1019,9 +1033,15 @@ namespace Windows {
                 {
                     game->selected = !game->selected;
                 }
-                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM || game->type == TYPE_GMS)
+                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                 {
                     GAME::Launch(game);
+                }
+                else if (game->type == TYPE_GMS)
+                {
+                    handle_boot_yoyo_game = true;
+                    game_to_boot = game;
+                    GAME::LoadYoYoSettings(game_to_boot, &settings);
                 }
                 else if (game->type == TYPE_ROM)
                 {
@@ -1050,7 +1070,7 @@ namespace Windows {
                     {
                         handle_boot_game = true;
                         game_to_boot = game;
-                        settings = defaul_boot_settings;
+                        settings = default_boot_settings;
                         DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
                     }
                     else
@@ -1161,6 +1181,11 @@ namespace Windows {
         if (handle_boot_game)
         {
             HandleAdrenalineGame();
+        }
+
+        if (handle_boot_yoyo_game)
+        {
+            HandleYoYoGame();
         }
 
         if (handle_boot_rom_game)
@@ -1687,6 +1712,24 @@ namespace Windows {
                             }
                             ImGui::Columns(1);
                             ImGui::EndChild();
+                            ImGui::Separator();
+                        }
+                        else if (current_category->id == GMS_GAMES)
+                        {
+                            ImGui::PushID("roms_path");
+                            ImGui::Text("Roms Path:"); ImGui::SameLine();
+                            ImGui::SetCursorPosX(posX + 100);
+                            if (ImGui::Selectable(current_category->roms_path, false, ImGuiSelectableFlags_DontClosePopups) && !parental_control)
+                            {
+                                sprintf(gms_data_path, "%s", current_category->roms_path);
+                                ime_single_field = gms_data_path;
+                                ime_before_update = nullptr;
+                                ime_after_update = AfterGMSPathChangeCallback;
+                                ime_callback = SingleValueImeCallback;
+                                Dialog::initImeDialog("Roms Path", current_category->roms_path, 95, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                gui_mode = GUI_MODE_IME;
+                            };
+                            ImGui::PopID();
                             ImGui::Separator();
                         }
                     }
@@ -2359,8 +2402,63 @@ namespace Windows {
             if (ImGui::Button("Cancel"))
             {
                 SetModalMode(false);
-                settings = defaul_boot_settings;
+                settings = default_boot_settings;
                 handle_boot_game = false;
+                ImGui::CloseCurrentPopup();
+            }
+            
+            ImGui::EndPopup();
+        }
+    }
+
+    void HandleYoYoGame()
+    {
+        SetModalMode(true);
+        GameCategory *category = categoryMap[game_to_boot->category];
+        char popup_title[64];
+        sprintf(popup_title, "Boot %s Game", category->alt_title);
+        ImGui::OpenPopup(popup_title);
+        ImGui::SetNextWindowPos(ImVec2(300, 100));
+        ImGui::SetNextWindowSize(ImVec2(420,335));
+
+        if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
+        {
+            float posX = ImGui::GetCursorPosX();
+            ImGui::Text("Boot Settings");
+            ImGui::Separator();
+
+            ImGui::Checkbox("Force GLES1 Mode", &settings.gles1);
+            ImGui::Checkbox("Fake Windows as Platform", &settings.fake_win_mode);
+            ImGui::Checkbox("Run with Extended Mem Mode", &settings.mem_extended);
+            ImGui::Checkbox("Run with Extended Runner Pool", &settings.newlib_extended);
+            ImGui::Separator();
+
+            ImGui::Checkbox("Force Bilinear Filtering", &settings.bilinear);
+            ImGui::Checkbox("Compress Textures", &settings.compress_textures);
+            ImGui::Separator();
+
+            ImGui::Checkbox("Skip Splashscreen at Boot", &settings.skip_splash);
+            ImGui::Separator();
+
+            ImGui::Checkbox("Run with Debug Mode", &settings.debug_mode);
+            ImGui::Checkbox("Run with Shaders Debug Mode", &settings.debug_shaders);
+            ImGui::Separator();
+
+            if (ImGui::Button("OK"))
+            {
+                GAME::SaveYoYoSettings(game_to_boot, &settings);
+                SetModalMode(false);
+                handle_boot_yoyo_game = false;
+                GAME::Launch(game_to_boot, &settings);
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+            {
+                SetModalMode(false);
+                handle_boot_yoyo_game = false;
                 ImGui::CloseCurrentPopup();
             }
             
@@ -2461,7 +2559,7 @@ namespace Windows {
                     else if (game_to_boot->type == TYPE_PSP_ISO || game_to_boot->type == TYPE_EBOOT)
                     {
                         handle_boot_game = true;
-                        settings = defaul_boot_settings;
+                        settings = default_boot_settings;
                         DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
                     }
                     handle_download_rom = false;
@@ -3448,9 +3546,15 @@ namespace Windows {
                 sprintf(title, "%s##%s%d%d", games_selection[i].title, games_selection[i].category, search_count, i);
                 if (ImGui::Selectable(title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_SpanAllColumns))
                 {
-                    if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM || game->type == TYPE_GMS)
+                    if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                     {
                         GAME::Launch(game);
+                    }
+                    else if (game->type == TYPE_GMS)
+                    {
+                        handle_boot_yoyo_game = true;
+                        game_to_boot = game;
+                        GAME::LoadYoYoSettings(game_to_boot, &settings);
                     }
                     else if (game->type == TYPE_ROM)
                     {
@@ -3479,7 +3583,7 @@ namespace Windows {
                         {
                             handle_boot_game = true;
                             game_to_boot = game;
-                            settings = defaul_boot_settings;
+                            settings = default_boot_settings;
                             DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
                         }
                         else
@@ -3668,6 +3772,15 @@ namespace Windows {
         AfterPathChangeCallback(ime_result);
         sprintf(pspemu_iso_path, "%s/ISO", pspemu_path);
         sprintf(pspemu_eboot_path, "%s/PSP/GAME", pspemu_path);
+    }
+
+    void AfterGMSPathChangeCallback(int ime_result)
+    {
+        AfterPathChangeCallback(ime_result);
+        if (strncmp(gms_data_path, "ftp0:", 5) == 0 || strcasecmp(gms_data_path, GMS_GAMES_PATH) == 0)
+        {
+            sprintf(game_categories[GMS_GAMES].roms_path, "%s", gms_data_path);
+        }
     }
 
     void AfterGameTitleChangeCallback(int ime_result)

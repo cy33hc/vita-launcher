@@ -35,6 +35,7 @@ std::vector<std::string> psp_iso_extensions;
 std::vector<std::string> eboot_extensions;
 std::vector<std::string> hidden_title_ids;
 char pspemu_path[32];
+char gms_data_path[96];
 char pspemu_iso_path[36];
 char pspemu_eboot_path[41];
 char game_uninstalled = 0;
@@ -55,7 +56,7 @@ int ROM_CATEGORIES[TOTAL_ROM_CATEGORY] = {PS1_GAMES, NES_GAMES, SNES_GAMES, GB_G
 char adernaline_launcher_boot_bin_path[32];
 char adernaline_launcher_config_bin_path[50];
 char adernaline_launcher_title_id[12];
-BootSettings defaul_boot_settings;
+BootSettings default_boot_settings;
 FtpClient *ftpclient;
 int64_t bytes_transfered;
 int64_t bytes_to_download;
@@ -642,14 +643,14 @@ namespace GAME {
             boot_data[36] = settings->nonpdrm;
             boot_data[40] = settings->high_memory;
 
-            if (settings->driver != defaul_boot_settings.driver ||
-                settings->execute != defaul_boot_settings.execute ||
-                settings->ps_button_mode != defaul_boot_settings.ps_button_mode ||
-                settings->suspend_threads != defaul_boot_settings.suspend_threads ||
-                settings->plugins != defaul_boot_settings.plugins ||
-                settings->nonpdrm != defaul_boot_settings.nonpdrm ||
-                settings->high_memory != defaul_boot_settings.high_memory ||
-                settings->cpu_speed != defaul_boot_settings.cpu_speed)
+            if (settings->driver != default_boot_settings.driver ||
+                settings->execute != default_boot_settings.execute ||
+                settings->ps_button_mode != default_boot_settings.ps_button_mode ||
+                settings->suspend_threads != default_boot_settings.suspend_threads ||
+                settings->plugins != default_boot_settings.plugins ||
+                settings->nonpdrm != default_boot_settings.nonpdrm ||
+                settings->high_memory != default_boot_settings.high_memory ||
+                settings->cpu_speed != default_boot_settings.cpu_speed)
             {
                 boot_data[12] = 0;
             }
@@ -1489,66 +1490,75 @@ namespace GAME {
         {
             char db_name[64];
             sprintf(db_name, "ux0:app/SMLA00001/thumbnails/%s.db", game->category);
+            debugNetPrintf(DEBUG, "db_name %s\n", db_name);
             int rc = sqlite3_open(db_name, &db);
         }
 
-        char thumbnail[128];
+        char thumbnail[133];
         bool found = DB::FindMatchingThumbnail(db, tokens, thumbnail);
-        if (found)
+        if (!found)
         {
-            char url[384];
-            char alternate_url[384];
-            char path[384];
-            char base_url[132];
-            char alternate_base_url[132];
-            game->icon_missing = false;
-            GameCategory *cat = categoryMap[game->category];
-            if (cat->icon_type == 1)
+            sprintf(thumbnail, "%s.png", game->title);
+        }
+
+        debugNetPrintf(DEBUG, "thumbnail %s\n", thumbnail);
+        char url[384];
+        char alternate_url[384];
+        char path[384];
+        char base_url[132];
+        char alternate_base_url[132];
+        game->icon_missing = false;
+        GameCategory *cat = categoryMap[game->category];
+        if (cat->icon_type == 1)
+        {
+            sprintf(base_url, cat->download_url, ICON_TYPE_BOXARTS);
+            sprintf(alternate_base_url, cat->download_url, ICON_TYPE_TITLES);
+        }
+        else
+        {
+            sprintf(base_url, cat->download_url, ICON_TYPE_TITLES);
+            sprintf(alternate_base_url, cat->download_url, ICON_TYPE_BOXARTS);
+        }
+        
+        sprintf(url, "%s/%s", base_url, thumbnail);
+        sprintf(alternate_url, "%s/%s", alternate_base_url, thumbnail);
+        std::string url_str = std::string(url);
+        CONFIG::ReplaceAll(url_str, " ", "%20");
+        std::string alternate_url_str = std::string(alternate_url);
+        CONFIG::ReplaceAll(alternate_url_str, " ", "%20");
+
+        if (game->type == TYPE_ROM)
+        {
+            std::string rom_path = std::string(game->rom_path);
+            int dot_index = rom_path.find_last_of(".");
+            if (new_icon_method)
             {
-                sprintf(base_url, cat->download_url, ICON_TYPE_BOXARTS);
-                sprintf(alternate_base_url, cat->download_url, ICON_TYPE_TITLES);
+                sprintf(path, "%s.png", rom_path.substr(0, dot_index).c_str());
             }
             else
             {
-                sprintf(base_url, cat->download_url, ICON_TYPE_TITLES);
-                sprintf(alternate_base_url, cat->download_url, ICON_TYPE_BOXARTS);
+                int slash_index = rom_path.find_last_of("/");
+                std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
+                sprintf(path, "%s/%s.png", cat->icon_path, rom_name.c_str());
             }
             
-            sprintf(url, "%s/%s", base_url, thumbnail);
-            sprintf(alternate_url, "%s/%s", alternate_base_url, thumbnail);
-            std::string url_str = std::string(url);
-            CONFIG::ReplaceAll(url_str, " ", "%20");
-            std::string alternate_url_str = std::string(alternate_url);
-            CONFIG::ReplaceAll(alternate_url_str, " ", "%20");
+        }
+        else if (game->type == TYPE_SCUMMVM)
+        {
+            sprintf(path, "%s/icon0.png", game->rom_path);
+        }
+        else if (game->type == TYPE_GMS)
+        {
+            std::string rom_path = std::string(game->rom_path);
+            sprintf(path, "%s/%s/icon0.png", GMS_GAMES_PATH, rom_path.substr(rom_path.find_last_of("/")+1).c_str());
+        }
 
-            if (game->type == TYPE_ROM)
+        if (!FS::FileExists(path))
+        {
+            int res = Net::DownloadFile(url_str.c_str(), path);
+            if (res < 0)
             {
-                std::string rom_path = std::string(game->rom_path);
-                int dot_index = rom_path.find_last_of(".");
-                if (new_icon_method)
-                {
-                    sprintf(path, "%s.png", rom_path.substr(0, dot_index).c_str());
-                }
-                else
-                {
-                    int slash_index = rom_path.find_last_of("/");
-                    std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
-                    sprintf(path, "%s/%s.png", cat->icon_path, rom_name.c_str());
-                }
-                
-            }
-            else if (game->type == TYPE_SCUMMVM)
-            {
-                sprintf(path, "%s/icon0.png", game->rom_path);
-            }
-
-            if (!FS::FileExists(path))
-            {
-                int res = Net::DownloadFile(url_str.c_str(), path);
-                if (res < 0)
-                {
-                    Net::DownloadFile(alternate_url_str.c_str(), path);
-                }
+                Net::DownloadFile(alternate_url_str.c_str(), path);
             }
         }
 
@@ -1578,7 +1588,9 @@ namespace GAME {
         FS::MkDirs(cat->icon_path);
         for (int i=0; i<cat->current_folder->games.size(); i++)
         {
-            if (cat->current_folder->games[i].type == TYPE_ROM || cat->current_folder->games[i].type == TYPE_SCUMMVM)
+            if (cat->current_folder->games[i].type == TYPE_ROM ||
+                cat->current_folder->games[i].type == TYPE_SCUMMVM ||
+                cat->current_folder->games[i].type == TYPE_GMS )
             {
                 DownloadThumbnail(db, &cat->current_folder->games[i]);
                 game_scan_inprogress = cat->current_folder->games[i];
@@ -2159,5 +2171,60 @@ namespace GAME {
 
             FS::RmDir(old_cache_path);
         }
+    }
+
+    void LoadYoYoSettings(Game *game, BootSettings *settings)
+    {
+        char configFile[512];
+        char buffer[30];
+        int value;
+        
+        std::string rom_path = std::string(game->rom_path);
+        sprintf(configFile, "%s/%s/yyl.cfg", GMS_GAMES_PATH, rom_path.substr(rom_path.find_last_of("/")+1).c_str());
+        FILE *config = fopen(configFile, "r");
+
+        if (config) {
+            while (EOF != fscanf(config, "%[^=]=%d\n", buffer, &value)) {
+                if (strcmp("forceGLES1", buffer) == 0) settings->gles1 = (bool)value;
+                else if (strcmp("forceBilinear", buffer) == 0) settings->bilinear = (bool)value;
+                else if (strcmp("winMode", buffer) == 0) settings->fake_win_mode = (bool)value;
+                else if (strcmp("debugShaders", buffer) == 0) settings->debug_shaders = (bool)value;
+                else if (strcmp("compressTextures", buffer) == 0) settings->compress_textures = (bool)value;
+                else if (strcmp("debugMode", buffer) == 0) settings->debug_mode = (bool)value;
+                else if (strcmp("noSplash", buffer) == 0) settings->skip_splash = (bool)value;
+                else if (strcmp("maximizeMem", buffer) == 0) settings->mem_extended = (bool)value;
+                else if (strcmp("maximizeNewlib", buffer) == 0) settings->newlib_extended = (bool)value;
+            }
+            fclose(config);
+        } else {
+            settings->bilinear = false;
+            settings->compress_textures = false;
+            settings->debug_mode = false;
+            settings->debug_shaders = false;
+            settings->fake_win_mode = false;
+            settings->gles1 = false;
+            settings->mem_extended = false;
+            settings->newlib_extended = false;
+            settings->skip_splash = false;
+        }
+    }
+
+    void SaveYoYoSettings(Game *game, BootSettings *settings)
+    {
+        char configFile[512];
+        std::string rom_path = std::string(game->rom_path);
+        sprintf(configFile, "%s/%s/yyl.cfg", GMS_GAMES_PATH, rom_path.substr(rom_path.find_last_of("/")+1).c_str());
+
+        FILE *f = fopen(configFile, "w+");
+        fprintf(f, "%s=%d\n", "forceGLES1", (int)settings->gles1);
+        fprintf(f, "%s=%d\n", "noSplash", (int)settings->skip_splash);
+        fprintf(f, "%s=%d\n", "forceBilinear", (int)settings->bilinear);
+        fprintf(f, "%s=%d\n", "winMode", (int)settings->fake_win_mode);
+        fprintf(f, "%s=%d\n", "compressTextures", (int)settings->compress_textures);
+        fprintf(f, "%s=%d\n", "debugMode", (int)settings->debug_mode);
+        fprintf(f, "%s=%d\n", "debugShaders", (int)settings->debug_shaders);
+        fprintf(f, "%s=%d\n", "maximizeMem", (int)settings->mem_extended);
+        fprintf(f, "%s=%d\n", "maximizeNewlib", (int)settings->newlib_extended);
+        fclose(f);
     }
 }

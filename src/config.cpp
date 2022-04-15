@@ -156,7 +156,7 @@ namespace CONFIG {
             }
         }
 
-        if (category->id == TYPE_GMS)
+        if (category->id == GMS_GAMES)
         {
             sprintf(category->roms_path, "%s", ReadString(category->title, CONFIG_ROMS_PATH, GMS_GAMES_PATH));
             WriteString(category->title, CONFIG_ROMS_PATH, category->roms_path);
@@ -200,15 +200,15 @@ namespace CONFIG {
 		OpenIniFile (CONFIG_INI_FILE);
 
         // Adernaline Default Boot Settings
-        defaul_boot_settings.driver = INFERNO;
-        defaul_boot_settings.execute = EBOOT_BIN;
-        defaul_boot_settings.customized = true;
-        defaul_boot_settings.ps_button_mode = MENU;
-        defaul_boot_settings.suspend_threads = SUSPEND_YES;
-        defaul_boot_settings.plugins = PLUGINS_DISABLE;
-        defaul_boot_settings.nonpdrm = NONPDRM_DISABLE;
-        defaul_boot_settings.high_memory = HIGH_MEM_DISABLE;
-        defaul_boot_settings.cpu_speed = CPU_DEFAULT;
+        default_boot_settings.driver = INFERNO;
+        default_boot_settings.execute = EBOOT_BIN;
+        default_boot_settings.customized = true;
+        default_boot_settings.ps_button_mode = MENU;
+        default_boot_settings.suspend_threads = SUSPEND_YES;
+        default_boot_settings.plugins = PLUGINS_DISABLE;
+        default_boot_settings.nonpdrm = NONPDRM_DISABLE;
+        default_boot_settings.high_memory = HIGH_MEM_DISABLE;
+        default_boot_settings.cpu_speed = CPU_DEFAULT;
 
         // setup psp iso extensions
         psp_iso_extensions.push_back(".iso");
@@ -448,6 +448,10 @@ namespace CONFIG {
             WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores).c_str());
             WriteBool(cat->title, CONFIG_BOOT_WITH_ALT_CORE, cat->boot_with_alt_core);
             WriteInt(cat->title, CONFIG_ICON_TYPE, cat->icon_type);
+        }
+        else if (cat->id == GMS_GAMES)
+        {
+            WriteString(cat->title, CONFIG_ROMS_PATH, cat->roms_path);
         }
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();

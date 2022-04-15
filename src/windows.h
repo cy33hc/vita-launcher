@@ -45,6 +45,7 @@ namespace Windows {
     void HandleAddNewIsoGame();
     void HandleAddNewEbootGame();
     void HandleAdrenalineGame();
+    void HandleYoYoGame();
     void HandleBootRomGame();
     void HandleDownloadRom();
     void HandleImeInput();
@@ -61,6 +62,7 @@ namespace Windows {
     void AfterTitleChangeCallback(int ime_result);
     void BeforeTitleChangeCallback(int ime_result);
     void AfterPspemuChangeCallback(int ime_result);
+    void AfterGMSPathChangeCallback(int ime_result);
     void AfterGameTitleChangeCallback(int ime_result);
     void AfterPathChangeCallback(int ime_result);
     void SetModalMode(bool modal);
