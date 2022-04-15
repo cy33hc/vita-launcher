@@ -2,6 +2,7 @@
 #include <vita2d.h>
 
 #include "textures.h"
+#include "config.h"
 #include "gui.h"
 
 Tex no_icon;
@@ -38,6 +39,12 @@ namespace Textures {
 		if (image == NULL) {
 			return false;
 		}
+
+		if (enable_bilinear_filter)
+		{
+			vita2d_texture_set_filters(image, SCE_GXM_TEXTURE_FILTER_LINEAR, SCE_GXM_TEXTURE_FILTER_LINEAR);
+		}
+
 		int image_width = vita2d_texture_get_width(image);
 		int image_height = vita2d_texture_get_height(image);
 

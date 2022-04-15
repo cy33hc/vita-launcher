@@ -28,6 +28,7 @@ char ftp_server_password[32];
 int ftp_server_port;
 bool pasv_mode;
 char ftp_cache_path[128];
+bool enable_bilinear_filter;
 
 namespace CONFIG {
 
@@ -155,6 +156,12 @@ namespace CONFIG {
             }
         }
 
+        if (category->id == TYPE_GMS)
+        {
+            sprintf(category->roms_path, "%s", ReadString(category->title, CONFIG_ROMS_PATH, GMS_GAMES_PATH));
+            WriteString(category->title, CONFIG_ROMS_PATH, category->roms_path);
+        }
+
         if (default_file_filters != nullptr)
         {
             file_filters = ReadString(category->title, CONFIG_ROM_EXTENSIONS, default_file_filters);
@@ -247,6 +254,9 @@ namespace CONFIG {
         parental_control = ReadBool(CONFIG_GLOBAL, CONFIG_PARENT_CONTROL, false);
         WriteBool(CONFIG_GLOBAL, CONFIG_PARENT_CONTROL, parental_control);
 
+        enable_bilinear_filter = ReadBool(CONFIG_GLOBAL, CONFIG_BILINEAR_FILTER, true);
+        WriteBool(CONFIG_GLOBAL, CONFIG_BILINEAR_FILTER, enable_bilinear_filter);
+        
         // Config for hidden title ids
         hidden_title_ids_str = ReadString(CONFIG_GLOBAL, CONFIG_HIDE_TITLE_IDS, "");
         ParseMultiValueString(hidden_title_ids_str, hidden_title_ids, false);
@@ -320,6 +330,7 @@ namespace CONFIG {
         SetupCategory(&game_categories[GAW_GAMES], GAW_GAMES, "gaw", "GAW", "RETROVITA", "app0:gw_libretro.self", GAW_TITLE_ID_PREFIXES, GAW_FILTERS, GAW_ALT_CORES, TYPE_ROM, GAW_DOWNLOAD_URL, 3);
         SetupCategory(&game_categories[MAME_2000_GAMES], MAME_2000_GAMES, "mame2k", "MAME2000", "RETROVITA", "app0:mame2000_libretro.self", MAME_2000_TITLE_ID_PREFIXES, MAME_2000_FILTERS, MAME_2000_ALT_CORES, TYPE_ROM, MAME_2000_DOWNLOAD_URL, 3);
         SetupCategory(&game_categories[MAME_2003_GAMES], MAME_2003_GAMES, "mame2k3", "MAME2003", "RETROVITA", "app0:mame2003_plus_libretro.self", MAME_2003_TITLE_ID_PREFIXES, MAME_2003_FILTERS, MAME_2003_ALT_CORES, TYPE_ROM, MAME_2003_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[GMS_GAMES], GMS_GAMES, "gms", "GMS", YOYO_LAUNCHER_ID, nullptr, nullptr, nullptr, nullptr, TYPE_GMS, GMS_DOWNLOAD_URL, 3);
         SetupCategory(&game_categories[SCUMMVM_GAMES], SCUMMVM_GAMES, "scummvm", "SCUMMVM", "VSCU00001", nullptr, nullptr, nullptr, nullptr, TYPE_SCUMMVM, SCUMMVM_DOWNLOAD_URL, 3);
         SetupCategory(&game_categories[PORT_GAMES], PORT_GAMES, "ports", "Ports", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
         SetupCategory(&game_categories[ORIGINAL_GAMES], ORIGINAL_GAMES, "original", "Originals", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
@@ -420,6 +431,8 @@ namespace CONFIG {
         WriteInt(cat->title, CONFIG_GRID_ROWS, cat->rows);
         WriteInt(cat->title, CONFIG_ASPECT_RATIO, cat->ratio);
         WriteInt(cat->title, CONFIG_CATEGORY_ORDER, cat->order);
+        WriteString(cat->title, CONFIG_CATEGORY_ICON, cat->category_icon);
+        
         if (cat->id != FAVORITES && cat->id != HOMEBREWS)
         {
             WriteString(cat->title, CONFIG_TITLE_ID_PREFIXES, GetMultiValueString(cat->valid_title_ids).c_str());
@@ -431,7 +444,6 @@ namespace CONFIG {
             WriteString(cat->title, CONFIG_ROM_LAUNCHER_TITLE_ID, cat->rom_launcher_title_id);
             WriteString(cat->title, CONFIG_ROMS_PATH, cat->roms_path);
             WriteString(cat->title, CONFIG_ICON_PATH, cat->icon_path);
-            WriteString(cat->title, CONFIG_CATEGORY_ICON, cat->category_icon);
             WriteString(cat->title, CONFIG_ROM_EXTENSIONS, GetMultiValueString(cat->file_filters).c_str());
             WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores).c_str());
             WriteBool(cat->title, CONFIG_BOOT_WITH_ALT_CORE, cat->boot_with_alt_core);

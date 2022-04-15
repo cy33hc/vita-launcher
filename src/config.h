@@ -14,6 +14,8 @@
 
 #define SCUMMVM_INI_FILE "ux0:data/scummvm/scummvm.ini"
 
+#define GMS_GAMES_PATH "ux0:data/gms"
+
 #define PSP_ISO_PATH "ux0:pspemu/ISO"
 #define PSP_EBOOT_PATH "ux0:pspemu/PSP/GAME"
 #define CONFIG_PSPEMU_PATH "pspemu_location"
@@ -42,6 +44,7 @@
 
 #define DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID "ADRLANCHR"
 #define RETROARCH_TITLE_ID "RETROVITA"
+#define YOYO_LAUNCHER_ID "YYOLOADER"
 
 #define VIEW_MODE_GRID 0
 #define VIEW_MODE_LIST 1
@@ -69,7 +72,7 @@
 #define CONFIG_FTP_SERVER_PASSWORD "ftp_server_password"
 #define CONFIG_FTP_CACHE_PATH "ftp_cache_path"
 #define CONFIG_FTP_TRANSFER_MODE "ftp_transfer_mode"
-
+#define CONFIG_BILINEAR_FILTER "enable_bilinear_filter"
 #define ICON_TYPE_BOXARTS "Boxarts"
 #define ICON_TYPE_TITLES "Titles"
 
@@ -107,6 +110,7 @@
 #define AMIGA_FILTERS ".hdf"
 #define MSX1_FILTERS ".zip,.bin"
 #define DREAMCAST_FILTERS ".chd,.cue,.iso"
+#define GMS_FILTERS ".apk"
 
 // Filters for title prefixes
 #define VITA_TITLE_ID_PREFIXES "PCSA,PCSB,PCSC,PCSD,PCSE,PCSF,PCSG,PCSH,PCSI"
@@ -147,6 +151,8 @@
 #define AMIGA_TITLE_ID_PREFIXES "AMIGA"
 #define MSX1_TITLE_ID_PREFIXES "MSX1"
 #define DREAMCAST_TITLE_ID_PREFIXES "DCAST"
+#define GMS_TITLE_ID_PREFIXES "GMS"
+
 
 // Alt retroarch cores
 #define PS1_ALT_CORES ""
@@ -219,6 +225,7 @@
 #define AMIGA_DOWNLOAD_URL "https://github.com/cy33hc/Commodore_-_Amiga/raw/master/Named_%s"
 #define MSX1_DOWNLOAD_URL "https://github.com/cy33hc/Microsoft_-_MSX/raw/master/Named_%s"
 #define DREAMCAST_DOWNLOAD_URL "https://github.com/cy33hc/Sega_-_Dreamcast/raw/master/Named_%s"
+#define GMS_DOWNLOAD_URL "https://github.com/cy33hc/Game_Maker_Studio/raw/master/Named_%s"
 
 extern bool show_all_categories;
 extern bool parental_control;
@@ -235,6 +242,7 @@ extern char ftp_server_password[];
 extern int ftp_server_port;
 extern char ftp_cache_path[];
 extern bool pasv_mode;
+extern bool enable_bilinear_filter;
 
 namespace CONFIG {
     void LoadConfig();

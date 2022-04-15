@@ -132,15 +132,16 @@ typedef struct {
 #define GAW_GAMES 35
 #define MAME_2000_GAMES 36
 #define MAME_2003_GAMES 37
-#define SCUMMVM_GAMES 38
-#define PORT_GAMES 39
-#define ORIGINAL_GAMES 40
-#define UTILITIES 41
-#define EMULATORS 42
-#define HOMEBREWS 43
-#define CATEGORY 44
+#define GMS_GAMES 38
+#define SCUMMVM_GAMES 39
+#define PORT_GAMES 40
+#define ORIGINAL_GAMES 41
+#define UTILITIES 42
+#define EMULATORS 43
+#define HOMEBREWS 44
+#define CATEGORY 45
 
-#define TOTAL_CATEGORY 44
+#define TOTAL_CATEGORY 45
 #define TOTAL_ROM_CATEGORY 32
 
 #define TYPE_BUBBLE 0
@@ -148,6 +149,7 @@ typedef struct {
 #define TYPE_PSP_ISO 2
 #define TYPE_EBOOT 3
 #define TYPE_SCUMMVM 4
+#define TYPE_GMS 5
 #define TYPE_CATEGORY 126
 #define TYPE_FOLDER 127
 
@@ -222,6 +224,7 @@ namespace GAME {
     int PopulateEbootGameInfo(Game *game, std::string rom, int game_index);
     void ScanAdrenalineEbootGames(sqlite3 *db);
     void ScanScummVMGames(sqlite3 *db);
+    void ScanGMSGames(sqlite3 *db);
     bool Launch(Game *game, BootSettings *settings = nullptr, char* retro_core = nullptr);
     void LoadGamesCache(sqlite3 *db);
     void LoadGameImages(int category, int prev_page, int page_num, int games_per_page);

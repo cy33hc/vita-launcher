@@ -118,7 +118,7 @@ namespace Windows {
 
         if ((pad_prev.buttons & SCE_CTRL_SQUARE) && !(pad.buttons & SCE_CTRL_SQUARE) && !paused)
         {
-            if (selected_game != nullptr && selected_game->type != TYPE_FOLDER)
+            if (selected_game != nullptr && selected_game->type != TYPE_FOLDER && selected_game->type != TYPE_CATEGORY)
             {
                 if (current_category->id != FAVORITES)
                 {
@@ -417,8 +417,8 @@ namespace Windows {
     {
         for (int i=current_category->current_folder->page_num*current_category->games_per_page-current_category->games_per_page; i < current_category->current_folder->page_num*current_category->games_per_page; i++)
         {
-            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && strcmp(game->id, current_category->current_folder->games[i].id) == 0) ||
-                ((game->type == TYPE_ROM || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, current_category->current_folder->games[i].rom_path) == 0))
+            if ((game->type != TYPE_ROM && game->type != TYPE_SCUMMVM && game->type != TYPE_GMS && strcmp(game->id, current_category->current_folder->games[i].id) == 0) ||
+                ((game->type == TYPE_ROM || game->type == TYPE_GMS || game->type == TYPE_SCUMMVM) && strcmp(game->rom_path, current_category->current_folder->games[i].rom_path) == 0))
             {
                 return i % current_category->games_per_page;
             }
@@ -558,7 +558,7 @@ namespace Windows {
                         {
                             game->selected = !game->selected;
                         }
-                        else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                        else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM || game->type == TYPE_GMS)
                         {
                             GAME::Launch(game);
                         }
@@ -750,7 +750,7 @@ namespace Windows {
                 {
                     game->selected = !game->selected;
                 }
-                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM || game->type == TYPE_GMS)
                 {
                     GAME::Launch(game);
                 }
@@ -1019,7 +1019,7 @@ namespace Windows {
                 {
                     game->selected = !game->selected;
                 }
-                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM || game->type == TYPE_GMS)
                 {
                     GAME::Launch(game);
                 }
@@ -1389,7 +1389,7 @@ namespace Windows {
                         }
                         
                         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES
-                            || current_category->rom_type == TYPE_SCUMMVM)
+                            || current_category->rom_type == TYPE_SCUMMVM || current_category->rom_type == TYPE_GMS)
                         {
                             if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder && !selection_mode && !delete_rom_cache &&
                                 !add_eboot_game && !add_psp_iso_game && !rename_game && !add_rom_game && !uninstall_game && !edit_folder)
@@ -1715,6 +1715,9 @@ namespace Windows {
                     ImGui::Checkbox("Swap X/O Buttons", &swap_xo);
                     ImGui::Separator();
 
+                    ImGui::Checkbox("Enable Bilinear Filter", &enable_bilinear_filter);
+                    ImGui::Separator();
+
                     ImGui::Text("Style:"); ImGui::SameLine();
                     if (ImGui::BeginCombo("##Style", cb_style_name, ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular))
                     {
@@ -1978,6 +1981,7 @@ namespace Windows {
                 WriteBool(CONFIG_GLOBAL, CONFIG_SHOW_CATEGORY_AS_TABS, show_categories_as_tabs_settings);
                 WriteBool(CONFIG_GLOBAL, CONFIG_NEW_ICON_METHOD, new_icon_method);
                 WriteBool(CONFIG_GLOBAL, CONFIG_SWAP_XO, swap_xo);
+                WriteBool(CONFIG_GLOBAL, CONFIG_BILINEAR_FILTER, enable_bilinear_filter);
                 ImGui_ImplVita2D_SwapXO(swap_xo);
 
                 WriteString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, pspemu_path);
@@ -3002,7 +3006,7 @@ namespace Windows {
                             {
                                 if (!selection_mode)
                                 {
-                                    if ((selected_game->type == TYPE_ROM || selected_game->type == TYPE_SCUMMVM || selected_game->type == TYPE_FOLDER))
+                                    if ((selected_game->type == TYPE_ROM || selected_game->type == TYPE_SCUMMVM || selected_game->type == TYPE_FOLDER || selected_game->type == TYPE_GMS))
                                     {
                                         sprintf(game_action_message, "Can't move ROM type games. Since they\nare dependent on RetroArch core of \nthe category.");
                                     }
@@ -3444,7 +3448,7 @@ namespace Windows {
                 sprintf(title, "%s##%s%d%d", games_selection[i].title, games_selection[i].category, search_count, i);
                 if (ImGui::Selectable(title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_SpanAllColumns))
                 {
-                    if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                    if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM || game->type == TYPE_GMS)
                     {
                         GAME::Launch(game);
                     }

@@ -21,7 +21,7 @@
 #include "net.h"
 #include "ftpclient.h"
 
-//#include "debugnet.h"
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -614,6 +614,16 @@ namespace GAME {
             sceKernelDelayThread(1000);
             sceKernelExitProcess(0);
         }
+        else if (game->type == TYPE_GMS)
+        {
+            char uri[512];
+            std::string game_path = std::string(game->rom_path);
+            debugNetPrintf(DEBUG, "rom_path %s\n", game_path.substr(game_path.find_last_of("/")+1).c_str());
+            sprintf(uri, "psgm:play?titleid=%s&param=%s", YOYO_LAUNCHER_ID, game_path.substr(game_path.find_last_of("/")+1));
+            sceAppMgrLaunchAppByUri(0xFFFFF, uri);
+            sceKernelDelayThread(1000);
+            sceKernelExitProcess(0);
+        }
         else if (game->type == TYPE_PSP_ISO || game->type == TYPE_EBOOT)
         {
             char boot_data[320];
@@ -867,7 +877,7 @@ namespace GAME {
         {
             sprintf(icon_path, "ux0:data/SMLA00001/data/%s/icon0.png", game->id);
         }
-        else if (game->type == TYPE_SCUMMVM)
+        else if (game->type == TYPE_SCUMMVM || game->type == TYPE_GMS)
         {
             sprintf(icon_path, "%s/icon0.png", game->rom_path);
         }
@@ -1063,11 +1073,12 @@ namespace GAME {
 
     int ScanGamesCategoryThread(SceSize args, ScanGamesParams *params)
     {
+        debugNetPrintf(DEBUG, "scan type = %d, cat = %s", params->type, params->category);
         gui_mode = GUI_MODE_SCAN;
         sceKernelDelayThread(50000);
         sqlite3 *db;
         sqlite3_open(CACHE_DB_FILE, &db);
-        if (params->type == TYPE_ROM || params->type == TYPE_SCUMMVM)
+        if (params->type == TYPE_ROM || params->type == TYPE_SCUMMVM || params->type == TYPE_GMS)
         {
             GameCategory *category = categoryMap[params->category];
             RemoveGamesFromCategoryByType(db, category, params->type);
@@ -1122,6 +1133,11 @@ namespace GAME {
         if (params->type == TYPE_SCUMMVM)
         {
             ScanScummVMGames(db);
+        }
+
+        if (params->type == TYPE_GMS)
+        {
+            ScanGMSGames(db);
         }
 
         sqlite3_close(db);
@@ -1419,6 +1435,41 @@ namespace GAME {
         }
 
         CloseIniFile();
+    }
+
+    void ScanGMSGames(sqlite3 *db)
+    {
+        sprintf(scan_message, "Scanning for GMS games in the %s folder", GMS_GAMES_PATH);
+        std::vector<std::string> files = FS::ListDir(GMS_GAMES_PATH);
+        debugNetPrintf(DEBUG, "file count %d\n", files.size());
+        games_to_scan = files.size();
+        games_scanned = 0;
+
+        char rom_path[512];
+        int rom_length;
+        for(std::size_t j = 0; j < files.size(); j++)
+        {
+            debugNetPrintf(DEBUG, "file %s\n", files[j].c_str());
+            sprintf(rom_path, "%s/%s/game.apk", GMS_GAMES_PATH, files[j].c_str());
+            rom_length = strlen(rom_path);
+            debugNetPrintf(DEBUG, "rom_path %s, length %d\n", rom_path, rom_length);
+            if (rom_length < 192 && FS::FileExists(rom_path))
+            {
+                debugNetPrintf(DEBUG, "Game %s found\n", rom_path);
+                Game game;
+                game.type = TYPE_GMS;
+                game.cache_state = 2;
+                sprintf(game.title, "%s", files[j].c_str());
+                sprintf(game.id, "%s", game_categories[GMS_GAMES].title);
+                sprintf(game.category, "%s", game_categories[GMS_GAMES].category);
+                sprintf(game.rom_path, "%s/%s", GMS_GAMES_PATH, files[j].c_str());
+                game.tex = no_icon;
+                game_categories[GMS_GAMES].current_folder->games.push_back(game);
+                DB::InsertGame(db, &game);
+                game_scan_inprogress = game;
+            }
+            games_scanned++;
+        }
     }
 
     void DownloadThumbnail(sqlite3 *database, Game *game)
