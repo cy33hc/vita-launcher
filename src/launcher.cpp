@@ -2445,8 +2445,8 @@ namespace Windows {
         char popup_title[64];
         sprintf(popup_title, "Boot %s Game", category->alt_title);
         ImGui::OpenPopup(popup_title);
-        ImGui::SetNextWindowPos(ImVec2(300, 100));
-        ImGui::SetNextWindowSize(ImVec2(420,335));
+        ImGui::SetNextWindowPos(ImVec2(300, 90));
+        ImGui::SetNextWindowSize(ImVec2(420,360));
 
         if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
         {
