@@ -565,9 +565,18 @@ namespace Windows {
                         }
                         else if (game->type == TYPE_GMS)
                         {
-                            handle_boot_yoyo_game = true;
-                            game_to_boot = game;
-                            GAME::LoadYoYoSettings(game_to_boot, &settings);
+                            if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                            {
+                                handle_boot_yoyo_game = true;
+                                game_to_boot = game;
+                                GAME::LoadYoYoSettings(game_to_boot, &settings);
+                            }
+                            else
+                            {
+                                handle_download_rom = true;
+                                game_to_boot = game;
+                                GAME::StartDownloadGameThread(game_to_boot);
+                            }
                         }
                         else if (game->type == TYPE_ROM)
                         {
@@ -764,9 +773,18 @@ namespace Windows {
                 }
                 else if (game->type == TYPE_GMS)
                 {
-                    handle_boot_yoyo_game = true;
-                    game_to_boot = game;
-                    GAME::LoadYoYoSettings(game_to_boot, &settings);
+                    if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                    {
+                        handle_boot_yoyo_game = true;
+                        game_to_boot = game;
+                        GAME::LoadYoYoSettings(game_to_boot, &settings);
+                    }
+                    else
+                    {
+                        handle_download_rom = true;
+                        game_to_boot = game;
+                        GAME::StartDownloadGameThread(game_to_boot);
+                    }
                 }
                 else if (game->type == TYPE_ROM)
                 {
@@ -1039,9 +1057,18 @@ namespace Windows {
                 }
                 else if (game->type == TYPE_GMS)
                 {
-                    handle_boot_yoyo_game = true;
-                    game_to_boot = game;
-                    GAME::LoadYoYoSettings(game_to_boot, &settings);
+                    if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                    {
+                        handle_boot_yoyo_game = true;
+                        game_to_boot = game;
+                        GAME::LoadYoYoSettings(game_to_boot, &settings);
+                    }
+                    else
+                    {
+                        handle_download_rom = true;
+                        game_to_boot = game;
+                        GAME::StartDownloadGameThread(game_to_boot);
+                    }
                 }
                 else if (game->type == TYPE_ROM)
                 {
@@ -1978,7 +2005,7 @@ namespace Windows {
                     ImGui::PopID();
                     ImGui::Separator();
 
-                    ImGui::Checkbox("Enable PASV mode:", &pasv_mode);
+                    ImGui::Checkbox("Enable PASV mode", &pasv_mode);
                     ImGui::Separator();
 
                     ImGui::PushID("ftp_cache_path");
@@ -2561,6 +2588,11 @@ namespace Windows {
                         handle_boot_game = true;
                         settings = default_boot_settings;
                         DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                    }
+                    else if (game_to_boot->type == TYPE_GMS)
+                    {
+                        GAME::LoadYoYoSettings(game_to_boot, &settings);
+                        handle_boot_yoyo_game = true;
                     }
                     handle_download_rom = false;
                     SetModalMode(false);
@@ -3552,9 +3584,18 @@ namespace Windows {
                     }
                     else if (game->type == TYPE_GMS)
                     {
-                        handle_boot_yoyo_game = true;
-                        game_to_boot = game;
-                        GAME::LoadYoYoSettings(game_to_boot, &settings);
+                        if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                        {
+                            handle_boot_yoyo_game = true;
+                            game_to_boot = game;
+                            GAME::LoadYoYoSettings(game_to_boot, &settings);
+                        }
+                        else
+                        {
+                            handle_download_rom = true;
+                            game_to_boot = game;
+                            GAME::StartDownloadGameThread(game_to_boot);
+                        }
                     }
                     else if (game->type == TYPE_ROM)
                     {

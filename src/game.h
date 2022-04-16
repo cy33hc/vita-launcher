@@ -227,6 +227,7 @@ namespace GAME {
     void Init();
     void Scan();
     std::vector<std::string> GetRomFiles(const std::string path);
+    std::vector<std::string> GetGMSRomFiles(const std::string path);
     void ScanRetroCategory(sqlite3 *db, GameCategory *category);
     void ScanRetroGames(sqlite3 *db);
     int PopulateIsoGameInfo(Game *game, std::string rom, int game_index);

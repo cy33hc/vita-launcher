@@ -878,9 +878,14 @@ namespace GAME {
         {
             sprintf(icon_path, "ux0:data/SMLA00001/data/%s/icon0.png", game->id);
         }
-        else if (game->type == TYPE_SCUMMVM || game->type == TYPE_GMS)
+        else if (game->type == TYPE_SCUMMVM)
         {
             sprintf(icon_path, "%s/icon0.png", game->rom_path);
+        }
+        else if (game->type == TYPE_GMS)
+        {
+            std::string tmp_path = std::string(game->rom_path);
+            sprintf(icon_path, "%s/%s/icon0.png", GMS_GAMES_PATH, tmp_path.substr(tmp_path.find_last_of("/")+1).c_str());
         }
         else if (game->type == TYPE_FOLDER)
         {
@@ -1438,23 +1443,86 @@ namespace GAME {
         CloseIniFile();
     }
 
+    std::vector<std::string> GetGMSRomFiles(const std::string path)
+    {
+        debugNetPrintf(DEBUG, "rom_path %s\n", path.c_str());
+        std::vector<std::string> files;
+        if (strncmp(path.c_str(), "ftp0:", 5) == 0)
+        {
+            std::vector<FtpDirEntry> ftp_files = ftpclient->ListDir(path.substr(5).c_str());
+            for (int i=0; i<ftp_files.size(); i++)
+            {
+                files.push_back(std::string(ftp_files[i].name));
+            }
+        }
+        else
+        {
+            files = FS::ListDir(path);
+        }
+
+        return files;
+    }
+
     void ScanGMSGames(sqlite3 *db)
     {
         sprintf(scan_message, "Scanning for GMS games in the %s folder", GMS_GAMES_PATH);
-        std::vector<std::string> files = FS::ListDir(GMS_GAMES_PATH);
+
+        bool is_ftp_enabled = strncmp(game_categories[GMS_GAMES].roms_path, "ftp0:", 5) == 0;
+        bool is_ftp_connected;
+        std::vector<std::string> files;
+        if (is_ftp_enabled)
+        {
+            ftpclient->Connect(ftp_server_ip, ftp_server_port);
+            if (ftpclient->Login(ftp_server_user, ftp_server_password) > 0)
+            {
+                is_ftp_connected = true;
+                files = GetGMSRomFiles(game_categories[GMS_GAMES].roms_path);
+            }
+            else
+            {
+                is_ftp_connected = false;
+                files = std::vector<std::string>();
+            }
+        }
+        else
+        {
+            files = GetGMSRomFiles(game_categories[GMS_GAMES].roms_path);
+        }
         debugNetPrintf(DEBUG, "file count %d\n", files.size());
         games_to_scan = files.size();
         games_scanned = 0;
 
         char rom_path[512];
+        char icon_path[512];
+        char icon_local_path[192];
         int rom_length;
+        bool rom_exists;
         for(std::size_t j = 0; j < files.size(); j++)
         {
             debugNetPrintf(DEBUG, "file %s\n", files[j].c_str());
-            sprintf(rom_path, "%s/%s/game.apk", GMS_GAMES_PATH, files[j].c_str());
+            sprintf(rom_path, "%s/%s/game.apk", game_categories[GMS_GAMES].roms_path, files[j].c_str());
             rom_length = strlen(rom_path);
             debugNetPrintf(DEBUG, "rom_path %s, length %d\n", rom_path, rom_length);
-            if (rom_length < 192 && FS::FileExists(rom_path))
+
+            if (is_ftp_enabled)
+            {
+                if (is_ftp_connected)
+                {
+                    std::string tmp_path = std::string(rom_path);
+                    int64_t file_size;
+                    rom_exists = ftpclient->Size(tmp_path.substr(5).c_str(), &file_size, FtpClient::image);
+                }
+                else
+                {
+                    rom_exists = false;
+                }
+            }
+            else
+            {
+                rom_exists = FS::FileExists(rom_path);
+            }
+
+            if (rom_length < 192 && rom_exists)
             {
                 debugNetPrintf(DEBUG, "Game %s found\n", rom_path);
                 Game game;
@@ -1463,13 +1531,30 @@ namespace GAME {
                 sprintf(game.title, "%s", files[j].c_str());
                 sprintf(game.id, "%s", game_categories[GMS_GAMES].title);
                 sprintf(game.category, "%s", game_categories[GMS_GAMES].category);
-                sprintf(game.rom_path, "%s/%s", GMS_GAMES_PATH, files[j].c_str());
+                sprintf(game.rom_path, "%s/%s", game_categories[GMS_GAMES].roms_path, files[j].c_str());
                 game.tex = no_icon;
                 game_categories[GMS_GAMES].current_folder->games.push_back(game);
                 DB::InsertGame(db, &game);
+
+                // download icon if ftp enabled
+                if (is_ftp_enabled && is_ftp_connected)
+                {
+                    sprintf(icon_path, "%s/%s/icon0.png", game_categories[GMS_GAMES].roms_path, game.title);
+                    sprintf(icon_local_path, "%s/%s/icon0.png", GMS_GAMES_PATH, game.title);
+                    FS::MkDirs(std::string(GMS_GAMES_PATH) + "/" + game.title);
+                    if (!FS::FileExists(icon_local_path))
+                    {
+                        ftpclient->Get(icon_local_path, std::string(icon_path).substr(5).c_str(), FtpClient::image, 0);
+                    }
+                }
                 game_scan_inprogress = game;
             }
             games_scanned++;
+        }
+
+        if (is_ftp_enabled)
+        {
+            ftpclient->Quit();
         }
     }
 
@@ -1827,7 +1912,6 @@ namespace GAME {
 
     char GetCacheState(Game *game)
     {
-        //debugNetPrintf(DEBUG, "%s cache_state %d\n", game->title, game->cache_state);
         if (game->cache_state != 2)
         {
             return game->cache_state;
@@ -1855,6 +1939,14 @@ namespace GAME {
                 eboot_folder_name = eboot_folder_name.substr(eboot_folder_name.find_last_of("/"));
                 game->cache_state = FS::FileExists(std::string(PSP_EBOOT_CACHE_PATH) + eboot_folder_name + eboot_name);
                 return game->cache_state;
+            }
+            else if (game->type == TYPE_GMS)
+            {
+                std::string game_path = std::string(game->rom_path);
+                char rom_local_path[192];
+                sprintf(rom_local_path, "%s/%s/game.apk", GMS_GAMES_PATH, game_path.substr(game_path.find_last_of("/")+1).c_str());
+                game->cache_state = FS::FileExists(rom_local_path);
+                debugNetPrintf(DEBUG, "%s cache_state %d\n", game->title, game->cache_state);
             }
         }
         else
@@ -2043,6 +2135,31 @@ namespace GAME {
                         if (ftpclient->Size(path.c_str(), &bytes_to_download, FtpClient::image) > 0)
                         {
                             if (ftpclient->Get(output_file.c_str(), path.c_str(), FtpClient::image, 0) > 0)
+                            {
+                                game->cache_state = 1;
+                            }
+                            else
+                            {
+                                download_error = true;
+                            }
+                        }
+                        else
+                        {
+                            download_error = true;
+                        }
+                    }
+                    else if (game->type == TYPE_GMS)
+                    {
+                        std::string output_path = std::string(GMS_GAMES_PATH) + "/" + path.substr(path.find_last_of("/")+1);
+                        if (!FS::FolderExists(output_path.c_str()))
+                        {
+                            FS::MkDirs(output_path.c_str());
+                        }
+                        output_path = output_path + "/game.apk";
+                        path = path.substr(5) + "/game.apk";
+                        if (ftpclient->Size(path.c_str(), &bytes_to_download, FtpClient::image) > 0)
+                        {
+                            if (ftpclient->Get(output_path.c_str(), path.c_str(), FtpClient::image, 0) > 0)
                             {
                                 game->cache_state = 1;
                             }
