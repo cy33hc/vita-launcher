@@ -2458,6 +2458,7 @@ namespace Windows {
             ImGui::Checkbox("Fake Windows as Platform", &settings.fake_win_mode);
             ImGui::Checkbox("Run with Extended Mem Mode", &settings.mem_extended);
             ImGui::Checkbox("Run with Extended Runner Pool", &settings.newlib_extended);
+            ImGui::Checkbox("Enable Video Player", &settings.video_support);
             ImGui::Separator();
 
             ImGui::Checkbox("Force Bilinear Filtering", &settings.bilinear);
