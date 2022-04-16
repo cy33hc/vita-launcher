@@ -10,7 +10,7 @@
 #include "config.h"
 #include "ime_dialog.h"
 #include "gui.h"
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -751,7 +751,7 @@ namespace Windows {
             ImGui::SetCursorPos(ImVec2(pos.x-5, pos.y));
             if (ImGui::Button(sel_id, current_category->button_size))
             {
-                debugNetPrintf(DEBUG, "game.type %d\n", game->type);
+                //debugNetPrintf(DEBUG, "game.type %d\n", game->type);
                 if (game->type == TYPE_CATEGORY)
                 {
                     new_category = categoryMap[game->category];
@@ -1309,12 +1309,12 @@ namespace Windows {
 
         if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES)
         {
-            ImGui::SetNextWindowPos(ImVec2(200, 30));
+            ImGui::SetNextWindowPos(ImVec2(250, 30));
             ImGui::SetNextWindowSizeConstraints(ImVec2(500,130), ImVec2(500,475), NULL, NULL);
         }
         else
         {
-            ImGui::SetNextWindowPos(ImVec2(200, 140));
+            ImGui::SetNextWindowPos(ImVec2(250, 80));
             ImGui::SetNextWindowSizeConstraints(ImVec2(500,130), ImVec2(500,400), NULL, NULL);
         }
         

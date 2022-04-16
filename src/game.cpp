@@ -21,7 +21,7 @@
 #include "net.h"
 #include "ftpclient.h"
 
-#include "debugnet.h"
+//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -619,7 +619,7 @@ namespace GAME {
         {
             char uri[512];
             std::string game_path = std::string(game->rom_path);
-            debugNetPrintf(DEBUG, "rom_path %s\n", game_path.substr(game_path.find_last_of("/")+1).c_str());
+            //debugNetPrintf(DEBUG, "rom_path %s\n", game_path.substr(game_path.find_last_of("/")+1).c_str());
             sprintf(uri, "psgm:play?titleid=%s&param=%s", YOYO_LAUNCHER_ID, game_path.substr(game_path.find_last_of("/")+1));
             sceAppMgrLaunchAppByUri(0xFFFFF, uri);
             sceKernelDelayThread(1000);
@@ -1079,7 +1079,7 @@ namespace GAME {
 
     int ScanGamesCategoryThread(SceSize args, ScanGamesParams *params)
     {
-        debugNetPrintf(DEBUG, "scan type = %d, cat = %s", params->type, params->category);
+        //debugNetPrintf(DEBUG, "scan type = %d, cat = %s", params->type, params->category);
         gui_mode = GUI_MODE_SCAN;
         sceKernelDelayThread(50000);
         sqlite3 *db;
@@ -1445,7 +1445,7 @@ namespace GAME {
 
     std::vector<std::string> GetGMSRomFiles(const std::string path)
     {
-        debugNetPrintf(DEBUG, "rom_path %s\n", path.c_str());
+        //debugNetPrintf(DEBUG, "rom_path %s\n", path.c_str());
         std::vector<std::string> files;
         if (strncmp(path.c_str(), "ftp0:", 5) == 0)
         {
@@ -1488,7 +1488,7 @@ namespace GAME {
         {
             files = GetGMSRomFiles(game_categories[GMS_GAMES].roms_path);
         }
-        debugNetPrintf(DEBUG, "file count %d\n", files.size());
+        //debugNetPrintf(DEBUG, "file count %d\n", files.size());
         games_to_scan = files.size();
         games_scanned = 0;
 
@@ -1499,10 +1499,10 @@ namespace GAME {
         bool rom_exists;
         for(std::size_t j = 0; j < files.size(); j++)
         {
-            debugNetPrintf(DEBUG, "file %s\n", files[j].c_str());
+            //debugNetPrintf(DEBUG, "file %s\n", files[j].c_str());
             sprintf(rom_path, "%s/%s/game.apk", game_categories[GMS_GAMES].roms_path, files[j].c_str());
             rom_length = strlen(rom_path);
-            debugNetPrintf(DEBUG, "rom_path %s, length %d\n", rom_path, rom_length);
+            //debugNetPrintf(DEBUG, "rom_path %s, length %d\n", rom_path, rom_length);
 
             if (is_ftp_enabled)
             {
@@ -1524,7 +1524,7 @@ namespace GAME {
 
             if (rom_length < 192 && rom_exists)
             {
-                debugNetPrintf(DEBUG, "Game %s found\n", rom_path);
+                //debugNetPrintf(DEBUG, "Game %s found\n", rom_path);
                 Game game;
                 game.type = TYPE_GMS;
                 game.cache_state = 2;
@@ -1575,7 +1575,7 @@ namespace GAME {
         {
             char db_name[64];
             sprintf(db_name, "ux0:app/SMLA00001/thumbnails/%s.db", game->category);
-            debugNetPrintf(DEBUG, "db_name %s\n", db_name);
+            //debugNetPrintf(DEBUG, "db_name %s\n", db_name);
             int rc = sqlite3_open(db_name, &db);
         }
 
@@ -1586,7 +1586,7 @@ namespace GAME {
             sprintf(thumbnail, "%s.png", game->title);
         }
 
-        debugNetPrintf(DEBUG, "thumbnail %s\n", thumbnail);
+        //debugNetPrintf(DEBUG, "thumbnail %s\n", thumbnail);
         char url[384];
         char alternate_url[384];
         char path[384];
@@ -1946,7 +1946,7 @@ namespace GAME {
                 char rom_local_path[192];
                 sprintf(rom_local_path, "%s/%s/game.apk", GMS_GAMES_PATH, game_path.substr(game_path.find_last_of("/")+1).c_str());
                 game->cache_state = FS::FileExists(rom_local_path);
-                debugNetPrintf(DEBUG, "%s cache_state %d\n", game->title, game->cache_state);
+                //debugNetPrintf(DEBUG, "%s cache_state %d\n", game->title, game->cache_state);
             }
         }
         else
