@@ -100,7 +100,8 @@ typedef struct {
 	bool debug_mode;
 	bool debug_shaders;
 	bool mem_extended;
-	bool newlib_extended;    
+	bool newlib_extended;
+    bool video_support;  
 } BootSettings;
 
 #define FAVORITES 0

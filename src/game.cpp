@@ -2311,6 +2311,7 @@ namespace GAME {
                 else if (strcmp("noSplash", buffer) == 0) settings->skip_splash = (bool)value;
                 else if (strcmp("maximizeMem", buffer) == 0) settings->mem_extended = (bool)value;
                 else if (strcmp("maximizeNewlib", buffer) == 0) settings->newlib_extended = (bool)value;
+                else if (strcmp("videoSupport", buffer) == 0) settings->video_support = (bool)value;
             }
             fclose(config);
         } else {
@@ -2323,6 +2324,7 @@ namespace GAME {
             settings->mem_extended = false;
             settings->newlib_extended = false;
             settings->skip_splash = false;
+            settings->video_support = false;
         }
     }
 
@@ -2342,6 +2344,7 @@ namespace GAME {
         fprintf(f, "%s=%d\n", "debugShaders", (int)settings->debug_shaders);
         fprintf(f, "%s=%d\n", "maximizeMem", (int)settings->mem_extended);
         fprintf(f, "%s=%d\n", "maximizeNewlib", (int)settings->newlib_extended);
+        fprintf(f, "%s=%d\n", "videoSupport", (int)settings->video_support);
         fclose(f);
     }
 }
