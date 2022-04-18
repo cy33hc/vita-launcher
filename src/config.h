@@ -11,8 +11,8 @@
 
 #define VITADB_JSON_FILE "ux0:data/SMLA00001/vitadb.json"
 #define VITADB_URL "https://rinnegatamante.it/vitadb/list_hbs_json.php"
-#define VITA_LAUNCHER_VPK_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/launcher.vpk"
-#define VITA_LAUNCHER_VERSION_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/version.txt"
+#define VITA_LAUNCHER_VPK_URL "https://github.com/cy33hc/vita-launcher/releases/download/latest/launcher.vpk"
+#define VITA_LAUNCHER_VERSION_URL "https://github.com/cy33hc/vita-launcher/releases/download/latest/version.txt"
 #define VITA_LAUNCHER_VERSION_PATH "ux0:app/SMLA00001/version.txt"
 #define VITA_LAUNCHER_VERSION_UPDATE_PATH "ux0:data/SMLA00001/tmp/version.txt"
 #define VITA_LAUNCHER_VPK_UPDATE_PATH "ux0:data/SMLA00001/tmp/launcher.vpk"
@@ -23,13 +23,13 @@
 #define YOYO_LOADER_VERSION_PATH "ux0:app/SMLA00002/yoyo_version.txt"
 #define YOYO_LOADER_VERSION_UPDATE_PATH "ux0:data/SMLA00001/tmp/yoyo_version.txt"
 
-#define YOYO_LAUNCHER_VERSION_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/yoyo_launcher_version.txt"
-#define YOYO_LAUNCHER_VPK_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/yoyo_launcher.vpk"
+#define YOYO_LAUNCHER_VERSION_URL "https://github.com/cy33hc/vita-launcher/releases/download/latest/yoyo_launcher_version.txt"
+#define YOYO_LAUNCHER_VPK_URL "https://github.com/cy33hc/vita-launcher/releases/download/latest/yoyo_launcher.vpk"
 #define YOYO_LAUNCHER_VPK_UPDATE_PATH "ux0:data/SMLA00001/tmp/yoyo_launcher.vpk"
 #define YOYO_LAUNCHER_VERSION_PATH "ux0:app/SMLA00002/version.txt"
 #define YOYO_LAUNCHER_VERSION_UPDATE_PATH "ux0:data/SMLA00001/tmp/yoyo_launcher_version.txt"
 
-#define ADR_LAUNCHER_VPK_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/AdrenalineLauncher.vpk"
+#define ADR_LAUNCHER_VPK_URL "https://github.com/cy33hc/vita-launcher/releases/download/latest/AdrenalineLauncher.vpk"
 #define ADR_LAUNCHER_VPK_UPDATE_PATH "ux0:data/SMLA00001/tmp/AdrenalineLauncher.vpk"
 
 #define SCUMMVM_INI_FILE "ux0:data/scummvm/scummvm.ini"
