@@ -11,7 +11,7 @@
 
 #define VITADB_JSON_FILE "ux0:data/SMLA00001/vitadb.json"
 #define VITADB_URL "https://rinnegatamante.it/vitadb/list_hbs_json.php"
-#define VITA_LAUNCHER_VPK_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/test_launcher.vpk"
+#define VITA_LAUNCHER_VPK_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/launcher.vpk"
 #define VITA_LAUNCHER_VERSION_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/version.txt"
 #define VITA_LAUNCHER_VERSION_PATH "ux0:app/SMLA00001/version.txt"
 #define VITA_LAUNCHER_VERSION_UPDATE_PATH "ux0:data/SMLA00001/tmp/version.txt"
