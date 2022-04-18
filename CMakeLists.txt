@@ -46,10 +46,16 @@ add_executable(${PROJECT_NAME}
   src/audio.c
   src/ogg.c
   src/vitaaudiolib.c
+  src/zip.c
+  src/unzip.c
+  src/ioapi.c
+  src/sha1.c
+  src/updater.cpp
   sqlite-3.6.23.1/sqlite3.c
 )
 
 target_link_libraries(${PROJECT_NAME}
+  debugnet
   vorbisfile
   vorbis
   ogg
@@ -182,4 +188,6 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE music.ogg music.ogg
   FILE redbar.png redbar.png
   FILE greenbar.png greenbar.png
+  FILE version.txt version.txt
+  FILE head.bin head.bin
 )

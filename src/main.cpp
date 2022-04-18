@@ -11,6 +11,7 @@
 #include <vita2d.h>
 
 #include "gui.h"
+#include "windows.h"
 #include "textures.h"
 #include "game.h"
 #include "config.h"
@@ -18,6 +19,7 @@
 #include "fs.h"
 #include "net.h"
 #include "ftpclient.h"
+#include "updater.h"
 //#include "debugnet.h"
 extern "C" {
 	#include "audio.h"
@@ -104,7 +106,7 @@ namespace Services
 
 	int Init(void)
 	{
-		// Allow writing to ux0:app/VITASHELL
+		// Allow writing to ux0:app
 		sceAppMgrUmount("app0:");
 		sceAppMgrUmount("savedata0:");
 
@@ -133,7 +135,7 @@ namespace Services
 #define ip_server "192.168.100.14"
 #define port_server 18194
 
-unsigned int _newlib_heap_size_user = 128 * 1024 * 1024;
+int _newlib_heap_size_user = 128 * 1024 * 1024;
 
 int main(int, char **)
 {
@@ -154,6 +156,7 @@ int main(int, char **)
 	GAME::StartScanGamesThread();
 	GAME::StartGetCacheStateThread();
 	GAME::MigratePSPCache();
+	Updater::StartInstallerThread();
 	
 	GUI::RenderLoop();
 

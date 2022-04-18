@@ -18,7 +18,6 @@
 #include <vitasdk.h>
 #include <cstdlib>
 #include "certs.h"
-//#include "debugnet.h"
 
 #define VITALAUNCHER_USER_AGENT "VitaLauncher/1.00 libhttp/1.1"
 #define NET_MEMORY_SIZE (4 * 1024 * 1024)
@@ -95,7 +94,6 @@ namespace Net
     int res;
     int statusCode;
     int tmplId = -1, connId = -1, reqId = -1;
-
 
     res = sceHttpCreateTemplate(VITALAUNCHER_USER_AGENT, SCE_HTTP_VERSION_1_1, SCE_TRUE);
     if (res < 0)

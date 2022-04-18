@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <ftpclient.h>
-//#include <debugnet.h>
 #include <errno.h>
 
 #define FTP_CLIENT_BUFSIZ 16384
@@ -62,21 +61,18 @@ int FtpClient::Connect(const char *host, unsigned short port)
     sControl = sceNetSocket("ftp_control", SCE_NET_AF_INET, SCE_NET_SOCK_STREAM, SCE_NET_IPPROTO_TCP);
     if (mp_ftphandle->handle < 0)
     {
-        //debugNetPrintf(ERROR, "sceNetSocket error\n");
         return 0;
     }
 
     retval = sceNetSetsockopt(sControl, SCE_NET_SOL_SOCKET, SCE_NET_SO_REUSEADDR, (const void*)&on, sizeof(on));
     if (retval == -1)
     {
-        //debugNetPrintf(ERROR, "sceNetSetsockopt error\n");
         return 0;
     }
 
     retval = sceNetConnect(sControl, (SceNetSockaddr *)&server_addr, sizeof(server_addr));
     if (retval == -1)
     {
-        //debugNetPrintf(ERROR, "sceNetConnect error\n");
 		sprintf(mp_ftphandle->response, "Connection timeout\n");
         sceNetSocketClose(sControl);
         return 0;
@@ -110,7 +106,6 @@ int FtpClient::FtpSendCmd(const char *cmd, char expected_resp, ftphandle *nContr
     x = sceNetSend(nControl->handle, buf, strlen(buf), 0);
 	if (x <= 0)
 	{
-		//debugNetPrintf(ERROR, "sceNetSend error\n");
 		return 0;
 	}
 	
@@ -129,7 +124,6 @@ int FtpClient::ReadResponse(char c, ftphandle *nControl)
 	
 	if (Readline(nControl->response, 512, nControl) == -1)
 	{
-		//debugNetPrintf(ERROR,"Readline error\n");
 		return 0;
 	}
 	
@@ -142,7 +136,6 @@ int FtpClient::ReadResponse(char c, ftphandle *nControl)
 		{
 			if (Readline(nControl->response, 512, nControl) == -1)
 			{
-				//debugNetPrintf(ERROR,"Readline error\n");
 				return 0;
 			}
 		} while (strncmp(nControl->response, match, 4));
@@ -214,7 +207,6 @@ int FtpClient::Readline(char *buf, int max, ftphandle *nControl)
 
 		if ( x == -1)
 		{
-			//debugNetPrintf(ERROR,"sceNetRecv error\n");
 			retval = -1;
 			break;
 		}
@@ -224,7 +216,6 @@ int FtpClient::Readline(char *buf, int max, ftphandle *nControl)
 		nControl->cavail += x;
 		nControl->cput += x;
 	} while (1);
-    //debugNetPrintf(DEBUG,"Response = %s\n", buf);
 	return retval;
 }
 
@@ -462,20 +453,17 @@ int FtpClient::FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode 
 	sData = sceNetSocket("ftp_data", SCE_NET_AF_INET, SCE_NET_SOCK_STREAM, SCE_NET_IPPROTO_TCP);
 	if (sData == -1)
 	{
-		//debugNetPrintf(ERROR, "sceNetSocket data error\n");
 		return -1;
 	}
 
 	if (sceNetSetsockopt(sData, SCE_NET_SOL_SOCKET, SCE_NET_SO_REUSEADDR, (const void*)&on, sizeof(on)) == -1)
 	{
-		//debugNetPrintf(ERROR, "sceNetSetsockopt SCE_NET_SO_REUSEADDR error\n");
 		sceNetSocketClose(sData);
 		return -1;
 	}
 
 	if (sceNetSetsockopt(sData, SCE_NET_SOL_SOCKET, SCE_NET_SO_LINGER, &lng, sizeof(lng)) == -1)
 	{
-        //debugNetPrintf(ERROR, "sceNetSetsockopt data SCE_NET_SO_LINGER error\n");
 		sceNetSocketClose(sData);
 		return -1;
 	}
@@ -485,14 +473,11 @@ int FtpClient::FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode 
 	ret = sceNetSend(nControl->handle, cmd, strlen(cmd), 0);
 	if (ret <= 0)
 	{
-		//debugNetPrintf(ERROR, "sceNetSend error\n");
 		return -1;
 	}
 
-    //debugNetPrintf(DEBUG, "Start  sceNetConnect\n");
 	if (sceNetConnect(sData, &sin.sa, sizeof(sin.sa)) == -1)
 	{
-		//debugNetPrintf(ERROR, "sceNetConnect data error\n");
 		sceNetSocketClose(sData);
 		return -1;
 	}
@@ -505,13 +490,11 @@ int FtpClient::FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode 
 	ctrl = static_cast<ftphandle*>(calloc(1,sizeof(ftphandle)));
 	if (ctrl == NULL)
 	{
-		//debugNetPrintf(ERROR, "calloc ctrl error\n");
 		sceNetSocketClose(sData);
 		return -1;
 	}
 	if ((mode == 'A') && ((ctrl->buf = static_cast<char*>(malloc(FTP_CLIENT_BUFSIZ))) == NULL))
 	{
-		//debugNetPrintf(ERROR, "calloc ctrl-buf error\n");
 		sceNetSocketClose(sData);
 		free(ctrl);
 		return -1;
@@ -569,26 +552,22 @@ int FtpClient::FtpOpenPort(ftphandle *nControl, ftphandle **nData, transfermode 
 
 	if (sceNetGetsockname(nControl->handle, &sin.sa, &l) < 0)
 	{
-		//debugNetPrintf(ERROR, "sceNetGetsockname error\n");
 		return -1;
 	}
 
 	sData = sceNetSocket("ftp_data", SCE_NET_AF_INET, SCE_NET_SOCK_STREAM, SCE_NET_IPPROTO_TCP);
 	if (sData == -1)
 	{
-		//debugNetPrintf(ERROR, "sceNetSocket error\n");
 		return -1;
 	}
 	if (sceNetSetsockopt(sData, SCE_NET_SOL_SOCKET, SCE_NET_SO_REUSEADDR, (const void*)&on, sizeof(on)) == -1)
 	{
-		//debugNetPrintf(ERROR, "sceNetSetsockopt SCE_NET_SO_REUSEADDR error\n");
 		sceNetSocketClose(sData);
 		return -1;
 	}
 
 	if (sceNetSetsockopt(sData, SCE_NET_SOL_SOCKET, SCE_NET_SO_LINGER, &lng, sizeof(lng)) == -1)
 	{
-        //debugNetPrintf(ERROR, "sceNetSetsockopt data SCE_NET_SO_LINGER error\n");
 		sceNetSocketClose(sData);
 		return -1;
 	}
@@ -596,13 +575,11 @@ int FtpClient::FtpOpenPort(ftphandle *nControl, ftphandle **nData, transfermode 
 	sin.in.sin_port = 0;
 	if (sceNetBind(sData, &sin.sa, sizeof(sin)) == -1)
 	{
-		//debugNetPrintf(ERROR, "sceNetBind data error\n");
 		sceNetSocketClose(sData);
 		return -1;
 	}
 	if (sceNetListen(sData, 1) < 0)
 	{
-		//debugNetPrintf(ERROR, "sceNetListen data error\n");
 		sceNetSocketClose(sData);
 		return -1;
 	}
@@ -634,13 +611,11 @@ int FtpClient::FtpOpenPort(ftphandle *nControl, ftphandle **nData, transfermode 
 	ctrl = static_cast<ftphandle*>(calloc(1,sizeof(ftphandle)));
 	if (ctrl == NULL)
 	{
-		//debugNetPrintf(ERROR, "calloc ctrl error\n");
 		sceNetSocketClose(sData);
 		return -1;
 	}
 	if ((mode == 'A') && ((ctrl->buf = static_cast<char*>(malloc(FTP_CLIENT_BUFSIZ))) == NULL))
 	{
-		//debugNetPrintf(ERROR, "calloc buf error\n");
 		sceNetSocketClose(sData);
 		free(ctrl);
 		return -1;
@@ -680,7 +655,6 @@ int FtpClient::CorrectPasvResponse(int *v)
 
 	if (sceNetGetpeername(mp_ftphandle->handle, &ipholder, &ipholder_size) == -1)
 	{
-		//debugNetPrintf(ERROR, "sceNetGetpeername error\n");
 		sceNetSocketClose(mp_ftphandle->handle);
 		return 0;
 	}
@@ -734,7 +708,6 @@ int FtpClient::FtpXfer(const char *localfile, const char *path, ftphandle *nCont
 		{
 			if ((c = FtpWrite(dbuf, l, nData)) < l)
 			{
-				//debugNetPrintf(ERROR, "short write: passed %d, wrote %d\n", l, c);
 				break;
 			}
 		}
@@ -745,7 +718,6 @@ int FtpClient::FtpXfer(const char *localfile, const char *path, ftphandle *nCont
 		{
 			if (fwrite(dbuf, 1, l, local) <= 0)
 			{
-				//debugNetPrintf(ERROR, "localfile write\n");
 				break;
 			}
 		}
@@ -836,7 +808,6 @@ int FtpClient::Writeline(char *buf, int len, ftphandle *nData)
 				w = sceNetSend(nData->handle, nbp, FTP_CLIENT_BUFSIZ, 0);
 				if (w != FTP_CLIENT_BUFSIZ)
 				{
-					//debugNetPrintf(ERROR, "write(1) returned %d, errno = %d\n", w, errno);
 					return(-1);
 				}
 				nb = 0;
@@ -848,7 +819,6 @@ int FtpClient::Writeline(char *buf, int len, ftphandle *nData)
 			w = sceNetSend(nData->handle, nbp, FTP_CLIENT_BUFSIZ, 0);
 			if (w != FTP_CLIENT_BUFSIZ)
 			{
-				//debugNetPrintf(ERROR, "write(2) returned %d, errno = %d\n", w, errno);
 				return(-1);
 			}
 			nb = 0;
@@ -860,7 +830,6 @@ int FtpClient::Writeline(char *buf, int len, ftphandle *nData)
 		w = sceNetSend(nData->handle, nbp, nb, 0);	
 		if (w != nb)
 		{
-			//debugNetPrintf(ERROR, "write(3) returned %d, errno = %d\n", w, errno);
 			return(-1);
 		}
 	}

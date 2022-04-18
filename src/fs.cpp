@@ -4,6 +4,9 @@
 #include <psp2/io/fcntl.h>
 #include <psp2/io/stat.h>
 #include <psp2/net/net.h>
+#include "string.h"
+#include "stdio.h"
+#include "debugnet.h"
 
 #include <algorithm>
 
@@ -11,10 +14,18 @@
 #define ERRNO_ENOENT (int)(0x80010000 + SCE_NET_ENOENT)
 
 namespace FS {
-    void MkDirs(const std::string& ppath)
+    int hasEndSlash(const char *path)
+    {
+        return path[strlen(path) - 1] == '/';
+    }
+
+    void MkDirs(const std::string& ppath, bool prev = false)
     {
         std::string path = ppath;
-        path.push_back('/');
+        if (!prev)
+        {
+            path.push_back('/');
+        }
         auto ptr = path.begin();
         while (true)
         {
@@ -225,6 +236,61 @@ namespace FS {
         }
         sceIoDclose(fd);
         return out;
+    }
+
+    int RmRecursive(const std::string& path)
+    {
+        SceUID dfd = sceIoDopen(path.c_str());
+        if (dfd >= 0) {
+            int res = 0;
+
+            do 
+            {
+                SceIoDirent dir;
+                memset(&dir, 0, sizeof(SceIoDirent));
+                res = sceIoDread(dfd, &dir);
+                if (res > 0)
+                {
+                    int path_length = strlen(path.c_str()) + strlen(dir.d_name) + 2;
+                    char *new_path = malloc(path_length);
+                    snprintf(new_path, path_length, "%s%s%s", path.c_str(), hasEndSlash(path.c_str()) ? "" : "/", dir.d_name);
+
+                    if (SCE_S_ISDIR(dir.d_stat.st_mode))
+                    {
+                        int ret = RmRecursive(new_path);
+                        if (ret <= 0) {
+                            free(new_path);
+                            sceIoDclose(dfd);
+                            return ret;
+                        }
+                    }
+                    else {
+                        int ret = sceIoRemove(new_path);
+                        if (ret < 0)
+                        {
+                            free(new_path);
+                            sceIoDclose(dfd);
+                            return ret;
+                        }
+                    }
+
+                    free(new_path);
+                }
+            } while (res > 0);
+
+            sceIoDclose(dfd);
+
+            int ret = sceIoRmdir(path.c_str());
+            if (ret < 0)
+                return ret;
+
+        } else {
+            int ret = sceIoRemove(path.c_str());
+            if (ret < 0)
+            return ret;
+        }
+
+        return 1;
     }
 
 }

@@ -11,10 +11,31 @@
 
 #define VITADB_JSON_FILE "ux0:data/SMLA00001/vitadb.json"
 #define VITADB_URL "https://rinnegatamante.it/vitadb/list_hbs_json.php"
+#define VITA_LAUNCHER_VPK_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/test_launcher.vpk"
+#define VITA_LAUNCHER_VERSION_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/version.txt"
+#define VITA_LAUNCHER_VERSION_PATH "ux0:app/SMLA00001/version.txt"
+#define VITA_LAUNCHER_VERSION_UPDATE_PATH "ux0:data/SMLA00001/tmp/version.txt"
+#define VITA_LAUNCHER_VPK_UPDATE_PATH "ux0:data/SMLA00001/tmp/launcher.vpk"
+
+#define YOYO_LOADER_VPK_URL "https://github.com/Rinnegatamante/yoyoloader_vita/releases/download/Nightly/YoYoLoader.vpk"
+#define YOYO_LOADER_VPK_UPDATE_PATH "ux0:data/SMLA00001/tmp/yoyoloader.vpk"
+#define YOYO_LOADER_VERSION_URL "https://api.github.com/repos/Rinnegatamante/yoyoloader_vita/releases/tags/Nightly"
+#define YOYO_LOADER_VERSION_PATH "ux0:app/SMLA00002/yoyo_version.txt"
+#define YOYO_LOADER_VERSION_UPDATE_PATH "ux0:data/SMLA00001/tmp/yoyo_version.txt"
+
+#define YOYO_LAUNCHER_VERSION_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/yoyo_launcher_version.txt"
+#define YOYO_LAUNCHER_VPK_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/yoyo_launcher.vpk"
+#define YOYO_LAUNCHER_VPK_UPDATE_PATH "ux0:data/SMLA00001/tmp/yoyo_launcher.vpk"
+#define YOYO_LAUNCHER_VERSION_PATH "ux0:app/SMLA00002/version.txt"
+#define YOYO_LAUNCHER_VERSION_UPDATE_PATH "ux0:data/SMLA00001/tmp/yoyo_launcher_version.txt"
+
+#define ADR_LAUNCHER_VPK_URL "https://github.com/cy33hc/vita-launcher/releases/download/lastest/AdrenalineLauncher.vpk"
+#define ADR_LAUNCHER_VPK_UPDATE_PATH "ux0:data/SMLA00001/tmp/AdrenalineLauncher.vpk"
 
 #define SCUMMVM_INI_FILE "ux0:data/scummvm/scummvm.ini"
 
 #define GMS_GAMES_PATH "ux0:data/gms"
+#define YOYO_LAUNCH_FILE_PATH "ux0:data/gms/launch.txt"
 
 #define PSP_ISO_PATH "ux0:pspemu/ISO"
 #define PSP_EBOOT_PATH "ux0:pspemu/PSP/GAME"
@@ -44,7 +65,8 @@
 
 #define DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID "ADRLANCHR"
 #define RETROARCH_TITLE_ID "RETROVITA"
-#define YOYO_LAUNCHER_ID "YYOLOADER"
+#define YOYO_LAUNCHER_ID "SMLA00002"
+#define ABM_APP_ID "ADRBUBMAN"
 
 #define VIEW_MODE_GRID 0
 #define VIEW_MODE_LIST 1
@@ -73,6 +95,8 @@
 #define CONFIG_FTP_CACHE_PATH "ftp_cache_path"
 #define CONFIG_FTP_TRANSFER_MODE "ftp_transfer_mode"
 #define CONFIG_BILINEAR_FILTER "enable_bilinear_filter"
+#define CONFIG_YOYO_LOADER_SIZE "yoyo_loader_size"
+
 #define ICON_TYPE_BOXARTS "Boxarts"
 #define ICON_TYPE_TITLES "Titles"
 

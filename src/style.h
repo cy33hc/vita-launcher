@@ -1,7 +1,7 @@
 
 
-#ifndef _ISO_H_
-#define _ISO_H_
+#ifndef _STYLE_H_
+#define _STYLE_H_
 #include <imgui_vita2d/imgui_vita.h>
 #include <string>
 #include <vector>

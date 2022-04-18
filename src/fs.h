@@ -7,11 +7,16 @@
 #include <vector>
 
 #include <cstdint>
+#define MAX_PATH_LENGTH 1024
 
 namespace FS {
-    void MkDirs(const std::string& path);
+    void MkDirs(const std::string& path, bool prev=false);
+    void MkPrevDirs(const std::string& path);
+
     void Rm(const std::string& file);
     void RmDir(const std::string& path);
+    int RmRecursive(const std::string& path);
+
     int64_t GetSize(const char* path);
 
     bool FileExists(const std::string& path);

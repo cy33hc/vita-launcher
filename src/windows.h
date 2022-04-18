@@ -8,6 +8,7 @@
 extern int view_mode;
 extern int grid_rows;
 extern int aspect_ratio;
+extern bool handle_updates;
 
 namespace Windows {
     inline void SetupWindow(void) {
@@ -54,6 +55,7 @@ namespace Windows {
     void HandleUninstallGame();
     void HandleAddNewFolder();
     void HandleEditDeleteFolder();
+    void HandleUpdates();
     void ChangeCategory(GameCategory *previous_category, int category_id);
     void ChangeToRootFolder();
     void MultiValueImeCallback(int ime_result);
