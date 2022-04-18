@@ -102,7 +102,8 @@ typedef struct {
 	bool mem_extended;
 	bool newlib_extended;
     bool video_support;
-    bool has_net;  
+    bool has_net;
+    bool squeeze_mem;
 } BootSettings;
 
 #define FAVORITES 0

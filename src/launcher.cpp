@@ -2494,8 +2494,8 @@ namespace Windows {
         char popup_title[64];
         sprintf(popup_title, "Boot %s Game", category->alt_title);
         ImGui::OpenPopup(popup_title);
-        ImGui::SetNextWindowPos(ImVec2(300, 90));
-        ImGui::SetNextWindowSize(ImVec2(420,360));
+        ImGui::SetNextWindowPos(ImVec2(300, 85));
+        ImGui::SetNextWindowSize(ImVec2(420,410));
 
         if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
         {
@@ -2507,8 +2507,9 @@ namespace Windows {
             ImGui::Checkbox("Fake Windows as Platform", &settings.fake_win_mode);
             ImGui::Checkbox("Run with Extended Mem Mode", &settings.mem_extended);
             ImGui::Checkbox("Run with Extended Runner Pool", &settings.newlib_extended);
+            ImGui::Checkbox("Run with Mem Squeezing", &settings.squeeze_mem);
             ImGui::Checkbox("Enable Video Player", &settings.video_support);
-            ImGui::Checkbox("Enable Network Features", &settings.video_support);
+            ImGui::Checkbox("Enable Network Features", &settings.has_net);
             ImGui::Separator();
 
             ImGui::Checkbox("Force Bilinear Filtering", &settings.bilinear);

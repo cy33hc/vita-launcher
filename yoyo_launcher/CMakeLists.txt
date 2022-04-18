@@ -13,7 +13,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "YOYO Games Launcher")
 set(VITA_TITLEID  "SMLA00002")
-set(VITA_VERSION  "01.01")
+set(VITA_VERSION  "01.02")
 set(VITA_MKSFOEX_FLAGS "-d ATTRIBUTE2=12")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")

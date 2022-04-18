@@ -2310,6 +2310,7 @@ namespace GAME {
         settings->skip_splash = false;
         settings->video_support = false;
         settings->has_net = false;
+        settings->squeeze_mem = false;
         if (config) {
             while (EOF != fscanf(config, "%[^=]=%d\n", buffer, &value)) {
                 if (strcmp("forceGLES1", buffer) == 0) settings->gles1 = (bool)value;
@@ -2323,6 +2324,7 @@ namespace GAME {
                 else if (strcmp("maximizeNewlib", buffer) == 0) settings->newlib_extended = (bool)value;
                 else if (strcmp("videoSupport", buffer) == 0) settings->video_support = (bool)value;
                 else if (strcmp("netSupport", buffer) == 0) settings->has_net = (bool)value;
+                else if (strcmp("squeezeMem", buffer) == 0) settings->squeeze_mem = (bool)value;
             }
             fclose(config);
         }
@@ -2358,6 +2360,8 @@ namespace GAME {
         sprintf(buffer, "%s=%d\n", "videoSupport", settings->video_support);
         FS::Write(f, buffer, strlen(buffer));
         sprintf(buffer, "%s=%d\n", "netSupport", settings->has_net);
+        FS::Write(f, buffer, strlen(buffer));
+        sprintf(buffer, "%s=%d\n", "squeezeMem", settings->squeeze_mem);
         FS::Write(f, buffer, strlen(buffer));
         FS::Close(f);
     }
