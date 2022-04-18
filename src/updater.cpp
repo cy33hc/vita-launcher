@@ -365,6 +365,7 @@ namespace Updater {
         update_version = FS::Load(VITA_LAUNCHER_VERSION_UPDATE_PATH);
         snprintf(cur_ver, 4, "%s", current_version.data());
         snprintf(upd_ver, 4, "%s", update_version.data());
+        ret = 0;
         if (strcmp(cur_ver, upd_ver) != 0)
         {
             sprintf(updater_message, "Downloading Vita-Laucher update");
