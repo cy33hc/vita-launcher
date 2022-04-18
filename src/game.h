@@ -101,7 +101,8 @@ typedef struct {
 	bool debug_shaders;
 	bool mem_extended;
 	bool newlib_extended;
-    bool video_support;  
+    bool video_support;
+    bool has_net;  
 } BootSettings;
 
 #define FAVORITES 0

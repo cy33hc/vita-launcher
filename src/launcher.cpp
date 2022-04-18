@@ -2508,6 +2508,7 @@ namespace Windows {
             ImGui::Checkbox("Run with Extended Mem Mode", &settings.mem_extended);
             ImGui::Checkbox("Run with Extended Runner Pool", &settings.newlib_extended);
             ImGui::Checkbox("Enable Video Player", &settings.video_support);
+            ImGui::Checkbox("Enable Network Features", &settings.video_support);
             ImGui::Separator();
 
             ImGui::Checkbox("Force Bilinear Filtering", &settings.bilinear);
