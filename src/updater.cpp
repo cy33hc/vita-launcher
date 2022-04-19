@@ -215,11 +215,21 @@ namespace Updater {
 
     int UpdaterThread(SceSize args, void *argp)
     {
-        int ret = UpdateYoyoLauncher();
-        ret = UpdateYoYoLoader();
-        int vita_updated = UpdateVitaLauncher();
+        int itls_enso_installed = Updater::CheckAppExist(ITLS_ENSO_APP_ID);
+        int vita_updated = 0;
+        if (itls_enso_installed)
+        {
+            int ret = UpdateYoyoLauncher();
+            ret = UpdateYoYoLoader();
+            int vita_updated = UpdateVitaLauncher();
+        }
 
     ERROR_EXIT:
+        if (!itls_enso_installed)
+        {
+            sprintf(updater_message, "iTLS-Enso is not installed.\nIt's required to download icons and updates");
+            sceKernelDelayThread(4000000);
+        }
         if (vita_updated)
         {
             sprintf(updater_message, "Vita-Laucher updated successfully.\nRestarting after 3s");
@@ -441,11 +451,12 @@ namespace Updater {
 
     void StartInstallerThread()
     {
+        int itls_enso_installed = Updater::CheckAppExist(ITLS_ENSO_APP_ID);
         int adr_installed = Updater::CheckAppExist(DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID);
         int yoyo_installed = Updater::CheckAppExist(YOYO_LAUNCHER_ID);
         int abm_installed = Updater::CheckAppExist(ABM_APP_ID);
 
-        if (!adr_installed || !yoyo_installed || !abm_installed)
+        if (!adr_installed || !yoyo_installed || !abm_installed || !itls_enso_installed)
         {
             while (gui_mode == GUI_MODE_SCAN)
             {
@@ -460,15 +471,24 @@ namespace Updater {
 
     int InstallerThread(SceSize args, void *argp)
     {
-        int ret = InstallAdrLauncher();
-        ret = InstallYoyoLauncher();
+        int itls_enso_installed = Updater::CheckAppExist(ITLS_ENSO_APP_ID);
         bool abm_installed = CheckAppExist(ABM_APP_ID);
+        if (itls_enso_installed)
+        {
+            int ret = InstallAdrLauncher();
+            ret = InstallYoyoLauncher();
+        }
 
     ERROR_EXIT:
         if (!abm_installed)
         {
             sprintf(updater_message, "Adrenaline Bubbles Manager is not installed. It is required to\nboot PSP/PS1/PSMinit games without bubbles");
-            sceKernelDelayThread(3000000);
+            sceKernelDelayThread(4000000);
+        }
+        if (!itls_enso_installed)
+        {
+            sprintf(updater_message, "iTLS-Enso is not installed.\nIt's required to download icons and updates");
+            sceKernelDelayThread(4000000);
         }
         handle_updates = false;
         Windows::SetModalMode(false);
