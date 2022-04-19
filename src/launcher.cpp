@@ -2495,14 +2495,11 @@ namespace Windows {
         sprintf(popup_title, "Boot %s Game", category->alt_title);
         ImGui::OpenPopup(popup_title);
         ImGui::SetNextWindowPos(ImVec2(300, 85));
-        ImGui::SetNextWindowSize(ImVec2(420,410));
+        ImGui::SetNextWindowSize(ImVec2(420,385));
 
         if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
         {
             float posX = ImGui::GetCursorPosX();
-            ImGui::Text("Boot Settings");
-            ImGui::Separator();
-
             ImGui::Checkbox("Force GLES1 Mode", &settings.gles1);
             ImGui::Checkbox("Fake Windows as Platform", &settings.fake_win_mode);
             ImGui::Checkbox("Run with Extended Mem Mode", &settings.mem_extended);
