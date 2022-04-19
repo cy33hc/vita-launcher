@@ -2338,7 +2338,7 @@ namespace GAME {
         std::string game_name = rom_path.substr(rom_path.find_last_of("/")+1);
         sprintf(configFile, "%s/%s/yyl.cfg", GMS_GAMES_PATH, game_name.c_str());
 
-        void *f = FS::OpenRW(configFile);
+        void *f = FS::Create(configFile);
         sprintf(buffer, "%s=%d\n", "forceGLES1", settings->gles1);
         FS::Write(f, buffer, strlen(buffer));
         sprintf(buffer, "%s=%d\n", "noSplash", settings->skip_splash);
