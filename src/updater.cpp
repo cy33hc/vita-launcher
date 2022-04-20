@@ -5,8 +5,6 @@
 #include "net.h"
 #include "gui.h"
 
-#include "debugnet.h"
-
 char updater_message[256];
 
 namespace Updater {
@@ -215,12 +213,13 @@ namespace Updater {
 
     int UpdaterThread(SceSize args, void *argp)
     {
-        int itls_enso_installed = Updater::CheckAppExist(ITLS_ENSO_APP_ID);
+        int itls_enso_installed = CheckAppExist(ITLS_ENSO_APP_ID);
         int vita_updated = 0;
         if (itls_enso_installed)
         {
             int ret = UpdateYoyoLauncher();
             ret = UpdateYoYoLoader();
+            ret = UpdateFlycastCores();
             int vita_updated = UpdateVitaLauncher();
         }
 
@@ -316,7 +315,7 @@ namespace Updater {
             }
 
             sprintf(updater_message, "Extracting files");
-            Updater::ExtractFile(YOYO_LOADER_VPK_UPDATE_PATH, "ux0:app/SMLA00002/", &files);
+            ExtractFile(YOYO_LOADER_VPK_UPDATE_PATH, "ux0:app/SMLA00002/", &files);
 
             FS::Save(YOYO_LOADER_VERSION_PATH, git_commit, strlen(git_commit));
             FS::Rm(YOYO_LOADER_VPK_UPDATE_PATH);
@@ -348,6 +347,94 @@ namespace Updater {
             ExtractFile(ADR_LAUNCHER_VPK_UPDATE_PATH, PACKAGE_DIR "/", nullptr);
             InstallPackage(ADR_LAUNCHER_VPK_UPDATE_PATH, "Adernaline Launcher");
             FS::Rm(ADR_LAUNCHER_VPK_UPDATE_PATH);
+            return 1;
+        }
+
+        return 0;
+    }
+
+    int InstallFlycastCores()
+    {
+        FS::MkDirs(FLYCAST_VPK_UPDATE_PATH, true);
+        sprintf(updater_message, "Checking if Flycast is installed");
+        int flycast_core_exists = FS::FileExists(FLYCAST_RETRO_ACCURACY_CORE_PATH);
+        int retroarch_installed = CheckAppExist(RETROARCH_TITLE_ID);
+
+        if (!flycast_core_exists && retroarch_installed)
+        {
+            sprintf(updater_message, "Downloading Flycast app");
+            int ret = Net::DownloadFile(FLYCAST_VPK_URL, FLYCAST_VPK_UPDATE_PATH);
+            if (ret < 0)
+            {
+                sprintf(updater_message, "Failed to download Flycast vpk");
+                return -1;
+            }
+            sprintf(updater_message, "Extracting Flycast cores to Retroarch");
+            std::vector<std::string> files =  std::vector<std::string>();
+            files.push_back("smc.bin");
+            files.push_back("smc2.bin");
+
+            ExtractFile(FLYCAST_VPK_UPDATE_PATH, RETROARCH_INSTALL_PATH "/", &files);
+
+            FS::Rename(RETROARCH_INSTALL_PATH "/smc.bin", FLYCAST_RETRO_CORE_PATH);
+            FS::Rename(RETROARCH_INSTALL_PATH "/smc2.bin", FLYCAST_RETRO_ACCURACY_CORE_PATH);
+            FS::Rm(FLYCAST_VPK_UPDATE_PATH);
+
+            uint64_t file_size;
+            char buffer[10];
+            Net::GetDownloadFileSize(FLYCAST_VPK_URL, &file_size);
+            sprintf(buffer, "%d", file_size);
+            FS::Save(FLYCAST_VERSION_PATH, buffer, strlen(buffer));
+
+            return 1;
+        }
+
+        return 0;
+    }
+
+    int UpdateFlycastCores()
+    {
+        FS::MkDirs(FLYCAST_VPK_UPDATE_PATH, true);
+        sprintf(updater_message, "Checking if Flycast is Updated");
+        int flycast_core_exists = FS::FileExists(FLYCAST_RETRO_ACCURACY_CORE_PATH);
+        int retroarch_installed = CheckAppExist(RETROARCH_TITLE_ID);
+        char current_size[20];
+        char new_size[20];
+        uint64_t file_size;
+
+        memset(current_size, 0, 20);
+        if (FS::FileExists(FLYCAST_VERSION_PATH))
+        {
+            memset(current_size, 0, 20);
+            void *f = FS::OpenRead(FLYCAST_VERSION_PATH);
+            FS::Read(f, current_size, 20);
+        }
+
+        Net::GetDownloadFileSize(FLYCAST_VPK_URL, &file_size);
+        sprintf(new_size, "%d", file_size);
+
+        if (strcmp(current_size, new_size) != 0 && retroarch_installed)
+        {
+            sprintf(updater_message, "Downloading Flycast app");
+            int ret = Net::DownloadFile(FLYCAST_VPK_URL, FLYCAST_VPK_UPDATE_PATH);
+            if (ret < 0)
+            {
+                sprintf(updater_message, "Failed to download Flycast vpk");
+                return -1;
+            }
+            sprintf(updater_message, "Extracting Flycast cores to Retroarch");
+            std::vector<std::string> files =  std::vector<std::string>();
+            files.push_back("smc.bin");
+            files.push_back("smc2.bin");
+
+            ExtractFile(FLYCAST_VPK_UPDATE_PATH, RETROARCH_INSTALL_PATH "/", &files);
+
+            FS::Rename(RETROARCH_INSTALL_PATH "/smc.bin", FLYCAST_RETRO_CORE_PATH);
+            FS::Rename(RETROARCH_INSTALL_PATH "/smc2.bin", FLYCAST_RETRO_ACCURACY_CORE_PATH);
+            FS::Rm(FLYCAST_VPK_UPDATE_PATH);
+
+            FS::Save(FLYCAST_VERSION_PATH, new_size, strlen(new_size));
+
             return 1;
         }
 
@@ -387,9 +474,9 @@ namespace Updater {
             }
 
             sprintf(updater_message, "Extracting files");
-            Updater::ExtractFile(VITA_LAUNCHER_VPK_UPDATE_PATH, "ux0:app/SMLA00001/", nullptr);
+            ExtractFile(VITA_LAUNCHER_VPK_UPDATE_PATH, "ux0:app/SMLA00001/", nullptr);
 
-            FS::Save(VITA_LAUNCHER_VERSION_PATH, update_version.data(), strlen(update_version.data()));
+            FS::Save(VITA_LAUNCHER_VERSION_PATH, upd_ver, strlen(upd_ver));
             FS::Rm(VITA_LAUNCHER_VPK_UPDATE_PATH);
             ret = 1;
         }
@@ -438,7 +525,7 @@ namespace Updater {
             }
 
             sprintf(updater_message, "Extracting files");
-            Updater::ExtractFile(YOYO_LAUNCHER_VPK_UPDATE_PATH, "ux0:app/SMLA00002/", nullptr);
+            ExtractFile(YOYO_LAUNCHER_VPK_UPDATE_PATH, "ux0:app/SMLA00002/", nullptr);
 
             FS::Save(YOYO_LAUNCHER_VERSION_PATH, upd_ver, strlen(upd_ver));
             FS::Rm(YOYO_LAUNCHER_VPK_UPDATE_PATH);
@@ -451,17 +538,14 @@ namespace Updater {
 
     void StartInstallerThread()
     {
-        int itls_enso_installed = Updater::CheckAppExist(ITLS_ENSO_APP_ID);
-        int adr_installed = Updater::CheckAppExist(DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID);
-        int yoyo_installed = Updater::CheckAppExist(YOYO_LAUNCHER_ID);
-        int abm_installed = Updater::CheckAppExist(ABM_APP_ID);
+        int itls_enso_installed = CheckAppExist(ITLS_ENSO_APP_ID);
+        int adr_installed = CheckAppExist(DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID);
+        int yoyo_installed = CheckAppExist(YOYO_LAUNCHER_ID);
+        int abm_installed = CheckAppExist(ABM_APP_ID);
+        int flycast_cores_installed = FS::FileExists(FLYCAST_RETRO_ACCURACY_CORE_PATH) && CheckAppExist(RETROARCH_TITLE_ID);
 
-        if (!adr_installed || !yoyo_installed || !abm_installed || !itls_enso_installed)
+        if (!adr_installed || !yoyo_installed || !abm_installed || !itls_enso_installed || !flycast_cores_installed)
         {
-            while (gui_mode == GUI_MODE_SCAN)
-            {
-                sceKernelDelayThread(100000);
-            }
             handle_updates = true;
             installer_thid = sceKernelCreateThread("installer_thread", (SceKernelThreadEntry)InstallerThread, 0x10000100, 0x4000, 0, 0, NULL);
             if (installer_thid >= 0)
@@ -471,12 +555,19 @@ namespace Updater {
 
     int InstallerThread(SceSize args, void *argp)
     {
-        int itls_enso_installed = Updater::CheckAppExist(ITLS_ENSO_APP_ID);
+        while (gui_mode == GUI_MODE_SCAN)
+        {
+            sceKernelDelayThread(100000);
+        }
+        sceKernelDelayThread(1500000);
+
+        int itls_enso_installed = CheckAppExist(ITLS_ENSO_APP_ID);
         bool abm_installed = CheckAppExist(ABM_APP_ID);
         if (itls_enso_installed)
         {
-            int ret = InstallAdrLauncher();
-            ret = InstallYoyoLauncher();
+            InstallAdrLauncher();
+            InstallYoyoLauncher();
+            InstallFlycastCores();
         }
 
     ERROR_EXIT:

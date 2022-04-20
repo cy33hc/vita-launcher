@@ -48,7 +48,7 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/startup.png
   FILE sce_sys/livearea/contents/template.xml sce_sys/livearea/contents/template.xml
   FILE yoyo_version.txt yoyo_version.txt
-  FILE version.txt version.txt
+  FILE yoyo_launcher_version.txt version.txt
   FILE loader.bin loader.bin
   FILE loader2.bin loader2.bin
 )

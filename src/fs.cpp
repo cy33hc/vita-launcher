@@ -6,7 +6,6 @@
 #include <psp2/net/net.h>
 #include "string.h"
 #include "stdio.h"
-#include "debugnet.h"
 
 #include <algorithm>
 

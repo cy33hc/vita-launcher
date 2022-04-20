@@ -38,6 +38,8 @@ namespace Updater {
     int UpdateYoyoLauncher();
     int UpdateYoYoLoader();
     int UpdateVitaLauncher();
+    int InstallFlycastCores();
+    int UpdateFlycastCores();
     void StartInstallerThread();
     int InstallerThread(SceSize args, void *argp);
 }

@@ -32,6 +32,14 @@
 #define ADR_LAUNCHER_VPK_URL "https://github.com/cy33hc/vita-launcher/releases/download/latest/AdrenalineLauncher.vpk"
 #define ADR_LAUNCHER_VPK_UPDATE_PATH "ux0:data/SMLA00001/tmp/AdrenalineLauncher.vpk"
 
+#define FLYCAST_VPK_URL "http://dl.coolatoms.org/vitadb/flycast.vpk"
+#define FLYCAST_VPK_UPDATE_PATH "ux0:data/SMLA00001/tmp/flycast.vpk"
+#define FLYCAST_RETRO_CORE_PATH "ux0:app/RETROVITA/flycast_libretro.self"
+#define FLYCAST_RETRO_ACCURACY_CORE_PATH "ux0:app/RETROVITA/flycast_accuracy_libretro.self"
+#define FLYCAST_VERSION_PATH "ux0:app/RETROVITA/flycast_version.txt"
+
+#define RETROARCH_INSTALL_PATH "ux0:app/RETROVITA"
+
 #define SCUMMVM_INI_FILE "ux0:data/scummvm/scummvm.ini"
 
 #define GMS_GAMES_PATH "ux0:data/gms"
@@ -211,7 +219,7 @@
 #define ATARI_5200_ALT_CORES ""
 #define AMIGA_ALT_CORES ""
 #define MSX1_ALT_CORES ""
-#define DREAMCAST_ALT_CORES ""
+#define DREAMCAST_ALT_CORES "app0:flycast_accuracy_libretro.self"
 
 #define SCUMMVM_GAME_ID "gameid"
 #define SCUMMVM_GAME_TITLE "description"

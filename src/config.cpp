@@ -8,7 +8,6 @@
 #include "fs.h"
 #include "style.h"
 
-//#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -178,9 +177,22 @@ namespace CONFIG {
 
         if (default_alt_cores != nullptr)
         {
+            char new_alt_cores[512];
             alt_cores = ReadString(category->title, CONFIG_ALT_CORES, default_alt_cores);
-            ParseMultiValueString(alt_cores, category->alt_cores, false);
-            WriteString(category->title, CONFIG_ALT_CORES, alt_cores);
+            sprintf(new_alt_cores, "%s", alt_cores);
+            if (strstr(alt_cores, default_alt_cores) == nullptr)
+            {
+                if (strlen(alt_cores) > 0)
+                {
+                    sprintf(new_alt_cores, "%s,%s", alt_cores, default_alt_cores);
+                }
+                else
+                {
+                    sprintf(new_alt_cores, "%s", default_alt_cores);
+                }
+            }
+            ParseMultiValueString(new_alt_cores, category->alt_cores, false);
+            WriteString(category->title, CONFIG_ALT_CORES, new_alt_cores);
         }
 
         if (category->view_mode == -1)

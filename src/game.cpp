@@ -21,7 +21,6 @@
 #include "net.h"
 #include "ftpclient.h"
 
-#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
