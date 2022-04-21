@@ -220,16 +220,15 @@ namespace Updater {
             int ret = UpdateYoyoLauncher();
             ret = UpdateYoYoLoader();
             ret = UpdateFlycastCores();
-            int vita_updated = UpdateVitaLauncher();
+            vita_updated = UpdateVitaLauncher();
         }
 
-    ERROR_EXIT:
         if (!itls_enso_installed)
         {
             sprintf(updater_message, "iTLS-Enso is not installed.\nIt's required to download icons and updates");
             sceKernelDelayThread(4000000);
         }
-        if (vita_updated)
+        if (vita_updated == 1)
         {
             sprintf(updater_message, "Vita-Laucher updated successfully.\nRestarting after 3s");
             sceKernelDelayThread(3000000);
@@ -476,13 +475,15 @@ namespace Updater {
             sprintf(updater_message, "Extracting files");
             ExtractFile(VITA_LAUNCHER_VPK_UPDATE_PATH, "ux0:app/SMLA00001/", nullptr);
 
-            FS::Save(VITA_LAUNCHER_VERSION_PATH, upd_ver, strlen(upd_ver));
+            FS::Save(VITA_LAUNCHER_VERSION_PATH, upd_ver, 4);
             FS::Rm(VITA_LAUNCHER_VPK_UPDATE_PATH);
-            ret = 1;
+            FS::Rm(VITA_LAUNCHER_VERSION_UPDATE_PATH);
+
+            return 1;
         }
         FS::Rm(VITA_LAUNCHER_VERSION_UPDATE_PATH);
 
-        return ret == 1;
+        return 0;
     }
 
     int UpdateYoyoLauncher()
