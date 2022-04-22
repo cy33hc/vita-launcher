@@ -192,6 +192,8 @@ namespace CONFIG {
                 }
             }
             ParseMultiValueString(new_alt_cores, category->alt_cores, false);
+            std::sort(category->alt_cores.begin(), category->alt_cores.end());
+            category->alt_cores.erase(std::unique(category->alt_cores.begin(), category->alt_cores.end()), category->alt_cores.end());
             WriteString(category->title, CONFIG_ALT_CORES, new_alt_cores);
         }
 
