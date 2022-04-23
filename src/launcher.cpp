@@ -393,7 +393,7 @@ namespace Windows {
         Windows::SetupWindow();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-        if (ImGui::Begin("Games", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar))
+        if (ImGui::Begin("Games", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar))
         {
             ImGui::SetCursorPosY(ImGui::GetCursorPosY()-7);
             if (show_categories_as_tabs)
