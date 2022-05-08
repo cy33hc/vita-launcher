@@ -213,9 +213,13 @@ namespace Updater {
 
     int UpdaterThread(SceSize args, void *argp)
     {
+        SceKernelFwInfo fw;
+        fw.size = sizeof(SceKernelFwInfo);
+        _vshSblGetSystemSwVersion(&fw);
+
         int itls_enso_installed = CheckAppExist(ITLS_ENSO_APP_ID);
         int vita_updated = 0;
-        if (itls_enso_installed)
+        if (itls_enso_installed || fw.version > 0x0365000)
         {
             int ret = UpdateYoyoLauncher();
             ret = UpdateYoYoLoader();
@@ -223,7 +227,7 @@ namespace Updater {
             vita_updated = UpdateVitaLauncher();
         }
 
-        if (!itls_enso_installed)
+        if (!itls_enso_installed && fw.version <= 0x03650000)
         {
             sprintf(updater_message, "iTLS-Enso is not installed.\nIt's required to download icons and updates");
             sceKernelDelayThread(4000000);
@@ -562,9 +566,13 @@ namespace Updater {
         }
         sceKernelDelayThread(1500000);
 
+        SceKernelFwInfo fw;
+        fw.size = sizeof(SceKernelFwInfo);
+        _vshSblGetSystemSwVersion(&fw);
+
         int itls_enso_installed = CheckAppExist(ITLS_ENSO_APP_ID);
         bool abm_installed = CheckAppExist(ABM_APP_ID);
-        if (itls_enso_installed)
+        if (itls_enso_installed || fw.version > 0x03650000)
         {
             InstallAdrLauncher();
             InstallYoyoLauncher();
@@ -577,7 +585,7 @@ namespace Updater {
             sprintf(updater_message, "Adrenaline Bubbles Manager is not installed. It is required to\nboot PSP/PS1/PSMinit games without bubbles");
             sceKernelDelayThread(4000000);
         }
-        if (!itls_enso_installed)
+        if (!itls_enso_installed && fw.version <= 0x03650000)
         {
             sprintf(updater_message, "iTLS-Enso is not installed.\nIt's required to download icons and updates");
             sceKernelDelayThread(4000000);
