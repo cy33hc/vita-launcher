@@ -121,6 +121,15 @@ namespace CONFIG {
         category->icon_type = ReadInt(category->title, CONFIG_ICON_TYPE, 1);
         WriteInt(category->title, CONFIG_ICON_TYPE, category->icon_type);
 
+        if (category->rom_type == TYPE_BUBBLE || category->rom_type == TYPE_EBOOT || category->rom_type == TYPE_PSP_ISO)
+        {
+            sprintf(category->icon_path, "%s", ReadString(category->title, CONFIG_ICON_PATH, ""));
+            WriteString(category->title, CONFIG_ICON_PATH, category->icon_path);
+        }
+
+        sprintf(category->category_icon, "%s", ReadString(category->title, CONFIG_CATEGORY_ICON, category_icon));
+        WriteString(category->title, CONFIG_CATEGORY_ICON, category->category_icon);
+
         if (download_url != nullptr)
         {
             sprintf(category->download_url, "%s", download_url);
@@ -452,12 +461,16 @@ namespace CONFIG {
             WriteString(cat->title, CONFIG_TITLE_ID_PREFIXES, GetMultiValueString(cat->valid_title_ids).c_str());
         }
 
+        if (cat->id != FAVORITES)
+        {
+            WriteString(cat->title, CONFIG_ICON_PATH, cat->icon_path);
+        }
+        
         if (cat->rom_type == TYPE_ROM || cat->id == PS1_GAMES)
         {
             WriteString(cat->title, CONFIG_RETRO_CORE, cat->core);
             WriteString(cat->title, CONFIG_ROM_LAUNCHER_TITLE_ID, cat->rom_launcher_title_id);
             WriteString(cat->title, CONFIG_ROMS_PATH, cat->roms_path);
-            WriteString(cat->title, CONFIG_ICON_PATH, cat->icon_path);
             WriteString(cat->title, CONFIG_ROM_EXTENSIONS, GetMultiValueString(cat->file_filters).c_str());
             WriteString(cat->title, CONFIG_ALT_CORES, GetMultiValueString(cat->alt_cores).c_str());
             WriteBool(cat->title, CONFIG_BOOT_WITH_ALT_CORE, cat->boot_with_alt_core);

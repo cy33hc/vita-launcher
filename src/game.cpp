@@ -858,24 +858,66 @@ namespace GAME {
         tex = no_icon;
 
         char icon_path[384];
-        if (game->type == TYPE_BUBBLE && strcmp(game->category, game_categories[PS_MOBILE_GAMES].category) == 0)
+        GameCategory *cat = categoryMap[game->category];
+        if (game->type == TYPE_BUBBLE)
         {
-            sprintf(icon_path, "ur0:appmeta/%s/pic0.png", game->id);
-        }
-        else if (game->type == TYPE_BUBBLE)
-        {
-            if (strncmp(game->id, "NPXS", 4)==0)
+            if (strlen(cat->icon_path) > 0)
             {
-                sprintf(icon_path, "vs0:app/%s/sce_sys/icon0.png", game->id);
+                sprintf(icon_path, "%s/%s.png", cat->icon_path, game->id);
+                if (!FS::FileExists(icon_path))
+                {
+                    if (strncmp(game->id, "NPXS", 4)==0)
+                    {
+                        sprintf(icon_path, "vs0:app/%s/sce_sys/icon0.png", game->id);
+                    }
+                    else
+                    {
+                        sprintf(icon_path, "ur0:appmeta/%s/icon0.png", game->id);
+                    }
+                }
+            }
+            else if (strcmp(game->category, game_categories[PS_MOBILE_GAMES].category) == 0)
+            {
+                sprintf(icon_path, "ur0:appmeta/%s/pic0.png", game->id);
             }
             else
             {
-                sprintf(icon_path, "ur0:appmeta/%s/icon0.png", game->id);
+                if (strncmp(game->id, "NPXS", 4)==0)
+                {
+                    sprintf(icon_path, "vs0:app/%s/sce_sys/icon0.png", game->id);
+                }
+                else
+                {
+                    sprintf(icon_path, "ur0:appmeta/%s/icon0.png", game->id);
+                }
             }
         }
         else if (game->type == TYPE_EBOOT || game->type == TYPE_PSP_ISO)
         {
             sprintf(icon_path, "ux0:data/SMLA00001/data/%s/icon0.png", game->id);
+            if (strlen(cat->icon_path) > 0)
+            {
+                if (game->type == TYPE_PSP_ISO)
+                {
+                    std::string rom_path = std::string(game->rom_path);
+                    int dot_index = rom_path.find_last_of(".");
+                    int slash_index = rom_path.find_last_of("/");
+                    std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
+                    sprintf(icon_path, "%s/%s.png", cat->icon_path, rom_name.c_str());
+                }
+                else
+                {
+                    std::string rom_path = std::string(game->rom_path);
+                    rom_path = rom_path.substr(0, rom_path.find_last_of("/"));
+                    rom_path = rom_path.substr(rom_path.find_last_of("/")+1);
+                    sprintf(icon_path, "%s/%s.png", cat->icon_path, rom_path.c_str());
+                }
+
+                if (!FS::FileExists(icon_path))
+                {
+                    sprintf(icon_path, "ux0:data/SMLA00001/data/%s/icon0.png", game->id);
+                }
+            }
         }
         else if (game->type == TYPE_SCUMMVM)
         {
@@ -888,7 +930,6 @@ namespace GAME {
         }
         else if (game->type == TYPE_FOLDER)
         {
-            GameCategory *cat = categoryMap[game->category];
             Folder* folder = FindFolder(cat, game->folder_id);
             if (folder != nullptr)
             {
@@ -901,12 +942,10 @@ namespace GAME {
         }
         else if (game->type == TYPE_CATEGORY)
         {
-            GameCategory *cat = categoryMap[game->category];
             sprintf(icon_path, cat->category_icon);
         }
         else
         {
-            GameCategory* category = categoryMap[game->category];
             std::string rom_path = std::string(game->rom_path);
             int dot_index = rom_path.find_last_of(".");
             if (new_icon_method)
@@ -917,7 +956,7 @@ namespace GAME {
             {
                 int slash_index = rom_path.find_last_of("/");
                 std::string rom_name = rom_path.substr(slash_index+1, dot_index-slash_index-1);
-                sprintf(icon_path, "%s/%s.png", category->icon_path, rom_name.c_str());
+                sprintf(icon_path, "%s/%s.png", cat->icon_path, rom_name.c_str());
             }
         }
         
