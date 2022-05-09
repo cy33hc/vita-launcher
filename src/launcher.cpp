@@ -1629,7 +1629,7 @@ namespace Windows {
                             ImGui::Separator();
                         }
 
-                        if (current_category->id == PS1_GAMES || current_category->rom_type == TYPE_ROM)
+                        if (current_category->id != FAVORITES)
                         {
                             ImGui::Text("Icon Path:"); ImGui::SameLine();
                             ImGui::SetCursorPosX(posX + 100);
@@ -1645,7 +1645,10 @@ namespace Windows {
                             };
                             ImGui::PopID();
                             ImGui::Separator();
+                        }
 
+                        if (current_category->id == PS1_GAMES || current_category->rom_type == TYPE_ROM)
+                        {
                             ImGui::PushID("roms_path");
                             ImGui::Text("Roms Path:"); ImGui::SameLine();
                             ImGui::SetCursorPosX(posX + 100);
