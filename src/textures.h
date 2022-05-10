@@ -2,10 +2,10 @@
 #define LAUNCHER_TEXTURES_H
 
 #include <string>
-#include <vita2d.h>
+#include <vitaGL.h>
 
 typedef struct {
-    vita2d_texture *id=0;
+    GLuint id=0;
     int width;
     int height;
 } Tex;
@@ -23,7 +23,6 @@ extern Tex redbar_icon;
 extern Tex greenbar_icon;
 
 namespace Textures {
-    void LoadFonts(Tex *font_texture);
     bool LoadImageFile(const std::string filename, Tex *texture);
     void Init(void);
     void Exit(void);

@@ -17,6 +17,7 @@
 */
 
 #include <vitasdk.h>
+#include <vita2d.h>
 #include "ime_dialog.h"
 
 static int ime_dialog_running = 0;
@@ -151,6 +152,8 @@ namespace Dialog
     if (!ime_dialog_running)
       return IME_DIALOG_RESULT_NONE;
 
+    vita2d_start_drawing();
+    vita2d_clear_screen();
     SceCommonDialogStatus status = sceImeDialogGetStatus();
     if (status == IME_DIALOG_RESULT_FINISHED)
     {
@@ -174,6 +177,10 @@ namespace Dialog
       ime_dialog_running = 0;
     }
 
+    vita2d_end_drawing();
+    vita2d_common_dialog_update();
+    vita2d_swap_buffers();
+    sceDisplayWaitVblankStart();
     return status;
   }
 

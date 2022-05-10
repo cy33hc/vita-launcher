@@ -1,6 +1,7 @@
-#include <imgui_vita2d/imgui_vita.h>
+#include <imgui_vita.h>
 #include <stdio.h>
 #include <vita2d.h>
+#include <vitaGL.h>
 #include "game.h"
 #include "windows.h"
 #include "gui.h"
@@ -22,37 +23,28 @@ namespace GUI {
 		
 		Windows::Init();
 		while (!done) {
-			vita2d_start_drawing();
-			vita2d_clear_screen();
-
 			if (gui_mode < GUI_MODE_IME)
 			{
-				ImGui_ImplVita2D_NewFrame();
-			}
+				ImGui_ImplVitaGL_NewFrame();
 			
-			if (gui_mode == GUI_MODE_SCAN)
-			{
-				Windows::GameScanWindow();
+				if (gui_mode == GUI_MODE_SCAN)
+				{
+					Windows::GameScanWindow();
+				}
+				else if (gui_mode == GUI_MODE_LAUNCHER)
+				{
+					Windows::HandleLauncherWindowInput();
+					Windows::LauncherWindow();
+				}
+				glViewport(0, 0, static_cast<int>(ImGui::GetIO().DisplaySize.x), static_cast<int>(ImGui::GetIO().DisplaySize.y));
+				ImGui::Render();
+				ImGui_ImplVitaGL_RenderDrawData(ImGui::GetDrawData());
+				vglSwapBuffers(GL_FALSE);
 			}
-			else if (gui_mode == GUI_MODE_LAUNCHER)
-			{
-				Windows::HandleLauncherWindowInput();
-				Windows::LauncherWindow();
-			} else if (gui_mode == GUI_MODE_IME)
+			else
 			{
 				Windows::HandleImeInput();
 			}
-			
-			if (gui_mode < GUI_MODE_IME)
-			{
-				ImGui::Render();
-				ImGui_ImplVita2D_RenderDrawData(ImGui::GetDrawData());
-			}
-
-			vita2d_end_drawing();
-			vita2d_common_dialog_update();
-			vita2d_swap_buffers();
-			sceDisplayWaitVblankStart();
 		}
 		
 		return 0;

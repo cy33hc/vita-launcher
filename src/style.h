@@ -2,7 +2,7 @@
 
 #ifndef _STYLE_H_
 #define _STYLE_H_
-#include <imgui_vita2d/imgui_vita.h>
+#include <imgui_vita.h>
 #include <string>
 #include <vector>
 extern "C" {

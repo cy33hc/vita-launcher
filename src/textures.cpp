@@ -1,5 +1,9 @@
-#include <imgui_vita2d/imgui_vita.h>
+#include <imgui_vita.h>
 #include <vita2d.h>
+#include <vitaGL.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #include "textures.h"
 #include "config.h"
@@ -19,38 +23,24 @@ Tex greenbar_icon;
 
 namespace Textures {
 	
-	void LoadFonts()
-	{
-		// Build and load the texture atlas into a texture
-		uint32_t* pixels = NULL;
-		int width, height;
-		ImGuiIO& io = ImGui::GetIO();
-		io.Fonts->AddFontFromFileTTF(
-					"ux0:app/SMLA00001/Ubuntu-R.ttf",
-					16.0f,
-					0,
-					io.Fonts->GetGlyphRangesDefault());
-	}
-
 	bool LoadImageFile(const std::string filename, Tex *texture)
 	{
 		// Load from file
-		vita2d_texture *image = vita2d_load_PNG_file(filename.c_str());
-		if (image == NULL) {
+		int image_width = 0;
+		int image_height = 0;
+		unsigned char* image_data = stbi_load(filename.c_str(), &image_width, &image_height, NULL, 4);
+		if (image_data == NULL)
 			return false;
-		}
 
-		if (enable_bilinear_filter)
-		{
-			vita2d_texture_set_filters(image, SCE_GXM_TEXTURE_FILTER_LINEAR, SCE_GXM_TEXTURE_FILTER_LINEAR);
-		}
-
-		int image_width = vita2d_texture_get_width(image);
-		int image_height = vita2d_texture_get_height(image);
-
-		texture->id = image;
 		texture->width = image_width;
 		texture->height = image_height;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glGenTextures(1, &texture->id);
+		glBindTexture(GL_TEXTURE_2D, texture->id);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+		stbi_image_free(image_data);
+
 
 		return true;
 	}
@@ -70,23 +60,23 @@ namespace Textures {
 	}
 
 	void Exit(void) {
-		vita2d_free_texture(no_icon.id);
-		vita2d_free_texture(favorite_icon.id);
-		vita2d_free_texture(square_icon.id);
-		vita2d_free_texture(triangle_icon.id);
-		vita2d_free_texture(circle_icon.id);
-		vita2d_free_texture(cross_icon.id);
-		vita2d_free_texture(start_icon.id);
-		vita2d_free_texture(folder_icon.id);
-		vita2d_free_texture(selected_icon.id);
-		vita2d_free_texture(redbar_icon.id);
-		vita2d_free_texture(greenbar_icon.id);
+		Free(&no_icon);
+		Free(&favorite_icon);
+		Free(&square_icon);
+		Free(&triangle_icon);
+		Free(&circle_icon);
+		Free(&cross_icon);
+		Free(&start_icon);
+		Free(&folder_icon);
+		Free(&selected_icon);
+		Free(&redbar_icon);
+		Free(&greenbar_icon);
 	}
 
 	void Free(Tex *texture) {
-		if (texture->id != no_icon.id)
+		if (texture->id != no_icon.id && texture->id != 0)
 		{
-			vita2d_free_texture(texture->id);
+			glDeleteTextures(1, &texture->id);
 		}
 	}
 	

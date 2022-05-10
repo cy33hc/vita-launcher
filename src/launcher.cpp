@@ -1,4 +1,4 @@
-#include <imgui_vita2d/imgui_vita.h>
+#include <imgui_vita.h>
 #include <stdio.h>
 #include <algorithm> 
 #include "windows.h"
@@ -374,17 +374,17 @@ namespace Windows {
         {
             if (modal)
             {
-                ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE);
+                ImGui_ImplVitaGL_DisableButtons(SCE_CTRL_SQUARE);
             }
             else
             {
                 if (swap_xo)
                 {
-                    ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CROSS);
+                    ImGui_ImplVitaGL_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CROSS);
                 }
                 else
                 {
-                    ImGui_ImplVita2D_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CIRCLE);
+                    ImGui_ImplVitaGL_DisableButtons(SCE_CTRL_SQUARE | SCE_CTRL_CIRCLE);
                 }
             }
         }
@@ -495,7 +495,7 @@ namespace Windows {
         ImGui::SetCursorPosX(x);
         if (selected_game != nullptr && selected_game->favorite)
         {
-            ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
+            ImGui::Image((void*)(favorite_icon.id), ImVec2(16,16));
             ImGui::SameLine();
         }
         ImGui::Text(title_text);
@@ -505,7 +505,7 @@ namespace Windows {
     {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.KeyRepeatRate = 0.05f;
-        ImGui_ImplVita2D_SetAnalogRepeatDelay(100000);
+        ImGui_ImplVitaGL_SetAnalogRepeatDelay(100000);
 
         int game_start_index = (current_category->current_folder->page_num * current_category->games_per_page) - current_category->games_per_page;
         int grid_size = 160;
@@ -545,7 +545,7 @@ namespace Windows {
                         thumbnail_offset = current_category->thumbnail_offset;
                     }
                     ImGui::SetCursorPos(ImVec2(pos.x+(j*grid_size)+thumbnail_offset.x,pos.y+(i*grid_size)+thumbnail_offset.y));
-                    if (ImGui::ImageButtonEx(ImGui::GetID(id), reinterpret_cast<ImTextureID>(game->tex.id), thumbnail_size, ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
+                    if (ImGui::ImageButtonEx(ImGui::GetID(id), (void*)(game->tex.id), thumbnail_size, ImVec2(0,0), ImVec2(1,1), style->FramePadding, ImVec4(0,0,0,0), ImVec4(1,1,1,1)))
                     {
                         if (game->type == TYPE_CATEGORY)
                         {
@@ -642,32 +642,32 @@ namespace Windows {
                     if (game->visible && GAME::GetCacheState(game) == 0)
                     {
                         ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
-                        ImGui::Image(reinterpret_cast<ImTextureID>(redbar_icon.id), ImVec2(3,16));
+                        ImGui::Image((void*)(redbar_icon.id), ImVec2(3,16));
                         ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-3);
                     }
                     else if (game->visible && GAME::GetCacheState(game) == 1)
                     {
                         ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
-                        ImGui::Image(reinterpret_cast<ImTextureID>(greenbar_icon.id), ImVec2(3,16));
+                        ImGui::Image((void*)(greenbar_icon.id), ImVec2(3,16));
                         ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-3);
                     }
                     if (game->selected)
                     {
-                        ImGui::Image(reinterpret_cast<ImTextureID>(selected_icon.id), ImVec2(16,16));
+                        ImGui::Image((void*)(selected_icon.id), ImVec2(16,16));
                         ImGui::SameLine();
                         ImGui::SetCursorPosX(pos.x+(j*grid_size)+14);
                         text_clip = 14;
                     }
                     else if (game->favorite)
                     {
-                        ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
+                        ImGui::Image((void*)(favorite_icon.id), ImVec2(16,16));
                         ImGui::SameLine();
                         ImGui::SetCursorPosX(pos.x+(j*grid_size)+14);
                         text_clip = 14;
                     }
                     else if (game->type == TYPE_FOLDER)
                     {
-                        ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
+                        ImGui::Image((void*)(folder_icon.id), ImVec2(16,16));
                         ImGui::SameLine();
                         text_clip = 14;
                     }
@@ -720,7 +720,7 @@ namespace Windows {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.KeyRepeatRate = 0.05f;
         ImGuiStyle* style = &ImGui::GetStyle();
-        ImGui_ImplVita2D_SetAnalogRepeatDelay(50000);
+        ImGui_ImplVitaGL_SetAnalogRepeatDelay(50000);
 
         ShowDisplayTitle();
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()-1);
@@ -843,7 +843,7 @@ namespace Windows {
                 thumbnail_size = current_category->thumbnail_size;
             }
             ImGui::SetCursorPos(ImVec2(pos.x+thumbnail_offset.x, pos.y+4+thumbnail_offset.y));
-            ImGui::Image(reinterpret_cast<ImTextureID>(game->tex.id), thumbnail_size);
+            ImGui::Image((void*)(game->tex.id), thumbnail_size);
             if (ImGui::IsItemVisible())
             {
                 if (game->tex.id == no_icon.id)
@@ -886,33 +886,33 @@ namespace Windows {
             if (game->visible && GAME::GetCacheState(game) == 0)
             {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
-                ImGui::Image(reinterpret_cast<ImTextureID>(redbar_icon.id), ImVec2(3,16));
+                ImGui::Image((void*)(redbar_icon.id), ImVec2(3,16));
                 ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-3);
             }
             else if (game->visible && GAME::GetCacheState(game) == 1)
             {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
-                ImGui::Image(reinterpret_cast<ImTextureID>(greenbar_icon.id), ImVec2(3,16));
+                ImGui::Image((void*)(greenbar_icon.id), ImVec2(3,16));
                 ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-3);
             }
             if (game->selected)
             {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
-                ImGui::Image(reinterpret_cast<ImTextureID>(selected_icon.id), ImVec2(16,16));
+                ImGui::Image((void*)(selected_icon.id), ImVec2(16,16));
                 ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
                 text_clip = 10;
             }
             else if (game->favorite)
             {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
-                ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
+                ImGui::Image((void*)(favorite_icon.id), ImVec2(16,16));
                 ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
                 text_clip = 10;
             }
             else if (game->type == TYPE_FOLDER)
             {
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX()-5);
-                ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
+                ImGui::Image((void*)(folder_icon.id), ImVec2(16,16));
                 ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
                 text_clip = 10;
             }
@@ -962,7 +962,7 @@ namespace Windows {
     {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.KeyRepeatRate = 0.005f;
-        ImGui_ImplVita2D_SetAnalogRepeatDelay(1000);
+        ImGui_ImplVitaGL_SetAnalogRepeatDelay(1000);
 
         ShowDisplayTitle();
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
@@ -1011,22 +1011,22 @@ namespace Windows {
             ImGui::Text(""); ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
             if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 0)
             {
-                ImGui::Image(reinterpret_cast<ImTextureID>(redbar_icon.id), ImVec2(3,16));
+                ImGui::Image((void*)(redbar_icon.id), ImVec2(3,16));
                 ImGui::SameLine();
             }
             else if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 1)
             {
-                ImGui::Image(reinterpret_cast<ImTextureID>(greenbar_icon.id), ImVec2(3,16));
+                ImGui::Image((void*)(greenbar_icon.id), ImVec2(3,16));
                 ImGui::SameLine();
             }
             if (game->type == TYPE_FOLDER)
             {
-                ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
+                ImGui::Image((void*)(folder_icon.id), ImVec2(16,16));
                 ImGui::SameLine();
             }
             if (game->selected)
             {
-                ImGui::Image(reinterpret_cast<ImTextureID>(selected_icon.id), ImVec2(16,16));
+                ImGui::Image((void*)(selected_icon.id), ImVec2(16,16));
                 ImGui::SameLine();
             }
             ImGui::PushID(i);
@@ -1128,7 +1128,7 @@ namespace Windows {
             if (game->favorite)
             {
                 ImGui::SameLine();
-                ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
+                ImGui::Image((void*)(favorite_icon.id), ImVec2(16,16));
             }
             ImGui::NextColumn();
             if (game->type != TYPE_FOLDER)
@@ -1160,7 +1160,7 @@ namespace Windows {
     void ShowCommonSubWindow()
     {
         ImGui::SetCursorPosX(290);
-        ImGui::Image(reinterpret_cast<ImTextureID>(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
+        ImGui::Image((void*)(circle_icon.id), ImVec2(16,16)); ImGui::SameLine();
         if (!swap_xo)
         {
             ImGui::Text("Un-Select"); ImGui::SameLine();
@@ -1169,11 +1169,11 @@ namespace Windows {
         {
             ImGui::Text("Select"); ImGui::SameLine();
         }
-            ImGui::Image(reinterpret_cast<ImTextureID>(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
+            ImGui::Image((void*)(square_icon.id), ImVec2(16,16)); ImGui::SameLine();
             ImGui::Text("Favorite"); ImGui::SameLine();
-            ImGui::Image(reinterpret_cast<ImTextureID>(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
+            ImGui::Image((void*)(triangle_icon.id), ImVec2(16,16)); ImGui::SameLine();
             ImGui::Text("Settings"); ImGui::SameLine();
-            ImGui::Image(reinterpret_cast<ImTextureID>(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
+            ImGui::Image((void*)(cross_icon.id), ImVec2(16,16)); ImGui::SameLine();
         if (!swap_xo)
         {
             ImGui::Text("Select"); ImGui::SameLine();
@@ -1183,7 +1183,7 @@ namespace Windows {
             ImGui::Text("Un-Select"); ImGui::SameLine();
         }
 
-        ImGui::Image(reinterpret_cast<ImTextureID>(start_icon.id), ImVec2(16,16)); ImGui::SameLine();
+        ImGui::Image((void*)(start_icon.id), ImVec2(16,16)); ImGui::SameLine();
         ImGui::Text("Search"); ImGui::SameLine();
 
         if (selection_mode)
@@ -2096,7 +2096,7 @@ namespace Windows {
                 WriteBool(CONFIG_GLOBAL, CONFIG_NEW_ICON_METHOD, new_icon_method);
                 WriteBool(CONFIG_GLOBAL, CONFIG_SWAP_XO, swap_xo);
                 WriteBool(CONFIG_GLOBAL, CONFIG_BILINEAR_FILTER, enable_bilinear_filter);
-                ImGui_ImplVita2D_SwapXO(swap_xo);
+                ImGui_ImplVitaGL_SwapXO(swap_xo);
 
                 WriteString(CONFIG_GLOBAL, CONFIG_PSPEMU_PATH, pspemu_path);
                 WriteString(CONFIG_GLOBAL, CONFIG_STYLE_NAME, cb_style_name);
@@ -3613,17 +3613,17 @@ namespace Windows {
                 ImGui::Text(""); ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
                 if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 0)
                 {
-                    ImGui::Image(reinterpret_cast<ImTextureID>(redbar_icon.id), ImVec2(3,16));
+                    ImGui::Image((void*)(redbar_icon.id), ImVec2(3,16));
                     ImGui::SameLine();
                 }
                 else if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 1)
                 {
-                    ImGui::Image(reinterpret_cast<ImTextureID>(greenbar_icon.id), ImVec2(3,16));
+                    ImGui::Image((void*)(greenbar_icon.id), ImVec2(3,16));
                     ImGui::SameLine();
                 }
                 if (games_selection[i].favorite)
                 {
-                    ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
+                    ImGui::Image((void*)(favorite_icon.id), ImVec2(16,16));
                     ImGui::SameLine();
                 }
                 char title[192];

@@ -50,23 +50,28 @@ add_executable(${PROJECT_NAME}
   src/unzip.c
   src/ioapi.c
   src/sha1.c
+  src/debugScreen.c
   src/updater.cpp
   sqlite-3.6.23.1/sqlite3.c
 )
 
 target_link_libraries(${PROJECT_NAME}
+  imgui
   vorbisfile
   vorbis
   ogg
   vita2d
+  vitaGL
+  vitashark
+  mathneon
   png
-  imgui_vita2d
   stdc++
   c
   z
   SceCommonDialog_stub
   SceLibKernel_stub
   SceDisplay_stub
+  SceKernelDmacMgr_stub
   SceGxm_stub
   SceSysmodule_stub
   SceVshBridge_stub

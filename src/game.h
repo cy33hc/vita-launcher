@@ -2,7 +2,7 @@
 #define LAUNCHER_GAME_H
 
 #pragma once
-#include <imgui_vita2d/imgui_vita.h>
+#include <imgui_vita.h>
 #include <cstdint>
 #include <string>
 #include <vector>
