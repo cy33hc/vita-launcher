@@ -995,155 +995,157 @@ namespace Windows {
         }
         
         ImGui::SetCursorPosY(ImGui::GetCursorPosY()+5);
-        ImGui::BeginChild(ImGui::GetID(current_category->title), ImVec2(950,452));
+        ImGui::BeginChild(ImGui::GetID(current_category->title), ImVec2(950,481));
         if (ImGui::IsWindowAppearing())
         {
             ImGui::SetWindowFocus();
         }
         ImGui::Separator();
-        ImGui::Columns(2, current_category->title, true);
         GameCategory *new_category = nullptr;
 
-        for (int i = 0; i < current_category->current_folder->games.size(); i++)
+        if (ImGui::BeginTable(current_category->title, 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings))
         {
-            Game *game = &current_category->current_folder->games[i];
-            ImGui::SetColumnWidth(-1, 760);
-            ImGui::Text(""); ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
-            if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 0)
+            ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed, 760);
+            for (int i = 0; i < current_category->current_folder->games.size(); i++)
             {
-                ImGui::Image(reinterpret_cast<ImTextureID>(redbar_icon.id), ImVec2(3,16));
-                ImGui::SameLine();
-            }
-            else if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 1)
-            {
-                ImGui::Image(reinterpret_cast<ImTextureID>(greenbar_icon.id), ImVec2(3,16));
-                ImGui::SameLine();
-            }
-            if (game->type == TYPE_FOLDER)
-            {
-                ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
-                ImGui::SameLine();
-            }
-            if (game->selected)
-            {
-                ImGui::Image(reinterpret_cast<ImTextureID>(selected_icon.id), ImVec2(16,16));
-                ImGui::SameLine();
-            }
-            ImGui::PushID(i);
-            bool folder_selected = false;
-            if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
-            {
-                if (game->type == TYPE_CATEGORY)
+                Game *game = &current_category->current_folder->games[i];
+                ImGui::TableNextColumn();
+                if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 0)
                 {
-                    new_category = categoryMap[game->category];
+                    ImGui::Image(reinterpret_cast<ImTextureID>(redbar_icon.id), ImVec2(3,16));
+                    ImGui::SameLine();
                 }
-                else if (game->type == TYPE_FOLDER)
+                else if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 1)
                 {
-                    if (!selection_mode)
+                    ImGui::Image(reinterpret_cast<ImTextureID>(greenbar_icon.id), ImVec2(3,16));
+                    ImGui::SameLine();
+                }
+                if (game->type == TYPE_FOLDER)
+                {
+                    ImGui::Image(reinterpret_cast<ImTextureID>(folder_icon.id), ImVec2(16,16));
+                    ImGui::SameLine();
+                }
+                if (game->selected)
+                {
+                    ImGui::Image(reinterpret_cast<ImTextureID>(selected_icon.id), ImVec2(16,16));
+                    ImGui::SameLine();
+                }
+                ImGui::PushID(i);
+                bool folder_selected = false;
+                if (ImGui::Selectable(game->title, false, ImGuiSelectableFlags_SpanAllColumns))
+                {
+                    if (game->type == TYPE_CATEGORY)
                     {
-                        GameCategory *cat = categoryMap[game->category];
-                        Folder *folder = GAME::FindFolder(cat, game->folder_id);
-                        cat->current_folder = folder;
-                        cat->list_view_position = 0;
-                        selected_game = nullptr;
-                        folder_selected = true;
+                        new_category = categoryMap[game->category];
                     }
-                }
-                else if (selection_mode)
-                {
-                    game->selected = !game->selected;
-                }
-                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
-                {
-                    GAME::Launch(game);
-                }
-                else if (game->type == TYPE_GMS)
-                {
-                    if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                    else if (game->type == TYPE_FOLDER)
                     {
-                        handle_boot_yoyo_game = true;
-                        game_to_boot = game;
-                        GAME::LoadYoYoSettings(game_to_boot, &settings);
-                    }
-                    else
-                    {
-                        handle_download_rom = true;
-                        game_to_boot = game;
-                        GAME::StartDownloadGameThread(game_to_boot);
-                    }
-                }
-                else if (game->type == TYPE_ROM)
-                {
-                    if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
-                    {
-                        GameCategory *cat = categoryMap[game->category];
-                        if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                        if (!selection_mode)
                         {
-                            GAME::Launch(game);
+                            GameCategory *cat = categoryMap[game->category];
+                            Folder *folder = GAME::FindFolder(cat, game->folder_id);
+                            cat->current_folder = folder;
+                            cat->list_view_position = 0;
+                            selected_game = nullptr;
+                            folder_selected = true;
                         }
-                        handle_boot_rom_game = true;
-                        game_to_boot = game;
-                        sprintf(retro_core, "%s", cat->core);
-                        DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
+                    }
+                    else if (selection_mode)
+                    {
+                        game->selected = !game->selected;
+                    }
+                    else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                    {
+                        GAME::Launch(game);
+                    }
+                    else if (game->type == TYPE_GMS)
+                    {
+                        if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                        {
+                            handle_boot_yoyo_game = true;
+                            game_to_boot = game;
+                            GAME::LoadYoYoSettings(game_to_boot, &settings);
+                        }
+                        else
+                        {
+                            handle_download_rom = true;
+                            game_to_boot = game;
+                            GAME::StartDownloadGameThread(game_to_boot);
+                        }
+                    }
+                    else if (game->type == TYPE_ROM)
+                    {
+                        if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                        {
+                            GameCategory *cat = categoryMap[game->category];
+                            if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                            {
+                                GAME::Launch(game);
+                            }
+                            handle_boot_rom_game = true;
+                            game_to_boot = game;
+                            sprintf(retro_core, "%s", cat->core);
+                            DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
+                        }
+                        else
+                        {
+                            handle_download_rom = true;
+                            game_to_boot = game;
+                            GAME::StartDownloadGameThread(game_to_boot);
+                        }                    
                     }
                     else
                     {
-                        handle_download_rom = true;
-                        game_to_boot = game;
-                        GAME::StartDownloadGameThread(game_to_boot);
-                    }                    
-                }
-                else
-                {
-                    if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
-                    {
-                        handle_boot_game = true;
-                        game_to_boot = game;
-                        settings = default_boot_settings;
-                        DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                        if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                        {
+                            handle_boot_game = true;
+                            game_to_boot = game;
+                            settings = default_boot_settings;
+                            DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                        }
+                        else
+                        {
+                            handle_download_rom = true;
+                            game_to_boot = game;
+                            GAME::StartDownloadGameThread(game_to_boot);
+                        }                    
                     }
-                    else
-                    {
-                        handle_download_rom = true;
-                        game_to_boot = game;
-                        GAME::StartDownloadGameThread(game_to_boot);
-                    }                    
                 }
-            }
-            ImGui::PopID();
-            game->visible = ImGui::IsItemVisible();
-            if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
-            {
-                if (current_category->list_view_position == i && !folder_selected && !paused)
+                ImGui::PopID();
+                game->visible = ImGui::IsItemVisible();
+                if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
                 {
-                    SetNavFocusHere();
-                    ImGui::SetScrollHereY(scroll_direction);
-                    current_category->list_view_position = -1;
+                    if (current_category->list_view_position == i && !folder_selected && !paused)
+                    {
+                        SetNavFocusHere();
+                        ImGui::SetScrollHereY(scroll_direction);
+                        current_category->list_view_position = -1;
+                    }
+                }
+                if (ImGui::IsItemHovered() && !folder_selected)
+                {
+                    selected_game = game;
+                }
+                if (game->favorite)
+                {
+                    ImGui::SameLine();
+                    ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
+                }
+                ImGui::TableNextColumn();
+                if (game->type != TYPE_FOLDER)
+                {
+                    ImGui::Text(game->id);
+                }
+                ImGui::Separator();
+                
+                if (new_category != nullptr)
+                {
+                    break;
                 }
             }
-            if (ImGui::IsItemHovered() && !folder_selected)
-            {
-                selected_game = game;
-            }
-            if (game->favorite)
-            {
-                ImGui::SameLine();
-                ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
-            }
-            ImGui::NextColumn();
-            if (game->type != TYPE_FOLDER)
-            {
-                ImGui::Text(game->id);
-            }
-            ImGui::NextColumn();               
-            ImGui::Separator();
-            
-            if (new_category != nullptr)
-            {
-                break;
-            }
+
+            ImGui::EndTable();
         }
-        ImGui::Columns(1);
         ImGui::EndChild();
         ImGui::SetCursorPosY(520);
         ImGui::Separator();
@@ -3605,101 +3607,102 @@ namespace Windows {
             ImGui::Separator();
             ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(595,238));
             ImGui::BeginChild("search games list");
-            ImGui::Columns(2, "search games list", true);
-            for (int i = 0; i < games_selection.size(); i++)
+            if (ImGui::BeginTable("search games list", 2))
             {
-                Game *game = &games_selection[i];
-                ImGui::SetColumnWidth(-1,450);
-                ImGui::Text(""); ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()-10);
-                if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 0)
+                ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthFixed, 450);
+                for (int i = 0; i < games_selection.size(); i++)
                 {
-                    ImGui::Image(reinterpret_cast<ImTextureID>(redbar_icon.id), ImVec2(3,16));
-                    ImGui::SameLine();
-                }
-                else if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 1)
-                {
-                    ImGui::Image(reinterpret_cast<ImTextureID>(greenbar_icon.id), ImVec2(3,16));
-                    ImGui::SameLine();
-                }
-                if (games_selection[i].favorite)
-                {
-                    ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
-                    ImGui::SameLine();
-                }
-                char title[192];
-                sprintf(title, "%s##%s%d%d", games_selection[i].title, games_selection[i].category, search_count, i);
-                if (ImGui::Selectable(title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_SpanAllColumns))
-                {
-                    if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                    Game *game = &games_selection[i];
+                    ImGui::TableNextColumn();
+                    if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 0)
                     {
-                        GAME::Launch(game);
+                        ImGui::Image(reinterpret_cast<ImTextureID>(redbar_icon.id), ImVec2(3,16));
+                        ImGui::SameLine();
                     }
-                    else if (game->type == TYPE_GMS)
+                    else if (ImGui::IsItemVisible() && GAME::GetCacheState(game) == 1)
                     {
-                        if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
-                        {
-                            handle_boot_yoyo_game = true;
-                            game_to_boot = game;
-                            GAME::LoadYoYoSettings(game_to_boot, &settings);
-                        }
-                        else
-                        {
-                            handle_download_rom = true;
-                            game_to_boot = game;
-                            GAME::StartDownloadGameThread(game_to_boot);
-                        }
+                        ImGui::Image(reinterpret_cast<ImTextureID>(greenbar_icon.id), ImVec2(3,16));
+                        ImGui::SameLine();
                     }
-                    else if (game->type == TYPE_ROM)
+                    if (games_selection[i].favorite)
                     {
-                        if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                        ImGui::Image(reinterpret_cast<ImTextureID>(favorite_icon.id), ImVec2(16,16));
+                        ImGui::SameLine();
+                    }
+                    char title[192];
+                    sprintf(title, "%s##%s%d%d", games_selection[i].title, games_selection[i].category, search_count, i);
+                    if (ImGui::Selectable(title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_SpanAllColumns))
+                    {
+                        if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
                         {
-                            GameCategory *cat = categoryMap[game->category];
-                            if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                            GAME::Launch(game);
+                        }
+                        else if (game->type == TYPE_GMS)
+                        {
+                            if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
                             {
-                                GAME::Launch(game);
+                                handle_boot_yoyo_game = true;
+                                game_to_boot = game;
+                                GAME::LoadYoYoSettings(game_to_boot, &settings);
                             }
-                            handle_boot_rom_game = true;
-                            game_to_boot = game;
-                            sprintf(retro_core, "%s", cat->core);
-                            DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
+                            else
+                            {
+                                handle_download_rom = true;
+                                game_to_boot = game;
+                                GAME::StartDownloadGameThread(game_to_boot);
+                            }
+                        }
+                        else if (game->type == TYPE_ROM)
+                        {
+                            if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                            {
+                                GameCategory *cat = categoryMap[game->category];
+                                if (cat->alt_cores.size() == 0 || !cat->boot_with_alt_core)
+                                {
+                                    GAME::Launch(game);
+                                }
+                                handle_boot_rom_game = true;
+                                game_to_boot = game;
+                                sprintf(retro_core, "%s", cat->core);
+                                DB::GetRomCoreSettings(game_to_boot->rom_path, retro_core);
+                            }
+                            else
+                            {
+                                handle_download_rom = true;
+                                game_to_boot = game;
+                                GAME::StartDownloadGameThread(game);
+                            }
                         }
                         else
                         {
-                            handle_download_rom = true;
-                            game_to_boot = game;
-                            GAME::StartDownloadGameThread(game);
+                            if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
+                            {
+                                handle_boot_game = true;
+                                game_to_boot = game;
+                                settings = default_boot_settings;
+                                DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                            }
+                            else
+                            {
+                                handle_download_rom = true;
+                                game_to_boot = game;
+                                GAME::StartDownloadGameThread(game);
+                            }
                         }
+                        SetModalMode(false);
+                        handle_search_game = false;
+                        ImGui::CloseCurrentPopup();
                     }
-                    else
+                    if (ImGui::IsItemHovered())
                     {
-                        if (!GAME::IsRemoteGame(game) || GAME::GetCacheState(game) > 0)
-                        {
-                            handle_boot_game = true;
-                            game_to_boot = game;
-                            settings = default_boot_settings;
-                            DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
-                        }
-                        else
-                        {
-                            handle_download_rom = true;
-                            game_to_boot = game;
-                            GAME::StartDownloadGameThread(game);
-                        }
+                        search_selected_game = &games_selection[i];
                     }
-                    SetModalMode(false);
-                    handle_search_game = false;
-                    ImGui::CloseCurrentPopup();
+                    ImGui::TableNextColumn();
+                    ImGui::Text(categoryMap[games_selection[i].category]->alt_title);
+                    ImGui::Separator();
                 }
-                if (ImGui::IsItemHovered())
-                {
-                    search_selected_game = &games_selection[i];
-                }
-                ImGui::NextColumn();
-                ImGui::Text(categoryMap[games_selection[i].category]->alt_title);
-                ImGui::NextColumn();
-                ImGui::Separator();
+                ImGui::EndTable();
             }
-            ImGui::Columns(1);
             ImGui::EndChild();
 
             ImGui::Separator();

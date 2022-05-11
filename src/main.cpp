@@ -33,13 +33,17 @@ namespace Services
 		ImGui::CreateContext();
 
 		ImGuiIO &io = ImGui::GetIO();
-		(void)io;
 		io.MouseDrawCursor = false;
 		ImGui::StyleColorsDark();
 		auto &style = ImGui::GetStyle();
 		style.AntiAliasedLinesUseTex = false;
 		style.AntiAliasedLines = true;
 		style.AntiAliasedFill = true;
+		io.Fonts->AddFontFromFileTTF(
+			"sa0:/data/font/pvf/jpn0.pvf",
+			16.0f,
+			NULL,
+			io.Fonts->GetGlyphRangesJapanese());
 
 		Style::LoadStyle(style_path);
 
