@@ -2685,6 +2685,7 @@ namespace Windows {
                 }
             }
             ImGui::EndPopup();
+            sceKernelPowerTick(SCE_KERNEL_POWER_TICK_DEFAULT);
         }
     }
 
