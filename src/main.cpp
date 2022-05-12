@@ -106,6 +106,11 @@ namespace Services
 
 	int Init(void)
 	{
+		scePowerSetArmClockFrequency(444);
+		scePowerSetBusClockFrequency(222);
+		scePowerSetGpuClockFrequency(222);
+		scePowerSetGpuXbarClockFrequency(166);
+
 		// Allow writing to ux0:app
 		sceAppMgrUmount("app0:");
 		sceAppMgrUmount("savedata0:");
