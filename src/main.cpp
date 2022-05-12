@@ -41,6 +41,43 @@ namespace Services
 		style.AntiAliasedLines = true;
 		style.AntiAliasedFill = true;
 
+		static const ImWchar ranges[] = { // All languages with chinese included
+			0x0020, 0x00FF, // Basic Latin + Latin Supplement
+			0x0100, 0x024F, // Latin Extended
+			0x0370, 0x03FF, // Greek
+			0x0400, 0x052F, // Cyrillic + Cyrillic Supplement
+			0x0590, 0x05FF, // Hebrew
+			0x1E00, 0x1EFF, // Latin Extended Additional
+			0x1F00, 0x1FFF, // Greek Extended
+			0x2000, 0x206F, // General Punctuation
+			0x2100, 0x214F, // Letterlike Symbols
+			0x2460, 0x24FF, // Enclosed Alphanumerics
+			0x2DE0, 0x2DFF, // Cyrillic Extended-A
+			0x2E80, 0x2EFF, // CJK Radicals Supplement
+			0x3000, 0x30FF, // CJK Symbols and Punctuations, Hiragana, Katakana
+			0x31F0, 0x31FF, // Katakana Phonetic Extensions
+			0x3400, 0x4DBF, // CJK Rare
+			0x4E00, 0x9FFF, // CJK Ideograms
+			0xA640, 0xA69F, // Cyrillic Extended-B
+			0xF900, 0xFAFF, // CJK Compatibility Ideographs
+			0xFF00, 0xFFEF, // Half-width characters
+			0,
+		};
+
+		ImFontConfig config;
+		config.MergeMode = true;
+		io.Fonts->AddFontFromFileTTF(
+			"sa0:/data/font/pvf/ltn0.pvf",
+			16.0f,
+			NULL,
+			ranges);
+		io.Fonts->AddFontFromFileTTF(
+			"sa0:/data/font/pvf/jpn0.pvf",
+			16.0f,
+			&config,
+			io.Fonts->GetGlyphRangesJapanese());
+		io.Fonts->Build();
+
 		Style::LoadStyle(style_path);
 
 		ImGui_ImplVita2D_Init();
