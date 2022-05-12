@@ -78,7 +78,7 @@ bool handle_updates = false;
 bool selection_mode = false;
 bool show_all_categories_setting = show_all_categories;
 bool show_categories_as_tabs_settings = show_categories_as_tabs;
-
+int game_to_select_idx = -1;
 char game_action_message[256];
 
 float previous_right = 0.0f;
@@ -239,6 +239,14 @@ namespace Windows {
                 current_category->current_folder->page_num = GAME::IncrementPage(current_category->current_folder->page_num, 1);
                 GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->current_folder->page_num, current_category->games_per_page);
                 selected_game = nullptr;
+                if (current_category->rows == 3)
+                {
+                    game_to_select_idx = game_position-5;
+                }
+                else
+                {
+                    game_to_select_idx = game_position-3;
+                }
             }
         } else if (previous_left == 0.0f &&
             io.NavInputs[ImGuiNavInput_DpadLeft] == 1.0f &&
@@ -251,6 +259,14 @@ namespace Windows {
                 int prev_page = current_category->current_folder->page_num;
                 current_category->current_folder->page_num = GAME::DecrementPage(current_category->current_folder->page_num, 1);
                 GAME::StartLoadImagesThread(current_category->id, prev_page, current_category->current_folder->page_num, current_category->games_per_page);
+                if (current_category->rows == 3)
+                {
+                    game_to_select_idx = game_position+5;
+                }
+                else
+                {
+                    game_to_select_idx = game_position+3;
+                }
                 selected_game = nullptr;
             }
         }
@@ -618,6 +634,11 @@ namespace Windows {
                                 GAME::StartDownloadGameThread(game_to_boot);
                             }
                         }
+                    }
+                    if (game_to_select_idx == button_id)
+                    {
+                        SetNavFocusHere();
+                        game_to_select_idx = -1;
                     }
                     game->visible = ImGui::IsItemVisible() ? 1 : 0;
 
