@@ -596,7 +596,7 @@ namespace Updater {
     ERROR_EXIT:
         if (!abm_installed && warn_missing_installs)
         {
-            sprintf(updater_message, "Adrenaline Bubble Booter plugin is not installed. It is required to\nboot PSP/PS1/PSMinit games without bubbles");
+            sprintf(updater_message, "Adrenaline Bubble Booter plugin is not installed. It is required to\nboot PSP/PS1/PSMini games without bubbles");
             sceKernelDelayThread(4000000);
         }
         if (!itls_enso_installed && fw.version <= 0x03650000 && warn_missing_installs)
