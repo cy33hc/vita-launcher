@@ -204,6 +204,16 @@ namespace Updater {
         unzClose(zipfile);
     }
 
+    bool isiTLSEnsoInstalled()
+    {
+        return FS::FileExists("vs0:/data/external/itls/libhttp.suprx");
+    }
+
+    bool isAdernalineBubbleBooterPluginInstalled()
+    {
+        return FS::FileExists("ux0:app/PSPEMUCFW/sce_module/adrbubblebooter.suprx");
+    }
+
     void StartUpdaterThread()
     {
         updater_thid = sceKernelCreateThread("updater_thread", (SceKernelThreadEntry)UpdaterThread, 0x10000100, 0x4000, 0, 0, NULL);
@@ -217,7 +227,7 @@ namespace Updater {
         fw.size = sizeof(SceKernelFwInfo);
         _vshSblGetSystemSwVersion(&fw);
 
-        int itls_enso_installed = CheckAppExist(ITLS_ENSO_APP_ID);
+        int itls_enso_installed = isiTLSEnsoInstalled();
         int vita_updated = 0;
         if (itls_enso_installed || fw.version > 0x0365000)
         {
@@ -543,10 +553,10 @@ namespace Updater {
 
     void StartInstallerThread()
     {
-        int itls_enso_installed = CheckAppExist(ITLS_ENSO_APP_ID);
+        int itls_enso_installed = isiTLSEnsoInstalled();
         int adr_installed = CheckAppExist(DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID);
         int yoyo_installed = CheckAppExist(YOYO_LAUNCHER_ID);
-        int abm_installed = CheckAppExist(ABM_APP_ID);
+        int abm_installed = isAdernalineBubbleBooterPluginInstalled();
         int flycast_cores_installed = FS::FileExists(FLYCAST_RETRO_ACCURACY_CORE_PATH) && CheckAppExist(RETROARCH_TITLE_ID);
 
         if (!adr_installed || !yoyo_installed || !abm_installed || !itls_enso_installed || !flycast_cores_installed)
@@ -570,8 +580,8 @@ namespace Updater {
         fw.size = sizeof(SceKernelFwInfo);
         _vshSblGetSystemSwVersion(&fw);
 
-        int itls_enso_installed = CheckAppExist(ITLS_ENSO_APP_ID);
-        bool abm_installed = CheckAppExist(ABM_APP_ID);
+        int itls_enso_installed = isiTLSEnsoInstalled();
+        bool abm_installed = isAdernalineBubbleBooterPluginInstalled();
         if (itls_enso_installed || fw.version > 0x03650000)
         {
             InstallAdrLauncher();
@@ -582,7 +592,7 @@ namespace Updater {
     ERROR_EXIT:
         if (!abm_installed)
         {
-            sprintf(updater_message, "Adrenaline Bubbles Manager is not installed. It is required to\nboot PSP/PS1/PSMinit games without bubbles");
+            sprintf(updater_message, "Adrenaline Bubble Booter plugin is not installed. It is required to\nboot PSP/PS1/PSMinit games without bubbles");
             sceKernelDelayThread(4000000);
         }
         if (!itls_enso_installed && fw.version <= 0x03650000)
