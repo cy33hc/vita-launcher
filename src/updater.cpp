@@ -241,7 +241,7 @@ namespace Updater {
             vita_updated = UpdateVitaLauncher();
         }
 
-        if (!itls_enso_installed && fw.version <= 0x03650000)
+        if (!itls_enso_installed && fw.version <= 0x03650000 && warn_missing_installs)
         {
             sprintf(updater_message, "iTLS-Enso is not installed.\nIt's required to download icons and updates");
             sceKernelDelayThread(4000000);
