@@ -5,6 +5,10 @@
 #include "net.h"
 #include "gui.h"
 
+extern "C" {
+	#include "inifile.h"
+}
+
 char updater_message[256];
 
 namespace Updater {
@@ -590,15 +594,24 @@ namespace Updater {
         }
 
     ERROR_EXIT:
-        if (!abm_installed)
+        if (!abm_installed && warn_missing_installs)
         {
             sprintf(updater_message, "Adrenaline Bubble Booter plugin is not installed. It is required to\nboot PSP/PS1/PSMinit games without bubbles");
             sceKernelDelayThread(4000000);
         }
-        if (!itls_enso_installed && fw.version <= 0x03650000)
+        if (!itls_enso_installed && fw.version <= 0x03650000 && warn_missing_installs)
         {
             sprintf(updater_message, "iTLS-Enso is not installed.\nIt's required to download icons and updates");
             sceKernelDelayThread(4000000);
+        }
+
+        // Just warn once only
+        if (warn_missing_installs)
+        {
+            OpenIniFile(CONFIG_INI_FILE);
+            WriteBool(CONFIG_GLOBAL, CONFIG_UPDATE_WARN_MISSING, false);
+            WriteIniFile(CONFIG_INI_FILE);
+            CloseIniFile();
         }
         handle_updates = false;
         Windows::SetModalMode(false);
