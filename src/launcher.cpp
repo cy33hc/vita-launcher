@@ -1818,7 +1818,6 @@ namespace Windows {
                 {
                     if (ImGui::BeginTabItem("PSP Plugins"))
                     {
-                        ImGui::BeginChild("PSPPluginsWindow##psppluginsettings", ImVec2(480,290));
                         ImGui::Columns(3, "psp_plugins##columnsettings");
                         bool sync = false;
                         for (int i=0; i<default_psp_plugin_settings.size(); i++)
@@ -1880,7 +1879,6 @@ namespace Windows {
                             }
                             to_be_delete_plugin = nullptr;
                         }
-                        ImGui::EndChild();
                         ImGui::EndTabItem();
                     }
                 }
@@ -1889,7 +1887,6 @@ namespace Windows {
                 {
                     if (ImGui::BeginTabItem("Pops Plugins"))
                     {
-                        ImGui::BeginChild("PopsPluginsWindow##popspluginsettings", ImVec2(480,290));
                         ImGui::SetNextItemWidth(390);
                         ImGui::Columns(3, "pops_plugins##columnsettings");
                         bool sync = false;
@@ -1952,7 +1949,6 @@ namespace Windows {
                             }
                             to_be_delete_plugin = nullptr;
                         }
-                        ImGui::EndChild();
                         ImGui::EndTabItem();
                     }
                 }
@@ -2628,7 +2624,6 @@ namespace Windows {
                         if (ImGui::BeginTabItem("Plugins"))
                         {
                             
-                            ImGui::BeginChild("PluginsWindow##bootsettings", ImVec2(480,290));
                             ImGui::Columns(3, "per_game_psp_plugins##columnsettings");
                             for (int i=0; i<per_game_plugin_settings.size(); i++)
                             {
@@ -2698,7 +2693,6 @@ namespace Windows {
                                 }
                                 to_be_delete_plugin = nullptr;
                             }
-                            ImGui::EndChild();
                             ImGui::EndTabItem();
                         }
                     }
