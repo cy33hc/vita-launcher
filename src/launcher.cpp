@@ -55,7 +55,9 @@ static std::vector<CategorySelection> categories_selection;
 static char txt_category_order[4];
 static char txt_server_port[6];
 static std::vector<PluginSetting> per_game_plugin_settings;
-
+static char new_plugin_file[256];
+static PluginSetting *to_be_delete_plugin = nullptr;
+static bool settings_modified = false;
 GameCategory *tmp_category;
 
 static std::vector<std::string> *ime_multi_field;
@@ -1816,25 +1818,43 @@ namespace Windows {
                 {
                     if (ImGui::BeginTabItem("PSP Plugins"))
                     {
-                        ImGui::BeginChild("PluginsWindow##bootsettings", ImVec2(480,290));
-                        ImGui::Columns(2, "psp_plugins##columnsettings");
+                        ImGui::BeginChild("PSPPluginsWindow##psppluginsettings", ImVec2(480,290));
+                        ImGui::Columns(3, "psp_plugins##columnsettings");
                         bool sync = false;
                         for (int i=0; i<default_psp_plugin_settings.size(); i++)
                         {
-                            ImGui::SetColumnWidth(-1,430);
+                            ImGui::SetColumnWidth(-1,375);
                             ImGui::Text(default_psp_plugin_settings[i].plugin);
                             ImGui::NextColumn();
-                            ImGui::SetColumnWidth(-1, 30);
+                            ImGui::SetColumnWidth(-1, 35);
                             ImGui::PushID(i);
-                            ImGui::Checkbox("##enable", &default_psp_plugin_settings[i].enable);
+                            if (ImGui::Checkbox("##enable", &default_psp_plugin_settings[i].enable)) settings_modified = true;
                             ImGui::PopID();
                             ImGui::NextColumn();
-
+                            ImGui::PushID(i+999);
+                            if (ImGui::SmallButton("Del##psp"))
+                            {
+                                to_be_delete_plugin = &default_psp_plugin_settings[i];
+                                settings_modified = true;
+                            }
+                            ImGui::PopID();
+                            ImGui::NextColumn();
                             ImGui::Separator();
                         }
                         ImGui::Columns(1);
-                        ImGui::SetCursorPosX(ImGui::GetCursorPosX()+410);
-                        if (ImGui::Button("Sync"))
+                        ImGui::SetCursorPosX(ImGui::GetCursorPosX()+360);
+                        if (ImGui::Button("Add##psp"))
+                        {
+                            ime_single_field = new_plugin_file;
+                            ime_callback = SingleValueImeCallback;
+                            ime_before_update = nullptr;
+                            ime_after_update = AfterNewPspGamePluginCallback;
+                            Dialog::initImeDialog("Plugin Path", "ms0:/seplugins/", 255, SCE_IME_TYPE_DEFAULT, 0, 0);
+                            settings_modified = true;
+                            gui_mode = GUI_MODE_IME;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Sync##psp"))
                         {
                             GAME::ImportPspGamePlugins();
                         }
@@ -1843,6 +1863,22 @@ namespace Windows {
                             ImGui::BeginTooltip();
                             ImGui::Text("Copy plugin settings from ux0:pspemu/seplugins/game.txt");
                             ImGui::EndTooltip();
+                        }
+                        if (to_be_delete_plugin != nullptr)
+                        {
+                            for (std::vector<PluginSetting>::iterator it=default_psp_plugin_settings.begin(); it != default_psp_plugin_settings.end(); )
+                            {
+                                if (strcmp(it->plugin, to_be_delete_plugin->plugin)==0)
+                                {
+                                    default_psp_plugin_settings.erase(it);
+                                    break;
+                                }
+                                else
+                                {
+                                    ++it;
+                                }
+                            }
+                            to_be_delete_plugin = nullptr;
                         }
                         ImGui::EndChild();
                         ImGui::EndTabItem();
@@ -1853,26 +1889,44 @@ namespace Windows {
                 {
                     if (ImGui::BeginTabItem("Pops Plugins"))
                     {
-                        ImGui::BeginChild("PluginsWindow##bootsettings", ImVec2(480,290));
+                        ImGui::BeginChild("PopsPluginsWindow##popspluginsettings", ImVec2(480,290));
                         ImGui::SetNextItemWidth(390);
-                        ImGui::Columns(2, "pops_plugins##columnsettings");
+                        ImGui::Columns(3, "pops_plugins##columnsettings");
                         bool sync = false;
                         for (int i=0; i<default_ps1_plugin_settings.size(); i++)
                         {
-                            ImGui::SetColumnWidth(-1,430);
+                            ImGui::SetColumnWidth(-1,375);
                             ImGui::Text(default_ps1_plugin_settings[i].plugin);
                             ImGui::NextColumn();
-                            ImGui::SetColumnWidth(-1, 30);
-                            ImGui::PushID(i);
-                            ImGui::Checkbox("##enable", &default_ps1_plugin_settings[i].enable);
+                            ImGui::SetColumnWidth(-1, 35);
+                            ImGui::PushID(i+2000);
+                            if (ImGui::Checkbox("##enable", &default_ps1_plugin_settings[i].enable)) settings_modified = true;
                             ImGui::PopID();
                             ImGui::NextColumn();
-
+                            ImGui::PushID(i+3000);
+                            if (ImGui::SmallButton("Del##pops"))
+                            {
+                                to_be_delete_plugin = &default_ps1_plugin_settings[i];
+                                settings_modified = true;
+                            }
+                            ImGui::PopID();
+                            ImGui::NextColumn();
                             ImGui::Separator();
                         }
                         ImGui::Columns(1);
-                        ImGui::SetCursorPosX(ImGui::GetCursorPosX()+410);
-                        if (ImGui::Button("Sync"))
+                        ImGui::SetCursorPosX(ImGui::GetCursorPosX()+360);
+                        if (ImGui::Button("Add##pops"))
+                        {
+                            ime_single_field = new_plugin_file;
+                            ime_callback = SingleValueImeCallback;
+                            ime_before_update = nullptr;
+                            ime_after_update = AfterNewPopsGamePluginCallback;
+                            Dialog::initImeDialog("Plugin Path", "ms0:/seplugins/", 255, SCE_IME_TYPE_DEFAULT, 0, 0);
+                            settings_modified = true;
+                            gui_mode = GUI_MODE_IME;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Sync##pops"))
                         {
                             GAME::ImportPopsGamePlugins();
                         }
@@ -1881,6 +1935,22 @@ namespace Windows {
                             ImGui::BeginTooltip();
                             ImGui::Text("Copy plugin settings from ux0:pspemu/seplugins/pops.txt");
                             ImGui::EndTooltip();
+                        }
+                        if (to_be_delete_plugin != nullptr)
+                        {
+                            for (std::vector<PluginSetting>::iterator it=default_ps1_plugin_settings.begin(); it != default_ps1_plugin_settings.end(); )
+                            {
+                                if (strcmp(it->plugin, to_be_delete_plugin->plugin)==0)
+                                {
+                                    default_ps1_plugin_settings.erase(it);
+                                    break;
+                                }
+                                else
+                                {
+                                    ++it;
+                                }
+                            }
+                            to_be_delete_plugin = nullptr;
                         }
                         ImGui::EndChild();
                         ImGui::EndTabItem();
@@ -2398,13 +2468,17 @@ namespace Windows {
                     }
                 }
                 
-                if (current_category->id == PS1_GAMES)
+                if (current_category->id == PS1_GAMES && settings_modified)
                 {
+                    DB::DeletePspPluginSettings("ps1");
                     DB::SavePspPluginSettings("ps1", default_ps1_plugin_settings);
+                    settings_modified = false;
                 }
-                else if (current_category->id == PSP_GAMES || current_category->id == PS_MIMI_GAMES)
+                else if ((current_category->id == PSP_GAMES || current_category->id == PS_MIMI_GAMES) && settings_modified)
                 {
+                    DB::DeletePspPluginSettings("psp");
                     DB::SavePspPluginSettings("psp", default_psp_plugin_settings);
+                    settings_modified = false;
                 }
 
                 show_all_categories = show_all_categories_setting;
@@ -2555,22 +2629,40 @@ namespace Windows {
                         {
                             
                             ImGui::BeginChild("PluginsWindow##bootsettings", ImVec2(480,290));
-                            ImGui::Columns(2, "per_game_psp_plugins##columnsettings");
+                            ImGui::Columns(3, "per_game_psp_plugins##columnsettings");
                             for (int i=0; i<per_game_plugin_settings.size(); i++)
                             {
-                                ImGui::SetColumnWidth(-1,430);
+                                ImGui::SetColumnWidth(-1,380);
                                 ImGui::Text(per_game_plugin_settings[i].plugin);
                                 ImGui::NextColumn();
-                                ImGui::SetColumnWidth(-1, 30);
+                                ImGui::SetColumnWidth(-1, 35);
                                 ImGui::PushID(i);
-                                ImGui::Checkbox("##enable", &per_game_plugin_settings[i].enable);
+                                if (ImGui::Checkbox("##enable", &per_game_plugin_settings[i].enable)) settings_modified = true;
                                 ImGui::PopID();
                                 ImGui::NextColumn();
-
+                                ImGui::PushID(i+999);
+                                if (ImGui::SmallButton("Del"))
+                                {
+                                    to_be_delete_plugin = &per_game_plugin_settings[i];
+                                    settings_modified = true;
+                                }
+                                ImGui::PopID();
+                                ImGui::NextColumn();
                                 ImGui::Separator();
                             }
                             ImGui::Columns(1);
-                            ImGui::SetCursorPosX(ImGui::GetCursorPosX()+400);
+                            ImGui::SetCursorPosX(ImGui::GetCursorPosX()+360);
+                            if (ImGui::Button("Add"))
+                            {
+                                ime_single_field = new_plugin_file;
+                                ime_callback = SingleValueImeCallback;
+                                ime_before_update = nullptr;
+                                ime_after_update = AfterNewPerGamePluginCallback;
+                                Dialog::initImeDialog("Plugin Path", "ms0:/seplugins/", 255, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                settings_modified = true;
+                                gui_mode = GUI_MODE_IME;
+                            }
+                            ImGui::SameLine();
                             if (ImGui::Button("Reset"))
                             {
                                 per_game_plugin_settings.clear();
@@ -2582,12 +2674,29 @@ namespace Windows {
                                 {
                                     per_game_plugin_settings.insert(per_game_plugin_settings.end(), default_psp_plugin_settings.begin(), default_psp_plugin_settings.end());
                                 }
+                                settings_modified = true;
                             }
                             if (ImGui::IsItemHovered())
                             {
                                 ImGui::BeginTooltip();
-                                ImGui::Text("Reset plugins settings and load defaults");
+                                ImGui::Text("Remove game plugins settings and load global defaults");
                                 ImGui::EndTooltip();
+                            }
+                            if (to_be_delete_plugin != nullptr)
+                            {
+                                for (std::vector<PluginSetting>::iterator it = per_game_plugin_settings.begin(); it != per_game_plugin_settings.end(); )
+                                {
+                                    if (strcmp(it->plugin, to_be_delete_plugin->plugin) == 0)
+                                    {
+                                        per_game_plugin_settings.erase(it);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        ++it;
+                                    }
+                                }
+                                to_be_delete_plugin = nullptr;
                             }
                             ImGui::EndChild();
                             ImGui::EndTabItem();
@@ -2608,10 +2717,11 @@ namespace Windows {
                     CloseIniFile();
                 }
                 DB::SavePspGameSettings(game_to_boot->rom_path, &settings);
-                if (settings.plugins != PLUGINS_DISABLE)
+                if (settings.plugins != PLUGINS_DISABLE && settings_modified)
                 {
                     GAME::SyncPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                     GAME::WritePerGamePluginSettings(game_to_boot, per_game_plugin_settings);
+                    settings_modified = false;
                 }
                 SetModalMode(false);
                 handle_boot_game = false;
@@ -2625,6 +2735,7 @@ namespace Windows {
                 SetModalMode(false);
                 settings = default_boot_settings;
                 handle_boot_game = false;
+                settings_modified = false;
                 ImGui::CloseCurrentPopup();
             }
             
@@ -4038,6 +4149,30 @@ namespace Windows {
         CONFIG::rtrim(str, "/");
         CONFIG::rtrim(str, " ");
         sprintf(ime_single_field, "%s", str.c_str());
+    }
+
+    void AfterNewPerGamePluginCallback(int ime_result)
+    {
+        PluginSetting setting;
+        sprintf(setting.plugin, "%s", new_plugin_file);
+        setting.enable = true;
+        per_game_plugin_settings.push_back(setting);
+    }
+
+    void AfterNewPspGamePluginCallback(int ime_result)
+    {
+        PluginSetting setting;
+        sprintf(setting.plugin, "%s", new_plugin_file);
+        setting.enable = true;
+        default_psp_plugin_settings.push_back(setting);
+    }
+
+    void AfterNewPopsGamePluginCallback(int ime_result)
+    {
+        PluginSetting setting;
+        sprintf(setting.plugin, "%s", new_plugin_file);
+        setting.enable = true;
+        default_ps1_plugin_settings.push_back(setting);
     }
 
     void HandleUpdates()

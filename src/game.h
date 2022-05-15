@@ -321,7 +321,7 @@ namespace GAME {
     void SaveYoYoSettings(Game *game, BootSettings *settings);
     void ImportPspGamePlugins();
     void ImportPopsGamePlugins();
-    void GetPerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings);
+    bool GetPerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings);
     void SyncPerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings);
     void WritePerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings);
 

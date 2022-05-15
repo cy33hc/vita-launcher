@@ -20,7 +20,7 @@
 #include "cso.h"
 #include "net.h"
 #include "ftpclient.h"
-
+#include "debugnet.h"
 extern "C" {
 	#include "inifile.h"
 }
@@ -2415,6 +2415,7 @@ namespace GAME {
         char plugin[256];
         int enable;
         char *tmp;
+        char *p;
 
         FILE *config = fopen(DEFAULT_GAME_PLUGIN_PATH, "r");
         if (config)
@@ -2424,11 +2425,11 @@ namespace GAME {
             while (fgets(line, 1024, config) != NULL)
             {
                 PluginSetting setting;
-                tmp = strtok(line, " \t");
+                tmp = strtok_r(line, " \t", &p);
                 if (tmp == NULL)
                     continue;
                 sprintf(setting.plugin, "%s", tmp);
-                tmp = strtok(NULL, " \t");
+                tmp = strtok_r(NULL, " \t\r\n", &p);
                 if (tmp == NULL)
                     continue;
                 setting.enable = atoi(tmp);
@@ -2444,6 +2445,7 @@ namespace GAME {
         char plugin[256];
         int enable;
         char *tmp;
+        char *p;
 
         FILE *config = fopen(DEFAULT_POPS_PLUGIN_PATH, "r");
         if (config)
@@ -2453,11 +2455,11 @@ namespace GAME {
             while (fgets(line, 1024, config) != NULL)
             {
                 PluginSetting setting;
-                tmp = strtok(line, " \t");
+                tmp = strtok_r(line, " \t", &p);
                 if (tmp == NULL)
                     continue;
                 sprintf(setting.plugin, "%s", tmp);
-                tmp = strtok(NULL, " \t");
+                tmp = strtok_r(NULL, " \t\r\n", &p);
                 if (tmp == NULL)
                     continue;
                 setting.enable = atoi(tmp);
@@ -2467,7 +2469,7 @@ namespace GAME {
         }
     }
 
-    void GetPerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings)
+    bool GetPerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings)
     {
         settings.clear();
         DB::GetPspPluginSettings(game->rom_path, settings);
@@ -2481,7 +2483,9 @@ namespace GAME {
             {
                 settings.insert(settings.end(), default_psp_plugin_settings.begin(), default_psp_plugin_settings.end());
             }
+            return true;
         }
+        return false;
     }
 
     void SyncPerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings)
