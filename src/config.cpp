@@ -7,6 +7,7 @@
 #include "game.h"
 #include "fs.h"
 #include "style.h"
+#include "db.h"
 
 extern "C" {
 	#include "inifile.h"
@@ -377,6 +378,9 @@ namespace CONFIG {
 
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();
+
+        DB::GetPspPluginSettings(game_categories[PSP_GAMES].category, default_psp_plugin_settings);
+        DB::GetPspPluginSettings(game_categories[PS1_GAMES].category, default_ps1_plugin_settings);
     }
 
     void ParseMultiValueString(const char* prefix_list, std::vector<std::string> &prefixes, bool toLower)

@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <set>
 #include <map>
 #include "textures.h"
 #include "sqlite3.h"
@@ -106,6 +107,16 @@ typedef struct {
     bool squeeze_mem;
 } BootSettings;
 
+struct PluginSetting {
+    char plugin[256];
+    bool enable;
+
+    friend bool operator<(PluginSetting const& a, PluginSetting const& b)
+    {
+        return strcmp(a.plugin, b.plugin) < 0;
+    }
+} ;
+
 #define FAVORITES 0
 #define VITA_GAMES 1
 #define SYSTEM_APPS 2
@@ -182,6 +193,8 @@ extern char adernaline_launcher_boot_bin_path[];
 extern char adernaline_launcher_config_bin_path[];
 extern char adernaline_launcher_title_id[];
 extern BootSettings default_boot_settings;
+extern std::vector<PluginSetting> default_psp_plugin_settings;
+extern std::vector<PluginSetting> default_ps1_plugin_settings;
 extern std::vector<std::string> psp_iso_extensions;
 extern std::vector<std::string> eboot_extensions;
 extern std::vector<std::string> hidden_title_ids;
@@ -306,6 +319,11 @@ namespace GAME {
     void DeleteCachedRoms(GameCategory *category);
     void LoadYoYoSettings(Game *game, BootSettings *settings);
     void SaveYoYoSettings(Game *game, BootSettings *settings);
+    void ImportPspGamePlugins();
+    void ImportPopsGamePlugins();
+    void GetPerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings);
+    void SyncPerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings);
+    void WritePerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings);
 
     static int DownloadGameCallback(int64_t xfered, void* arg);
     static int LoadScePaf();

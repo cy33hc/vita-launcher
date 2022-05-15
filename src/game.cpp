@@ -51,11 +51,12 @@ int ROM_CATEGORIES[TOTAL_ROM_CATEGORY] = {PS1_GAMES, NES_GAMES, SNES_GAMES, GB_G
                          SEGA_32X_GAMES, SEGA_CD_GAMES, SEGA_SATURN_GAMES, SEGA_DREAMCAST_GAMES, ATARI_2600_GAMES, ATARI_5200_GAMES,
                          ATARI_7800_GAMES, ATARI_LYNX_GAMES, AMIGA_GAMES, BANDAI_GAMES, C64_GAMES, MSX1_GAMES, MSX2_GAMES,
                          T_GRAFX_GAMES, VECTREX_GAMES, GAW_GAMES, MAME_2000_GAMES, MAME_2003_GAMES};
-
 char adernaline_launcher_boot_bin_path[32];
 char adernaline_launcher_config_bin_path[50];
 char adernaline_launcher_title_id[12];
 BootSettings default_boot_settings;
+std::vector<PluginSetting> default_psp_plugin_settings;
+std::vector<PluginSetting> default_ps1_plugin_settings;
 FtpClient *ftpclient;
 int64_t bytes_transfered;
 int64_t bytes_to_download;
@@ -70,16 +71,20 @@ namespace GAME {
         ftpclient->SetConnmode(pasv_mode ? FtpClient::pasv : FtpClient::port);
         ftpclient->SetCallbackBytes(1);
         ftpclient->SetCallbackXferFunction(DownloadGameCallback);
-    }
-
-    void Scan()
-    {
-        current_category = &game_categories[VITA_GAMES];
 
         if (!FS::FileExists(PER_GAME_SETTINGS_DB_FILE))
         {
             DB::SetupPerGameSettingsDatabase();
         }
+        else
+        {
+            DB::UpdateGameSettingsDatabase();
+        }
+    }
+
+    void Scan()
+    {
+        current_category = &game_categories[VITA_GAMES];
 
         if (!FS::FileExists(CACHE_DB_FILE))
         {
@@ -2401,6 +2406,130 @@ namespace GAME {
         FS::Write(f, buffer, strlen(buffer));
         sprintf(buffer, "%s=%d\n", "squeezeMem", settings->squeeze_mem);
         FS::Write(f, buffer, strlen(buffer));
+        FS::Close(f);
+    }
+
+    void ImportPspGamePlugins()
+    {
+        char line[1024];
+        char plugin[256];
+        int enable;
+        char *tmp;
+
+        FILE *config = fopen(DEFAULT_GAME_PLUGIN_PATH, "r");
+        if (config)
+        {
+            DB::DeletePspPluginSettings(game_categories[PSP_GAMES].category);
+            default_psp_plugin_settings.clear();
+            while (fgets(line, 1024, config) != NULL)
+            {
+                PluginSetting setting;
+                tmp = strtok(line, " \t");
+                if (tmp == NULL)
+                    continue;
+                sprintf(setting.plugin, "%s", tmp);
+                tmp = strtok(NULL, " \t");
+                if (tmp == NULL)
+                    continue;
+                setting.enable = atoi(tmp);
+                default_psp_plugin_settings.push_back(setting);
+            }
+            DB::SavePspPluginSettings(game_categories[PSP_GAMES].category, default_psp_plugin_settings);
+        }
+    }
+
+    void ImportPopsGamePlugins()
+    {
+        char line[1024];
+        char plugin[256];
+        int enable;
+        char *tmp;
+
+        FILE *config = fopen(DEFAULT_POPS_PLUGIN_PATH, "r");
+        if (config)
+        {
+            DB::DeletePspPluginSettings(game_categories[PS1_GAMES].category);
+            default_ps1_plugin_settings.clear();
+            while (fgets(line, 1024, config) != NULL)
+            {
+                PluginSetting setting;
+                tmp = strtok(line, " \t");
+                if (tmp == NULL)
+                    continue;
+                sprintf(setting.plugin, "%s", tmp);
+                tmp = strtok(NULL, " \t");
+                if (tmp == NULL)
+                    continue;
+                setting.enable = atoi(tmp);
+                default_ps1_plugin_settings.push_back(setting);
+            }
+            DB::SavePspPluginSettings(game_categories[PS1_GAMES].category, default_ps1_plugin_settings);
+        }
+    }
+
+    void GetPerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings)
+    {
+        settings.clear();
+        DB::GetPspPluginSettings(game->rom_path, settings);
+        if (settings.size() == 0)
+        {
+            if (strcmp(game->category, "ps1") == 0)
+            {
+                settings.insert(settings.end(), default_ps1_plugin_settings.begin(), default_ps1_plugin_settings.end());
+            }
+            else if (strcmp(game->category, "psp") == 0 || strcmp(game->category, "psmini") == 0)
+            {
+                settings.insert(settings.end(), default_psp_plugin_settings.begin(), default_psp_plugin_settings.end());
+            }
+        }
+    }
+
+    void SyncPerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings)
+    {
+        DB::DeletePspPluginSettings(game->rom_path);
+        DB::SavePspPluginSettings(game->rom_path, settings);
+    }
+
+    void WritePerGamePluginSettings(Game *game, std::vector<PluginSetting> &settings)
+    {
+        char plugin_file[20];
+        char plugin_device[6];
+        char plugin_path[512];
+        char line[1024];
+
+        if (strcmp(game->category, "ps1") == 0 )
+        {
+            sprintf(plugin_file, "pops.txt");
+        }
+        else
+        {
+            sprintf(plugin_file, "game.txt");
+        }
+
+        if (strncmp(game->rom_path, "ftp0:", 5) == 0)
+        {
+            sprintf(plugin_device, "ux0:");
+        }
+        else
+        {
+            char *token = strtok(game->rom_path, ":");
+            if (token != NULL)
+            {
+                sprintf(plugin_device, "%s:", token);
+            }
+            else
+            {
+                return;
+            }
+        }
+        sprintf(plugin_path, "%spspemu/seplugins/%s", plugin_device, plugin_file);
+        
+        void *f = FS::Create(plugin_path);
+        for (int i=0; i<settings.size(); i++)
+        {
+            sprintf(line, "%s %d\n", settings[i].plugin, settings[i].enable);
+            FS::Write(f, line, strlen(line));
+        }
         FS::Close(f);
     }
 }

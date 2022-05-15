@@ -49,6 +49,8 @@
 #define PSP_EBOOT_PATH "ux0:pspemu/PSP/GAME"
 #define CONFIG_PSPEMU_PATH "pspemu_location"
 #define DEFAULT_PSPEMU_PATH "ux0:pspemu"
+#define DEFAULT_GAME_PLUGIN_PATH DEFAULT_PSPEMU_PATH "/seplugins/game.txt"
+#define DEFAULT_POPS_PLUGIN_PATH DEFAULT_PSPEMU_PATH "/seplugins/pops.txt"
 #define PSP_ISO_CACHE_PATH "ux0:pspemu/ISO"
 #define PSP_EBOOT_CACHE_PATH "ux0:pspemu/PSP/GAME/_cache"
 
