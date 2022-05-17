@@ -11,7 +11,6 @@
 
 namespace FS {
     void MkDirs(const std::string& path, bool prev=false);
-    void MkPrevDirs(const std::string& path);
 
     void Rm(const std::string& file);
     void RmDir(const std::string& path);

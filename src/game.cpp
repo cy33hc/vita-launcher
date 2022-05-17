@@ -2527,7 +2527,7 @@ namespace GAME {
             }
         }
         sprintf(plugin_path, "%spspemu/seplugins/%s", plugin_device, plugin_file);
-        
+        FS::MkDirs(plugin_path, true);
         void *f = FS::Create(plugin_path);
         for (int i=0; i<settings.size(); i++)
         {
