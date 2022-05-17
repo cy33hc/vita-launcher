@@ -13,7 +13,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "Launcher")
 set(VITA_TITLEID  "SMLA00001")
-set(VITA_VERSION  "03.67")
+set(VITA_VERSION  "03.81")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 
@@ -75,6 +75,7 @@ target_link_libraries(${PROJECT_NAME}
   SceGxm_stub
   SceSysmodule_stub
   SceVshBridge_stub
+  ScePower_stub
   SceCtrl_stub
   SceTouch_stub
   SceAudio_stub

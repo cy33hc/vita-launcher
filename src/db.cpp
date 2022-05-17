@@ -1039,6 +1039,19 @@ namespace DB {
             sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
         }
 
+        if (!TableExists(db, PSP_PLUGINS_SETTINGS_TABLE))
+        {
+            std::string sql = std::string("CREATE TABLE ") + PSP_PLUGINS_SETTINGS_TABLE + "(" +
+                COL_ROM_PATH + " TEXT," +
+                COL_PLUGIN_PATH + " TEXT," +
+                COL_PLUGIN_ENABLE + " INTEGER)";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX psp_plugin_settings_index ON ") + PSP_PLUGINS_SETTINGS_TABLE + "(" + 
+                COL_ROM_PATH + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+        }
+
         if (!TableExists(db, RETROROM_GAME_SETTINGS_TABLE))
         {
             std::string sql = std::string("CREATE TABLE ") + RETROROM_GAME_SETTINGS_TABLE + "(" +
@@ -1051,7 +1064,79 @@ namespace DB {
             sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
         }
 
+        if (!TableExists(db, UPDATED_TABLE))
+        {
+            std::string sql = std::string("CREATE TABLE ") + UPDATED_TABLE + "(" +
+                COL_UPDATED + " TEXT," +
+                COL_VALUE + " INTEGER)";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX updated_table_index ON ") + UPDATED_TABLE + "(" + 
+                COL_UPDATED + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sqlite3_stmt *res;
+            sql = std::string("INSERT INTO ") + UPDATED_TABLE + 
+                "(" + COL_UPDATED + ", " + COL_VALUE + ") VALUES (?,?)";
+            int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+            if (rc == SQLITE_OK)
+            {
+                sqlite3_bind_text(res, 1, COL_UPDATED, strlen(COL_UPDATED), NULL);
+                sqlite3_bind_int(res, 2, 0);
+                sqlite3_step(res);
+                sqlite3_finalize(res);
+            }
+        }
+
         sqlite3_close(db);
+    }
+
+    void UpdateGameSettingsDatabase()
+    {
+        sqlite3 *db;
+        sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+
+        if (!TableExists(db, PSP_PLUGINS_SETTINGS_TABLE))
+        {
+            std::string sql = std::string("CREATE TABLE ") + PSP_PLUGINS_SETTINGS_TABLE + "(" +
+                COL_ROM_PATH + " TEXT," +
+                COL_PLUGIN_PATH + " TEXT," +
+                COL_PLUGIN_ENABLE + " INTEGER)";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX psp_plugin_settings_index ON ") + PSP_PLUGINS_SETTINGS_TABLE + "(" + 
+                COL_ROM_PATH + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+        }
+
+        if (!TableExists(db, UPDATED_TABLE))
+        {
+            std::string sql = std::string("CREATE TABLE ") + UPDATED_TABLE + "(" +
+                COL_UPDATED + " TEXT," +
+                COL_VALUE + " INTEGER)";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX updated_table_index ON ") + UPDATED_TABLE + "(" + 
+                COL_UPDATED + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sqlite3_stmt *res;
+            sql = std::string("INSERT INTO ") + UPDATED_TABLE + 
+                "(" + COL_UPDATED + ", " + COL_VALUE + ") VALUES (?,?)";
+            int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+            if (rc == SQLITE_OK)
+            {
+                sqlite3_bind_text(res, 1, COL_UPDATED, strlen(COL_UPDATED), NULL);
+                sqlite3_bind_int(res, 2, 0);
+                sqlite3_step(res);
+                sqlite3_finalize(res);
+            }
+        }
+
+        sqlite3_close(db);
+
     }
 
     void GetPspGameSettings(char* rom_path, BootSettings *settings)
@@ -1167,6 +1252,8 @@ namespace DB {
             }
         }
 
+        PerGameUpdated(db);
+
         sqlite3_close(db);
     }
 
@@ -1202,6 +1289,7 @@ namespace DB {
                 }
             }
         }
+        PerGameUpdated(db);
         sqlite3_close(db);
     }
 
@@ -1345,6 +1433,195 @@ namespace DB {
             sqlite3_step(res);
         }
         sqlite3_finalize(res);
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+    }
+
+    bool UpdatePspPluginSettings(sqlite3 *database, char* rom_path, const PluginSetting *settings)
+    {
+        sqlite3 *db = database;
+        if (database == nullptr)
+        {
+            sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        int updated = 0;
+        std::string sql = std::string("UPDATE ") + PSP_PLUGINS_SETTINGS_TABLE + " SET " + 
+                COL_PLUGIN_ENABLE + "=? WHERE " + COL_ROM_PATH + "=? AND " + COL_PLUGIN_PATH + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_int(res, 1, settings->enable);
+            sqlite3_bind_text(res, 2, rom_path, strlen(rom_path), NULL);
+            sqlite3_bind_text(res, 3, settings->plugin, strlen(settings->plugin), NULL);
+            int step = sqlite3_step(res);
+            updated = sqlite3_changes(db);
+            sqlite3_finalize(res);
+        }
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+
+        return updated;
+    }
+
+    void SavePspPluginSettings(sqlite3 *database, char* rom_path, const PluginSetting *settings)
+    {
+        sqlite3 *db = database;
+        if (database == nullptr)
+        {
+            sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+        }
+
+        if (!UpdatePspPluginSettings(db, rom_path, settings))
+        {
+            sqlite3_stmt *res;
+            std::string sql = std::string("INSERT INTO ") + PSP_PLUGINS_SETTINGS_TABLE + "(" + COL_ROM_PATH + "," + 
+                COL_PLUGIN_PATH + ", " + COL_PLUGIN_ENABLE + ") " + 
+                "VALUES (?, ?, ?)";
+            int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+        
+            if (rc == SQLITE_OK)
+            {
+                sqlite3_bind_text(res, 1, rom_path, strlen(rom_path), NULL);
+                sqlite3_bind_text(res, 2, settings->plugin, strlen(settings->plugin), NULL);
+                sqlite3_bind_int(res, 3, settings->enable);
+                int step = sqlite3_step(res);
+                sqlite3_finalize(res);
+            }
+        }
+
+        if (database == nullptr)
+        {
+            sqlite3_close(db);
+        }
+    }
+
+    void SavePspPluginSettings(char* rom_path, std::vector<PluginSetting> &plugins)
+    {
+        sqlite3 *db;
+        sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+
+        for (std::vector<PluginSetting>::iterator it=plugins.begin(); it != plugins.end(); ++it)
+        {
+            SavePspPluginSettings(db, rom_path, &(*it));
+        }
+
+        PerGameUpdated(db);
+        sqlite3_close(db);
+    }
+
+    void DeletePspPluginSettings(char* rom_path)
+    {
+        sqlite3 *db;
+        sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("DELETE FROM ") + PSP_PLUGINS_SETTINGS_TABLE + " WHERE " + COL_ROM_PATH + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_text(res, 1, rom_path, strlen(rom_path), NULL);
+            int step = sqlite3_step(res);
+            sqlite3_finalize(res);
+        }
+
+        sqlite3_close(db);
+    }
+
+    void DeletePspPluginSettings(char* rom_path, PluginSetting *setting)
+    {
+        sqlite3 *db;
+        sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("DELETE FROM ") + PSP_PLUGINS_SETTINGS_TABLE + " WHERE " + 
+            COL_ROM_PATH + "=? AND " + COL_PLUGIN_PATH + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_text(res, 1, rom_path, strlen(rom_path), NULL);
+            sqlite3_bind_text(res, 1, setting->plugin, strlen(setting->plugin), NULL);
+            int step = sqlite3_step(res);
+            sqlite3_finalize(res);
+        }
+
+        sqlite3_close(db);
+    }
+
+    void GetPspPluginSettings(char* rom_path, std::vector<PluginSetting> &plugins)
+    {
+        sqlite3 *db;
+        sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("SELECT ") + COL_PLUGIN_PATH + "," + COL_PLUGIN_ENABLE +
+            " FROM " + PSP_PLUGINS_SETTINGS_TABLE + " WHERE " + COL_ROM_PATH + "=?";
+
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_text(res, 1, rom_path, strlen(rom_path), NULL);
+            while (sqlite3_step(res) == SQLITE_ROW)
+            {
+                PluginSetting settings;
+                sprintf(settings.plugin, "%s", sqlite3_column_text(res, 0));
+                settings.enable = sqlite3_column_int(res, 1);
+                plugins.push_back(settings);
+            }
+            sqlite3_finalize(res);
+        }
+
+        sqlite3_close(db);
+    }
+
+    void PerGameUpdated(sqlite3 *database)
+    {
+        sqlite3 *db = database;
+        if (database == nullptr)
+        {
+            sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
+        }
+
+        sqlite3_stmt *res;
+        std::string sql = std::string("SELECT ") + COL_VALUE + " FROM " + 
+            UPDATED_TABLE + " WHERE " + COL_UPDATED + "=?";
+        int rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        int updated = 0;
+        int new_updated = 0;
+        if (rc == SQLITE_OK)
+        {
+            sqlite3_bind_text(res, 1, COL_UPDATED, strlen(COL_UPDATED), NULL);
+            int step = sqlite3_step(res);
+            if (step == SQLITE_ROW)
+            {
+                updated = sqlite3_column_int(res, 0);
+            }
+            sqlite3_finalize(res);
+        }
+        new_updated = updated + 1;
+        if (new_updated > 1000) new_updated = 0;
+        sql = std::string("UPDATE ") + UPDATED_TABLE + " SET " + COL_VALUE + "=? WHERE " + COL_UPDATED + "=?";
+        rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        if (rc == SQLITE_OK)
+        {
+            sqlite3_bind_int(res, 1, new_updated);
+            sqlite3_bind_text(res, 2, COL_UPDATED, strlen(COL_UPDATED), NULL);
+            int step = sqlite3_step(res);
+            sqlite3_finalize(res);
+        }
+
+        if (updated >= 1000)
+        {
+            rc = sqlite3_exec(db, "VACUUM", NULL, NULL, NULL);
+        }
 
         if (database == nullptr)
         {

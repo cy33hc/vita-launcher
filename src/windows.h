@@ -67,6 +67,9 @@ namespace Windows {
     void AfterGMSPathChangeCallback(int ime_result);
     void AfterGameTitleChangeCallback(int ime_result);
     void AfterPathChangeCallback(int ime_result);
+    void AfterNewPerGamePluginCallback(int ime_result);
+    void AfterNewPspGamePluginCallback(int ime_result);
+    void AfterNewPopsGamePluginCallback(int ime_result);
     void SetModalMode(bool modal);
 }
 

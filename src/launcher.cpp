@@ -54,7 +54,10 @@ static Folder temp_folder;
 static std::vector<CategorySelection> categories_selection;
 static char txt_category_order[4];
 static char txt_server_port[6];
-
+static std::vector<PluginSetting> per_game_plugin_settings;
+static char new_plugin_file[256];
+static PluginSetting *to_be_delete_plugin = nullptr;
+static bool settings_modified = false;
 GameCategory *tmp_category;
 
 static std::vector<std::string> *ime_multi_field;
@@ -610,6 +613,7 @@ namespace Windows {
                                 game_to_boot = game;
                                 settings = default_boot_settings;
                                 DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                                GAME::GetPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                             }
                             else
                             {
@@ -817,6 +821,7 @@ namespace Windows {
                         game_to_boot = game;
                         settings = default_boot_settings;
                         DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                        GAME::GetPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                     }
                     else
                     {
@@ -1101,6 +1106,7 @@ namespace Windows {
                         game_to_boot = game;
                         settings = default_boot_settings;
                         DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                        GAME::GetPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                     }
                     else
                     {
@@ -1808,6 +1814,145 @@ namespace Windows {
                     ImGui::EndTabItem();
                 }
 
+                if (current_category->id == PSP_GAMES || current_category->id == PS_MIMI_GAMES)
+                {
+                    if (ImGui::BeginTabItem("PSP Plugins"))
+                    {
+                        ImGui::Columns(3, "psp_plugins##columnsettings");
+                        bool sync = false;
+                        for (int i=0; i<default_psp_plugin_settings.size(); i++)
+                        {
+                            ImGui::SetColumnWidth(-1,375);
+                            ImGui::Text(default_psp_plugin_settings[i].plugin);
+                            ImGui::NextColumn();
+                            ImGui::SetColumnWidth(-1, 35);
+                            ImGui::PushID(i);
+                            if (ImGui::Checkbox("##enable", &default_psp_plugin_settings[i].enable)) settings_modified = true;
+                            ImGui::PopID();
+                            ImGui::NextColumn();
+                            ImGui::PushID(i+999);
+                            if (ImGui::SmallButton("Del##psp"))
+                            {
+                                to_be_delete_plugin = &default_psp_plugin_settings[i];
+                                settings_modified = true;
+                            }
+                            ImGui::PopID();
+                            ImGui::NextColumn();
+                            ImGui::Separator();
+                        }
+                        ImGui::Columns(1);
+                        ImGui::SetCursorPosX(ImGui::GetCursorPosX()+360);
+                        if (ImGui::Button("Add##psp"))
+                        {
+                            ime_single_field = new_plugin_file;
+                            ime_callback = SingleValueImeCallback;
+                            ime_before_update = nullptr;
+                            ime_after_update = AfterNewPspGamePluginCallback;
+                            Dialog::initImeDialog("Plugin Path", "ms0:/seplugins/", 255, SCE_IME_TYPE_DEFAULT, 0, 0);
+                            settings_modified = true;
+                            gui_mode = GUI_MODE_IME;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Sync##psp"))
+                        {
+                            GAME::ImportPspGamePlugins();
+                        }
+                        if (ImGui::IsItemHovered())
+                        {
+                            ImGui::BeginTooltip();
+                            ImGui::Text("Copy plugin settings from ux0:pspemu/seplugins/game.txt");
+                            ImGui::EndTooltip();
+                        }
+                        if (to_be_delete_plugin != nullptr)
+                        {
+                            for (std::vector<PluginSetting>::iterator it=default_psp_plugin_settings.begin(); it != default_psp_plugin_settings.end(); )
+                            {
+                                if (strcmp(it->plugin, to_be_delete_plugin->plugin)==0)
+                                {
+                                    default_psp_plugin_settings.erase(it);
+                                    break;
+                                }
+                                else
+                                {
+                                    ++it;
+                                }
+                            }
+                            to_be_delete_plugin = nullptr;
+                        }
+                        ImGui::EndTabItem();
+                    }
+                }
+
+                if (current_category->id == PS1_GAMES)
+                {
+                    if (ImGui::BeginTabItem("Pops Plugins"))
+                    {
+                        ImGui::SetNextItemWidth(390);
+                        ImGui::Columns(3, "pops_plugins##columnsettings");
+                        bool sync = false;
+                        for (int i=0; i<default_ps1_plugin_settings.size(); i++)
+                        {
+                            ImGui::SetColumnWidth(-1,375);
+                            ImGui::Text(default_ps1_plugin_settings[i].plugin);
+                            ImGui::NextColumn();
+                            ImGui::SetColumnWidth(-1, 35);
+                            ImGui::PushID(i+2000);
+                            if (ImGui::Checkbox("##enable", &default_ps1_plugin_settings[i].enable)) settings_modified = true;
+                            ImGui::PopID();
+                            ImGui::NextColumn();
+                            ImGui::PushID(i+3000);
+                            if (ImGui::SmallButton("Del##pops"))
+                            {
+                                to_be_delete_plugin = &default_ps1_plugin_settings[i];
+                                settings_modified = true;
+                            }
+                            ImGui::PopID();
+                            ImGui::NextColumn();
+                            ImGui::Separator();
+                        }
+                        ImGui::Columns(1);
+                        ImGui::SetCursorPosX(ImGui::GetCursorPosX()+360);
+                        if (ImGui::Button("Add##pops"))
+                        {
+                            ime_single_field = new_plugin_file;
+                            ime_callback = SingleValueImeCallback;
+                            ime_before_update = nullptr;
+                            ime_after_update = AfterNewPopsGamePluginCallback;
+                            Dialog::initImeDialog("Plugin Path", "ms0:/seplugins/", 255, SCE_IME_TYPE_DEFAULT, 0, 0);
+                            settings_modified = true;
+                            gui_mode = GUI_MODE_IME;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Sync##pops"))
+                        {
+                            GAME::ImportPopsGamePlugins();
+                        }
+                        if (ImGui::IsItemHovered())
+                        {
+                            ImGui::BeginTooltip();
+                            ImGui::Text("Copy plugin settings from ux0:pspemu/seplugins/pops.txt");
+                            ImGui::EndTooltip();
+                        }
+                        if (to_be_delete_plugin != nullptr)
+                        {
+                            for (std::vector<PluginSetting>::iterator it=default_ps1_plugin_settings.begin(); it != default_ps1_plugin_settings.end(); )
+                            {
+                                if (strcmp(it->plugin, to_be_delete_plugin->plugin)==0)
+                                {
+                                    default_ps1_plugin_settings.erase(it);
+                                    break;
+                                }
+                                else
+                                {
+                                    ++it;
+                                }
+                            }
+                            to_be_delete_plugin = nullptr;
+                        }
+                        ImGui::EndTabItem();
+                    }
+                }
+
                 if (ImGui::BeginTabItem("Global"))
                 {
                     if (current_category->id != CATEGORY)
@@ -2319,6 +2464,19 @@ namespace Windows {
                     }
                 }
                 
+                if (current_category->id == PS1_GAMES && settings_modified)
+                {
+                    DB::DeletePspPluginSettings("ps1");
+                    DB::SavePspPluginSettings("ps1", default_ps1_plugin_settings);
+                    settings_modified = false;
+                }
+                else if ((current_category->id == PSP_GAMES || current_category->id == PS_MIMI_GAMES) && settings_modified)
+                {
+                    DB::DeletePspPluginSettings("psp");
+                    DB::SavePspPluginSettings("psp", default_psp_plugin_settings);
+                    settings_modified = false;
+                }
+
                 show_all_categories = show_all_categories_setting;
                 SetModalMode(false);
                 move_game = false;
@@ -2355,7 +2513,7 @@ namespace Windows {
         else
         {
             ImGui::SetNextWindowPos(ImVec2(230, 80));
-            ImGui::SetNextWindowSize(ImVec2(495,385));
+            ImGui::SetNextWindowSizeConstraints(ImVec2(495,300), ImVec2(495,400), NULL, NULL);
         }
         if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
         {
@@ -2374,90 +2532,172 @@ namespace Windows {
                     sprintf(category->rom_launcher_title_id, "%s", RETROARCH_TITLE_ID);
                 }
             }
-            else
-            {
-                ImGui::Text("Boot Settings");
-            }
 
             if (category->id != PS1_GAMES || strcmp(category->rom_launcher_title_id, RETROARCH_TITLE_ID) != 0)
             {
-                ImGui::Separator();
-                ImGui::Text("Driver:"); ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 110);
-                if (ImGui::RadioButton("Inferno", settings.driver == INFERNO)) { settings.driver = INFERNO; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("March33", settings.driver == MARCH33)) { settings.driver = MARCH33; } ImGui::SameLine();
-                if (ImGui::RadioButton("NP9660", settings.driver == NP9660)) { settings.driver = NP9660; }
+                if (ImGui::BeginTabBar("AdernalineSettings", ImGuiTabBarFlags_FittingPolicyScroll))
+                {
+                    if (ImGui::BeginTabItem("Boot Settings"))
+                    {
+                        ImGui::Text("Driver:"); ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 110);
+                        if (ImGui::RadioButton("Inferno", settings.driver == INFERNO)) { settings.driver = INFERNO; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 220);
+                        if (ImGui::RadioButton("March33", settings.driver == MARCH33)) { settings.driver = MARCH33; } ImGui::SameLine();
+                        if (ImGui::RadioButton("NP9660", settings.driver == NP9660)) { settings.driver = NP9660; }
 
-                ImGui::Text("Execute:"); ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 110);
-                if (ImGui::RadioButton("eboot.bin", settings.execute == EBOOT_BIN)) { settings.execute = EBOOT_BIN; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("boot.bin", settings.execute == BOOT_BIN)) { settings.execute = BOOT_BIN; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 320);
-                if (ImGui::RadioButton("eboot.old", settings.execute == EBOOT_OLD)) { settings.execute = EBOOT_OLD; }
+                        ImGui::Text("Execute:"); ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 110);
+                        if (ImGui::RadioButton("eboot.bin", settings.execute == EBOOT_BIN)) { settings.execute = EBOOT_BIN; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 220);
+                        if (ImGui::RadioButton("boot.bin", settings.execute == BOOT_BIN)) { settings.execute = BOOT_BIN; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 320);
+                        if (ImGui::RadioButton("eboot.old", settings.execute == EBOOT_OLD)) { settings.execute = EBOOT_OLD; }
 
-                ImGui::Text("PS Button Mode:"); ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 150);
-                if (ImGui::RadioButton("Menu", settings.ps_button_mode == MENU)) { settings.ps_button_mode = MENU; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("LiveArea", settings.ps_button_mode == LIVEAREA)) { settings.ps_button_mode = LIVEAREA; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 320);
-                if (ImGui::RadioButton("Standard", settings.ps_button_mode == STANDARD)) { settings.ps_button_mode = STANDARD; }
+                        ImGui::Text("PS Button Mode:"); ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 150);
+                        if (ImGui::RadioButton("Menu", settings.ps_button_mode == MENU)) { settings.ps_button_mode = MENU; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 220);
+                        if (ImGui::RadioButton("LiveArea", settings.ps_button_mode == LIVEAREA)) { settings.ps_button_mode = LIVEAREA; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 320);
+                        if (ImGui::RadioButton("Standard", settings.ps_button_mode == STANDARD)) { settings.ps_button_mode = STANDARD; }
 
-                ImGui::Text("Suspend Threads:"); ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 150);
-                if (ImGui::RadioButton("Yes", settings.suspend_threads == SUSPEND_YES)) { settings.suspend_threads = SUSPEND_YES; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("No", settings.suspend_threads == SUSPEND_NO)) { settings.suspend_threads = SUSPEND_NO; }
+                        ImGui::Text("Suspend Threads:"); ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 150);
+                        if (ImGui::RadioButton("Yes", settings.suspend_threads == SUSPEND_YES)) { settings.suspend_threads = SUSPEND_YES; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 220);
+                        if (ImGui::RadioButton("No", settings.suspend_threads == SUSPEND_NO)) { settings.suspend_threads = SUSPEND_NO; }
 
-                ImGui::Text("Plugins:"); ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 110);
-                if (ImGui::RadioButton("Default##plugins", settings.plugins == PLUGINS_DEFAULT)) { settings.plugins = PLUGINS_DEFAULT; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("Enable##plugins", settings.plugins == PLUGINS_ENABLE)) { settings.plugins = PLUGINS_ENABLE; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 320);
-                if (ImGui::RadioButton("Disable##plugins", settings.plugins == PLUGINS_DISABLE)) { settings.plugins = PLUGINS_DISABLE; }
+                        ImGui::Text("Plugins:"); ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 110);
+                        if (ImGui::RadioButton("Default##plugins", settings.plugins == PLUGINS_DEFAULT)) { settings.plugins = PLUGINS_DEFAULT; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 220);
+                        if (ImGui::RadioButton("Enable##plugins", settings.plugins == PLUGINS_ENABLE)) { settings.plugins = PLUGINS_ENABLE; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 320);
+                        if (ImGui::RadioButton("Disable##plugins", settings.plugins == PLUGINS_DISABLE)) { settings.plugins = PLUGINS_DISABLE; }
 
-                ImGui::Text("NoNpDrm:"); ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 110);
-                if (ImGui::RadioButton("Default##nonpdrm", settings.nonpdrm == NONPDRM_DEFAULT)) { settings.nonpdrm = NONPDRM_DEFAULT; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("Enable##nonpdrm", settings.nonpdrm == NONPDRM_ENABLE)) { settings.nonpdrm = NONPDRM_ENABLE; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 320);
-                if (ImGui::RadioButton("Disable##nonpdrm", settings.nonpdrm == NONPDRM_DISABLE)) { settings.nonpdrm = NONPDRM_DISABLE; }
+                        ImGui::Text("NoNpDrm:"); ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 110);
+                        if (ImGui::RadioButton("Default##nonpdrm", settings.nonpdrm == NONPDRM_DEFAULT)) { settings.nonpdrm = NONPDRM_DEFAULT; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 220);
+                        if (ImGui::RadioButton("Enable##nonpdrm", settings.nonpdrm == NONPDRM_ENABLE)) { settings.nonpdrm = NONPDRM_ENABLE; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 320);
+                        if (ImGui::RadioButton("Disable##nonpdrm", settings.nonpdrm == NONPDRM_DISABLE)) { settings.nonpdrm = NONPDRM_DISABLE; }
 
-                ImGui::Text("High Memory:"); ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 110);
-                if (ImGui::RadioButton("Default##highmem", settings.high_memory == HIGH_MEM_DEFAULT)) { settings.high_memory = HIGH_MEM_DEFAULT; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("Enable##highmem", settings.high_memory == HIGH_MEM_ENABLE)) { settings.high_memory = HIGH_MEM_ENABLE; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 320);
-                if (ImGui::RadioButton("Disable##highmem", settings.high_memory == HIGH_MEM_DISABLE)) { settings.high_memory = HIGH_MEM_DISABLE; }
+                        ImGui::Text("High Memory:"); ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 110);
+                        if (ImGui::RadioButton("Default##highmem", settings.high_memory == HIGH_MEM_DEFAULT)) { settings.high_memory = HIGH_MEM_DEFAULT; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 220);
+                        if (ImGui::RadioButton("Enable##highmem", settings.high_memory == HIGH_MEM_ENABLE)) { settings.high_memory = HIGH_MEM_ENABLE; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 320);
+                        if (ImGui::RadioButton("Disable##highmem", settings.high_memory == HIGH_MEM_DISABLE)) { settings.high_memory = HIGH_MEM_DISABLE; }
 
-                ImGui::Text("Cpu Speed:"); ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 110);
-                if (ImGui::RadioButton("Default##cpuspeed", settings.cpu_speed == CPU_DEFAULT)) { settings.cpu_speed = CPU_DEFAULT; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("333/166", settings.cpu_speed == CPU_333_166)) { settings.cpu_speed = CPU_333_166; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 320);
-                if (ImGui::RadioButton("300/150", settings.cpu_speed == CPU_300_150)) { settings.cpu_speed = CPU_300_150; }
-                ImGui::SetCursorPosX(posX + 110);
-                if (ImGui::RadioButton("288/144", settings.cpu_speed == CPU_288_144)) { settings.cpu_speed = CPU_288_144; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("266/133", settings.cpu_speed == CPU_266_133)) { settings.cpu_speed = CPU_266_133; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 320);
-                if (ImGui::RadioButton("222/111", settings.cpu_speed == CPU_222_111)) { settings.cpu_speed = CPU_222_111; }
-                ImGui::SetCursorPosX(posX + 110);
-                if (ImGui::RadioButton("200/100", settings.cpu_speed == CPU_200_100)) { settings.cpu_speed = CPU_200_100; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("166/83", settings.cpu_speed == CPU_166_83)) { settings.cpu_speed = CPU_166_83; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 320);
-                if (ImGui::RadioButton("100/50", settings.cpu_speed == CPU_100_50)) { settings.cpu_speed = CPU_100_50; }
-                ImGui::SetCursorPosX(posX + 110);
-                if (ImGui::RadioButton("133/66", settings.cpu_speed == CPU_133_66)) { settings.cpu_speed = CPU_133_66; } ImGui::SameLine();
-                ImGui::SetCursorPosX(posX + 220);
-                if (ImGui::RadioButton("50/25", settings.cpu_speed == CPU_50_25)) { settings.cpu_speed = CPU_50_25; }
+                        ImGui::Text("Cpu Speed:"); ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 110);
+                        if (ImGui::RadioButton("Default##cpuspeed", settings.cpu_speed == CPU_DEFAULT)) { settings.cpu_speed = CPU_DEFAULT; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 220);
+                        if (ImGui::RadioButton("333/166", settings.cpu_speed == CPU_333_166)) { settings.cpu_speed = CPU_333_166; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 320);
+                        if (ImGui::RadioButton("300/150", settings.cpu_speed == CPU_300_150)) { settings.cpu_speed = CPU_300_150; }
+                        ImGui::SetCursorPosX(posX + 110);
+                        if (ImGui::RadioButton("288/144", settings.cpu_speed == CPU_288_144)) { settings.cpu_speed = CPU_288_144; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 220);
+                        if (ImGui::RadioButton("266/133", settings.cpu_speed == CPU_266_133)) { settings.cpu_speed = CPU_266_133; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 320);
+                        if (ImGui::RadioButton("222/111", settings.cpu_speed == CPU_222_111)) { settings.cpu_speed = CPU_222_111; }
+                        ImGui::SetCursorPosX(posX + 110);
+                        if (ImGui::RadioButton("200/100", settings.cpu_speed == CPU_200_100)) { settings.cpu_speed = CPU_200_100; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 220);
+                        if (ImGui::RadioButton("166/83", settings.cpu_speed == CPU_166_83)) { settings.cpu_speed = CPU_166_83; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 320);
+                        if (ImGui::RadioButton("100/50", settings.cpu_speed == CPU_100_50)) { settings.cpu_speed = CPU_100_50; }
+                        ImGui::SetCursorPosX(posX + 110);
+                        if (ImGui::RadioButton("133/66", settings.cpu_speed == CPU_133_66)) { settings.cpu_speed = CPU_133_66; } ImGui::SameLine();
+                        ImGui::SetCursorPosX(posX + 220);
+                        if (ImGui::RadioButton("50/25", settings.cpu_speed == CPU_50_25)) { settings.cpu_speed = CPU_50_25; }
+
+                        ImGui::EndTabItem();
+                    }
+
+                    if (settings.plugins != PLUGINS_DISABLE)
+                    {
+                        if (ImGui::BeginTabItem("Plugins"))
+                        {
+                            
+                            ImGui::Columns(3, "per_game_psp_plugins##columnsettings");
+                            for (int i=0; i<per_game_plugin_settings.size(); i++)
+                            {
+                                ImGui::SetColumnWidth(-1,380);
+                                ImGui::Text(per_game_plugin_settings[i].plugin);
+                                ImGui::NextColumn();
+                                ImGui::SetColumnWidth(-1, 35);
+                                ImGui::PushID(i);
+                                if (ImGui::Checkbox("##enable", &per_game_plugin_settings[i].enable)) settings_modified = true;
+                                ImGui::PopID();
+                                ImGui::NextColumn();
+                                ImGui::PushID(i+999);
+                                if (ImGui::SmallButton("Del"))
+                                {
+                                    to_be_delete_plugin = &per_game_plugin_settings[i];
+                                    settings_modified = true;
+                                }
+                                ImGui::PopID();
+                                ImGui::NextColumn();
+                                ImGui::Separator();
+                            }
+                            ImGui::Columns(1);
+                            ImGui::SetCursorPosX(ImGui::GetCursorPosX()+360);
+                            if (ImGui::Button("Add"))
+                            {
+                                ime_single_field = new_plugin_file;
+                                ime_callback = SingleValueImeCallback;
+                                ime_before_update = nullptr;
+                                ime_after_update = AfterNewPerGamePluginCallback;
+                                Dialog::initImeDialog("Plugin Path", "ms0:/seplugins/", 255, SCE_IME_TYPE_DEFAULT, 0, 0);
+                                settings_modified = true;
+                                gui_mode = GUI_MODE_IME;
+                            }
+                            ImGui::SameLine();
+                            if (ImGui::Button("Reset"))
+                            {
+                                per_game_plugin_settings.clear();
+                                if (strcmp(game_to_boot->category, "ps1") == 0)
+                                {
+                                    per_game_plugin_settings.insert(per_game_plugin_settings.end(), default_ps1_plugin_settings.begin(), default_ps1_plugin_settings.end());
+                                }
+                                else
+                                {
+                                    per_game_plugin_settings.insert(per_game_plugin_settings.end(), default_psp_plugin_settings.begin(), default_psp_plugin_settings.end());
+                                }
+                                settings_modified = true;
+                            }
+                            if (ImGui::IsItemHovered())
+                            {
+                                ImGui::BeginTooltip();
+                                ImGui::Text("Remove game plugins settings and load global defaults");
+                                ImGui::EndTooltip();
+                            }
+                            if (to_be_delete_plugin != nullptr)
+                            {
+                                for (std::vector<PluginSetting>::iterator it = per_game_plugin_settings.begin(); it != per_game_plugin_settings.end(); )
+                                {
+                                    if (strcmp(it->plugin, to_be_delete_plugin->plugin) == 0)
+                                    {
+                                        per_game_plugin_settings.erase(it);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        ++it;
+                                    }
+                                }
+                                to_be_delete_plugin = nullptr;
+                            }
+                            ImGui::EndTabItem();
+                        }
+                    }
+                    ImGui::EndTabBar();
+                }
             }
 
             ImGui::Separator();
@@ -2471,6 +2711,12 @@ namespace Windows {
                     CloseIniFile();
                 }
                 DB::SavePspGameSettings(game_to_boot->rom_path, &settings);
+                if (settings.plugins != PLUGINS_DISABLE && settings_modified)
+                {
+                    GAME::SyncPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
+                    GAME::WritePerGamePluginSettings(game_to_boot, per_game_plugin_settings);
+                    settings_modified = false;
+                }
                 SetModalMode(false);
                 handle_boot_game = false;
                 GAME::Launch(game_to_boot, &settings);
@@ -2483,6 +2729,7 @@ namespace Windows {
                 SetModalMode(false);
                 settings = default_boot_settings;
                 handle_boot_game = false;
+                settings_modified = false;
                 ImGui::CloseCurrentPopup();
             }
             
@@ -2640,6 +2887,7 @@ namespace Windows {
                         handle_boot_game = true;
                         settings = default_boot_settings;
                         DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                        GAME::GetPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                     }
                     else if (game_to_boot->type == TYPE_GMS)
                     {
@@ -2662,6 +2910,7 @@ namespace Windows {
                 }
             }
             ImGui::EndPopup();
+            sceKernelPowerTick(SCE_KERNEL_POWER_TICK_DEFAULT);
         }
     }
 
@@ -3678,6 +3927,7 @@ namespace Windows {
                             game_to_boot = game;
                             settings = default_boot_settings;
                             DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                            GAME::GetPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                         }
                         else
                         {
@@ -3893,6 +4143,30 @@ namespace Windows {
         CONFIG::rtrim(str, "/");
         CONFIG::rtrim(str, " ");
         sprintf(ime_single_field, "%s", str.c_str());
+    }
+
+    void AfterNewPerGamePluginCallback(int ime_result)
+    {
+        PluginSetting setting;
+        sprintf(setting.plugin, "%s", new_plugin_file);
+        setting.enable = true;
+        per_game_plugin_settings.push_back(setting);
+    }
+
+    void AfterNewPspGamePluginCallback(int ime_result)
+    {
+        PluginSetting setting;
+        sprintf(setting.plugin, "%s", new_plugin_file);
+        setting.enable = true;
+        default_psp_plugin_settings.push_back(setting);
+    }
+
+    void AfterNewPopsGamePluginCallback(int ime_result)
+    {
+        PluginSetting setting;
+        sprintf(setting.plugin, "%s", new_plugin_file);
+        setting.enable = true;
+        default_ps1_plugin_settings.push_back(setting);
     }
 
     void HandleUpdates()

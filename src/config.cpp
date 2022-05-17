@@ -7,6 +7,7 @@
 #include "game.h"
 #include "fs.h"
 #include "style.h"
+#include "db.h"
 
 extern "C" {
 	#include "inifile.h"
@@ -28,6 +29,7 @@ int ftp_server_port;
 bool pasv_mode;
 char ftp_cache_path[128];
 bool enable_bilinear_filter;
+bool warn_missing_installs;
 
 namespace CONFIG {
 
@@ -315,6 +317,9 @@ namespace CONFIG {
 
         sprintf(ftp_cache_path, "%s", ReadString(CONFIG_GLOBAL, CONFIG_FTP_CACHE_PATH, "ux0:/data/SMLA00001/cache"));
         WriteString(CONFIG_GLOBAL, CONFIG_FTP_CACHE_PATH, ftp_cache_path);
+        
+        warn_missing_installs = ReadBool(CONFIG_GLOBAL, CONFIG_UPDATE_WARN_MISSING, true);
+        WriteBool(CONFIG_GLOBAL, CONFIG_UPDATE_WARN_MISSING, warn_missing_installs);
 
         SetupCategory(&game_categories[VITA_GAMES], VITA_GAMES, "vita", "Vita", nullptr, nullptr, VITA_TITLE_ID_PREFIXES, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
         SetupCategory(&game_categories[SYSTEM_APPS], SYSTEM_APPS, "system", "System Apps", nullptr, nullptr, SYSTEM_APP_ID_PREFIXES, nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
@@ -373,6 +378,9 @@ namespace CONFIG {
 
         WriteIniFile(CONFIG_INI_FILE);
         CloseIniFile();
+
+        DB::GetPspPluginSettings(game_categories[PSP_GAMES].category, default_psp_plugin_settings);
+        DB::GetPspPluginSettings(game_categories[PS1_GAMES].category, default_ps1_plugin_settings);
     }
 
     void ParseMultiValueString(const char* prefix_list, std::vector<std::string> &prefixes, bool toLower)

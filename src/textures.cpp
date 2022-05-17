@@ -77,6 +77,7 @@ namespace Textures {
 		if (texture->id != no_icon.id && texture->id != 0)
 		{
 			glDeleteTextures(1, &texture->id);
+			glFlush();
 		}
 	}
 	

@@ -41,11 +41,6 @@ namespace Services
 		style.AntiAliasedLinesUseTex = false;
 		style.AntiAliasedLines = true;
 		style.AntiAliasedFill = true;
-		io.Fonts->AddFontFromFileTTF(
-			"sa0:/data/font/pvf/jpn0.pvf",
-			16.0f,
-			NULL,
-			io.Fonts->GetGlyphRangesJapanese());
 
 		static const ImWchar ranges[] = { // All languages with chinese included
 			0x0020, 0x00FF, // Basic Latin + Latin Supplement
@@ -56,6 +51,8 @@ namespace Services
 			0x1E00, 0x1EFF, // Latin Extended Additional
 			0x1F00, 0x1FFF, // Greek Extended
 			0x2000, 0x206F, // General Punctuation
+			0x2100, 0x214F, // Letterlike Symbols
+			0x2460, 0x24FF, // Enclosed Alphanumerics
 			0x2DE0, 0x2DFF, // Cyrillic Extended-A
 			0x2E80, 0x2EFF, // CJK Radicals Supplement
 			0x3000, 0x30FF, // CJK Symbols and Punctuations, Hiragana, Katakana
@@ -68,6 +65,19 @@ namespace Services
 			0,
 		};
 
+		ImFontConfig config;
+		config.MergeMode = true;
+		io.Fonts->AddFontFromFileTTF(
+			"sa0:/data/font/pvf/ltn0.pvf",
+			16.0f,
+			NULL,
+			ranges);
+		io.Fonts->AddFontFromFileTTF(
+			"sa0:/data/font/pvf/jpn0.pvf",
+			16.0f,
+			&config,
+			io.Fonts->GetGlyphRangesJapanese());
+		io.Fonts->Build();
 
 		Style::LoadStyle(style_path);
 
@@ -136,6 +146,11 @@ namespace Services
 
 	int Init(void)
 	{
+		scePowerSetArmClockFrequency(444);
+		scePowerSetBusClockFrequency(222);
+		scePowerSetGpuClockFrequency(222);
+		scePowerSetGpuXbarClockFrequency(166);
+
 		// Allow writing to ux0:app
 		sceAppMgrUmount("app0:");
 		sceAppMgrUmount("savedata0:");

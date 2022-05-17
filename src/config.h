@@ -49,6 +49,8 @@
 #define PSP_EBOOT_PATH "ux0:pspemu/PSP/GAME"
 #define CONFIG_PSPEMU_PATH "pspemu_location"
 #define DEFAULT_PSPEMU_PATH "ux0:pspemu"
+#define DEFAULT_GAME_PLUGIN_PATH DEFAULT_PSPEMU_PATH "/seplugins/game.txt"
+#define DEFAULT_POPS_PLUGIN_PATH DEFAULT_PSPEMU_PATH "/seplugins/pops.txt"
 #define PSP_ISO_CACHE_PATH "ux0:pspemu/ISO"
 #define PSP_EBOOT_CACHE_PATH "ux0:pspemu/PSP/GAME/_cache"
 
@@ -70,6 +72,7 @@
 #define CONFIG_NEW_ICON_METHOD "new_icon_method"
 #define CONFIG_ICON_TYPE "icon_type"
 #define CONFIG_ASPECT_RATIO "icon_aspect_ratio"
+#define CONFIG_UPDATE_WARN_MISSING "warn_missing_installs"
 
 #define DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID "ADRLANCHR"
 #define RETROARCH_TITLE_ID "RETROVITA"
@@ -276,6 +279,7 @@ extern int ftp_server_port;
 extern char ftp_cache_path[];
 extern bool pasv_mode;
 extern bool enable_bilinear_filter;
+extern bool warn_missing_installs;
 
 namespace CONFIG {
     void LoadConfig();

@@ -13,8 +13,10 @@
 #define FAVORITES_TABLE "favorites"
 #define FOLDERS_TABLE "folders"
 #define PSP_GAME_SETTINGS_TABLE "psp_settings"
+#define PSP_PLUGINS_SETTINGS_TABLE "psp_plugin_settings"
 #define RETROROM_GAME_SETTINGS_TABLE "retrorom_settings"
 #define APP_FOLDERS_TABLE "app_folders"
+#define UPDATED_TABLE "updated"
 
 #define COL_TITLE_ID "title_id"
 #define COL_TYPE "type"
@@ -24,6 +26,10 @@
 #define COL_ID "id"
 #define COL_FOLDER_ID "folder_id"
 #define COL_ICON_PATH "icon_path"
+#define COL_PLUGIN_PATH "plugin_path"
+#define COL_PLUGIN_ENABLE "plugin_enable"
+#define COL_UPDATED "updated"
+#define COL_VALUE "value"
 
 #define COL_DRIVERS                   "drivers"
 #define COL_EXECUTE                   "execute"
@@ -67,15 +73,23 @@ namespace DB {
     bool FindMatchingThumbnail(char* db_name, std::vector<std::string> &tokens, char* thumbnail);
     bool FindMatchingThumbnail(sqlite3 *database, std::vector<std::string> &tokens, char* thumbnail);
     void SetupPerGameSettingsDatabase();
+    void UpdateGameSettingsDatabase();
     void GetPspGameSettings(char* rom_path, BootSettings *settings);
     void GetRomCoreSettings(char* rom_path, char* core);
     void SavePspGameSettings(char* rom_path, BootSettings *settings);
     void SaveRomCoreSettings(char* rom_path, char* core);
+    void GetPspPluginSettings(char* rom_path, std::vector<PluginSetting> &plugins);
+    bool UpdatePspPluginSettings(sqlite3 *database, char* rom_path, const PluginSetting *settings);
+    void SavePspPluginSettings(sqlite3 *database, char* rom_path, const PluginSetting *settings);
+    void SavePspPluginSettings(char* rom_path, std::vector<PluginSetting> &plugins);
+    void DeletePspPluginSettings(char* rom_path);
+    void DeletePspPluginSettings(char* rom_path, PluginSetting *setting);
     bool GetMameRomName(sqlite3 *database, char* rom_name, char* name);
     void InsertVitaAppFolder(sqlite3 *database, char* title_id, int folder_id);
     int UpdateVitaAppFolder(sqlite3 *database, char* title_id, int folder_id);
     void DeleteVitaAppFolder(sqlite3 *database, int folder_id);
     void DeleteVitaAppFolderById(sqlite3 *database, char* title_id);
+    void PerGameUpdated(sqlite3 *database);
 }
 
 #endif
