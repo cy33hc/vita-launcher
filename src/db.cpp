@@ -1097,6 +1097,26 @@ namespace DB {
         sqlite3 *db;
         sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
 
+        if (!TableExists(db, PSP_GAME_SETTINGS_TABLE))
+        {
+            std::string sql = std::string("CREATE TABLE ") + PSP_GAME_SETTINGS_TABLE + "(" +
+                COL_ROM_PATH + " TEXT," +
+                COL_DRIVERS + " INTEGER," +
+                COL_EXECUTE + " INTEGER," +
+                COL_CUSTOMIZED + " INTEGER," +
+                COL_PSBUTTON_MODE + " INTEGER," +
+                COL_SUSPEND_THREADS + " INTEGER," +
+                COL_PLUGINS + " INTEGER," +
+                COL_NONPDRM + " INTEGER," +
+                COL_HIGH_MEMORY + " INTEGER," +
+                COL_CPU_SPEED + " INTEGER)";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX psp_games_settings_index ON ") + PSP_GAME_SETTINGS_TABLE + "(" + 
+                COL_ROM_PATH + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+        }
+
         if (!TableExists(db, PSP_PLUGINS_SETTINGS_TABLE))
         {
             std::string sql = std::string("CREATE TABLE ") + PSP_PLUGINS_SETTINGS_TABLE + "(" +
@@ -1106,6 +1126,18 @@ namespace DB {
             sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
 
             sql = std::string("CREATE INDEX psp_plugin_settings_index ON ") + PSP_PLUGINS_SETTINGS_TABLE + "(" + 
+                COL_ROM_PATH + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+        }
+
+        if (!TableExists(db, RETROROM_GAME_SETTINGS_TABLE))
+        {
+            std::string sql = std::string("CREATE TABLE ") + RETROROM_GAME_SETTINGS_TABLE + "(" +
+                COL_ROM_PATH + " TEXT," +
+                COL_RETRO_CORE + " TEXT)";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX retro_games_settings_index ON ") + RETROROM_GAME_SETTINGS_TABLE + "(" + 
                 COL_ROM_PATH + ")";
             sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
         }
@@ -1606,7 +1638,7 @@ namespace DB {
             sqlite3_finalize(res);
         }
         new_updated = updated + 1;
-        if (new_updated > 1000) new_updated = 0;
+        if (new_updated > 5000) new_updated = 0;
         sql = std::string("UPDATE ") + UPDATED_TABLE + " SET " + COL_VALUE + "=? WHERE " + COL_UPDATED + "=?";
         rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
 
@@ -1618,7 +1650,7 @@ namespace DB {
             sqlite3_finalize(res);
         }
 
-        if (updated >= 1000)
+        if (updated >= 5000)
         {
             rc = sqlite3_exec(db, "VACUUM", NULL, NULL, NULL);
         }
