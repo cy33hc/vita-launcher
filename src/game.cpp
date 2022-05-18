@@ -691,14 +691,7 @@ namespace GAME {
                 FS::Rm(adernaline_launcher_config_bin_path);
             }
 
-            if (FS::FileExists(adernaline_launcher_boot_bin_path))
-            {
-                fd = FS::OpenRW(adernaline_launcher_boot_bin_path);
-            }
-            else
-            {
-                fd = FS::Create(adernaline_launcher_boot_bin_path);
-            }
+            fd = FS::Create(adernaline_launcher_boot_bin_path);
             FS::Write(fd, boot_data, 320);
             FS::Close(fd);
 

@@ -1818,18 +1818,17 @@ namespace Windows {
                 {
                     if (ImGui::BeginTabItem("PSP Plugins"))
                     {
-                        ImGui::Columns(3, "psp_plugins##columnsettings");
+                        ImGui::Columns(2, "psp_plugins##columnsettings");
                         bool sync = false;
                         for (int i=0; i<default_psp_plugin_settings.size(); i++)
                         {
-                            ImGui::SetColumnWidth(-1,375);
+                            ImGui::SetColumnWidth(-1,395);
                             ImGui::Text(default_psp_plugin_settings[i].plugin);
                             ImGui::NextColumn();
-                            ImGui::SetColumnWidth(-1, 35);
+                            ImGui::SetColumnWidth(-1, 100);
                             ImGui::PushID(i);
                             if (ImGui::Checkbox("##enable", &default_psp_plugin_settings[i].enable)) settings_modified = true;
-                            ImGui::PopID();
-                            ImGui::NextColumn();
+                            ImGui::PopID(); ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()+20);
                             ImGui::PushID(i+999);
                             if (ImGui::SmallButton("Del##psp"))
                             {
@@ -1841,7 +1840,7 @@ namespace Windows {
                             ImGui::Separator();
                         }
                         ImGui::Columns(1);
-                        ImGui::SetCursorPosX(ImGui::GetCursorPosX()+360);
+                        ImGui::SetCursorPosX(ImGui::GetCursorPosX()+390);
                         if (ImGui::Button("Add##psp"))
                         {
                             ime_single_field = new_plugin_file;
@@ -1888,18 +1887,17 @@ namespace Windows {
                     if (ImGui::BeginTabItem("Pops Plugins"))
                     {
                         ImGui::SetNextItemWidth(390);
-                        ImGui::Columns(3, "pops_plugins##columnsettings");
+                        ImGui::Columns(2, "pops_plugins##columnsettings");
                         bool sync = false;
                         for (int i=0; i<default_ps1_plugin_settings.size(); i++)
                         {
-                            ImGui::SetColumnWidth(-1,375);
+                            ImGui::SetColumnWidth(-1,395);
                             ImGui::Text(default_ps1_plugin_settings[i].plugin);
                             ImGui::NextColumn();
-                            ImGui::SetColumnWidth(-1, 35);
+                            ImGui::SetColumnWidth(-1, 100);
                             ImGui::PushID(i+2000);
                             if (ImGui::Checkbox("##enable", &default_ps1_plugin_settings[i].enable)) settings_modified = true;
-                            ImGui::PopID();
-                            ImGui::NextColumn();
+                            ImGui::PopID(); ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()+20);
                             ImGui::PushID(i+3000);
                             if (ImGui::SmallButton("Del##pops"))
                             {
@@ -1911,7 +1909,7 @@ namespace Windows {
                             ImGui::Separator();
                         }
                         ImGui::Columns(1);
-                        ImGui::SetCursorPosX(ImGui::GetCursorPosX()+360);
+                        ImGui::SetCursorPosX(ImGui::GetCursorPosX()+390);
                         if (ImGui::Button("Add##pops"))
                         {
                             ime_single_field = new_plugin_file;
@@ -2624,17 +2622,16 @@ namespace Windows {
                         if (ImGui::BeginTabItem("Plugins"))
                         {
                             
-                            ImGui::Columns(3, "per_game_psp_plugins##columnsettings");
+                            ImGui::Columns(2, "per_game_psp_plugins##columnsettings");
                             for (int i=0; i<per_game_plugin_settings.size(); i++)
                             {
-                                ImGui::SetColumnWidth(-1,380);
+                                ImGui::SetColumnWidth(-1,390);
                                 ImGui::Text(per_game_plugin_settings[i].plugin);
                                 ImGui::NextColumn();
-                                ImGui::SetColumnWidth(-1, 35);
+                                ImGui::SetColumnWidth(-1, 90);
                                 ImGui::PushID(i);
                                 if (ImGui::Checkbox("##enable", &per_game_plugin_settings[i].enable)) settings_modified = true;
-                                ImGui::PopID();
-                                ImGui::NextColumn();
+                                ImGui::PopID(); ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetCursorPosX()+20);
                                 ImGui::PushID(i+999);
                                 if (ImGui::SmallButton("Del"))
                                 {
@@ -2646,7 +2643,7 @@ namespace Windows {
                                 ImGui::Separator();
                             }
                             ImGui::Columns(1);
-                            ImGui::SetCursorPosX(ImGui::GetCursorPosX()+360);
+                            ImGui::SetCursorPosX(ImGui::GetCursorPosX()+380);
                             if (ImGui::Button("Add"))
                             {
                                 ime_single_field = new_plugin_file;
