@@ -2708,11 +2708,14 @@ namespace Windows {
                     CloseIniFile();
                 }
                 DB::SavePspGameSettings(game_to_boot->rom_path, &settings);
-                if (settings.plugins != PLUGINS_DISABLE && settings_modified)
+                if (settings_modified)
                 {
                     GAME::SyncPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
-                    GAME::WritePerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                     settings_modified = false;
+                }
+                if (settings.plugins != PLUGINS_DISABLE)
+                {
+                    GAME::WritePerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                 }
                 SetModalMode(false);
                 handle_boot_game = false;

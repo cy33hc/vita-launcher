@@ -2509,15 +2509,8 @@ namespace GAME {
         }
         else
         {
-            char *token = strtok(game->rom_path, ":");
-            if (token != NULL)
-            {
-                sprintf(plugin_device, "%s:", token);
-            }
-            else
-            {
-                return;
-            }
+            std::string tmp = std::string(game->rom_path);
+            sprintf(plugin_device, "%s:", tmp.substr(0, tmp.find_first_of(":")).c_str());
         }
         sprintf(plugin_path, "%spspemu/seplugins/%s", plugin_device, plugin_file);
         FS::MkDirs(plugin_path, true);
