@@ -20,7 +20,7 @@
 #include "cso.h"
 #include "net.h"
 #include "ftpclient.h"
-#include "debugnet.h"
+
 extern "C" {
 	#include "inifile.h"
 }
@@ -1664,9 +1664,10 @@ namespace GAME {
         {
             std::string rom_path = std::string(game->rom_path);
             sprintf(path, "%s/%s/icon0.png", GMS_GAMES_PATH, rom_path.substr(rom_path.find_last_of("/")+1).c_str());
+            FS::MkDirs(path, true);
         }
 
-        if (!FS::FileExists(path))
+        if (!FS::FileExists(path) || FS::GetSize(path) == 0)
         {
             int res = Net::DownloadFile(url_str.c_str(), path);
             if (res < 0)
