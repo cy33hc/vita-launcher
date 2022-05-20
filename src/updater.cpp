@@ -557,13 +557,20 @@ namespace Updater {
 
     void StartInstallerThread()
     {
-        int itls_enso_installed = isiTLSEnsoInstalled();
+        SceKernelFwInfo fw;
+        fw.size = sizeof(SceKernelFwInfo);
+        _vshSblGetSystemSwVersion(&fw);
+
+        int itls_enso_installed = isiTLSEnsoInstalled() || (fw.version > 0x03650000);
         int adr_installed = CheckAppExist(DEFAULT_ADERNALINE_LAUNCHER_TITLE_ID);
         int yoyo_installed = CheckAppExist(YOYO_LAUNCHER_ID);
         int abm_installed = isAdernalineBubbleBooterPluginInstalled();
         int flycast_cores_installed = FS::FileExists(FLYCAST_RETRO_ACCURACY_CORE_PATH) && CheckAppExist(RETROARCH_TITLE_ID);
 
-        if (!adr_installed || !yoyo_installed || !abm_installed || !itls_enso_installed || !flycast_cores_installed)
+        if (!adr_installed || !yoyo_installed ||
+            (!abm_installed && warn_missing_installs) ||
+            (!itls_enso_installed && warn_missing_installs) ||
+            (!flycast_cores_installed && warn_missing_installs))
         {
             handle_updates = true;
             installer_thid = sceKernelCreateThread("installer_thread", (SceKernelThreadEntry)InstallerThread, 0x10000100, 0x4000, 0, 0, NULL);
