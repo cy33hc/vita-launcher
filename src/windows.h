@@ -71,6 +71,7 @@ namespace Windows {
     void AfterNewPspGamePluginCallback(int ime_result);
     void AfterNewPopsGamePluginCallback(int ime_result);
     void SetModalMode(bool modal);
+    bool isModalMode();
 }
 
 #endif

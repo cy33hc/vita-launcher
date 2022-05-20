@@ -105,6 +105,7 @@ typedef struct {
     bool video_support;
     bool has_net;
     bool squeeze_mem;
+    bool disable_audio;
 } BootSettings;
 
 struct PluginSetting {

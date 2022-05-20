@@ -392,6 +392,12 @@ namespace Windows {
             }
         }
     }
+
+    bool isModalMode()
+    {
+        return paused;
+    }
+
     void LauncherWindow() {
         Windows::SetupWindow();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -1310,7 +1316,7 @@ namespace Windows {
     void ShowSettingsDialog()
     {
         ImGuiIO& io = ImGui::GetIO(); (void)io;
-        if (io.NavInputs[ImGuiNavInput_Input] == 1.0f)
+        if (io.NavInputs[ImGuiNavInput_Input] == 1.0f && !isModalMode())
         {
             SetModalMode(true);
             show_categories_as_tabs_settings = show_categories_as_tabs;
@@ -2744,8 +2750,8 @@ namespace Windows {
         char popup_title[64];
         sprintf(popup_title, "Boot %s Game", category->alt_title);
         ImGui::OpenPopup(popup_title);
-        ImGui::SetNextWindowPos(ImVec2(300, 85));
-        ImGui::SetNextWindowSize(ImVec2(420,385));
+        ImGui::SetNextWindowPos(ImVec2(300, 65));
+        ImGui::SetNextWindowSize(ImVec2(420,415));
 
         if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
         {
@@ -2756,6 +2762,7 @@ namespace Windows {
             ImGui::Checkbox("Run with Extended Runner Pool", &settings.newlib_extended);
             ImGui::Checkbox("Run with Mem Squeezing", &settings.squeeze_mem);
             ImGui::Checkbox("Enable Video Player", &settings.video_support);
+            ImGui::Checkbox("Disable Audio", &settings.disable_audio);
             ImGui::Checkbox("Enable Network Features", &settings.has_net);
             ImGui::Separator();
 
