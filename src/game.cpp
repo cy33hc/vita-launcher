@@ -1755,7 +1755,8 @@ namespace GAME {
         {
             if (cat->current_folder->games[i].type == TYPE_ROM ||
                 cat->current_folder->games[i].type == TYPE_SCUMMVM ||
-                cat->current_folder->games[i].type == TYPE_GMS )
+                cat->current_folder->games[i].type == TYPE_GMS ||
+                cat->current_folder->games[i].type == TYPE_EASYRPG)
             {
                 DownloadThumbnail(db, &cat->current_folder->games[i]);
                 game_scan_inprogress = cat->current_folder->games[i];
