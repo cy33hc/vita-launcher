@@ -917,7 +917,7 @@ namespace GAME {
                 }
             }
         }
-        else if (game->type == TYPE_SCUMMVM)
+        else if (game->type == TYPE_SCUMMVM || game->type == TYPE_EASYRPG)
         {
             sprintf(icon_path, "%s/icon0.png", game->rom_path);
         }

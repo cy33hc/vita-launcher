@@ -158,14 +158,15 @@ struct PluginSetting {
 #define MAME_2003_GAMES 37
 #define GMS_GAMES 38
 #define SCUMMVM_GAMES 39
-#define PORT_GAMES 40
-#define ORIGINAL_GAMES 41
-#define UTILITIES 42
-#define EMULATORS 43
-#define HOMEBREWS 44
-#define CATEGORY 45
+#define EASYRPG_GAMES 40
+#define PORT_GAMES 41
+#define ORIGINAL_GAMES 42
+#define UTILITIES 43
+#define EMULATORS 44
+#define HOMEBREWS 45
+#define CATEGORY 46
 
-#define TOTAL_CATEGORY 45
+#define TOTAL_CATEGORY 46
 #define TOTAL_ROM_CATEGORY 32
 
 #define TYPE_BUBBLE 0
@@ -174,6 +175,7 @@ struct PluginSetting {
 #define TYPE_EBOOT 3
 #define TYPE_SCUMMVM 4
 #define TYPE_GMS 5
+#define TYPE_EASYRPG 6
 #define TYPE_CATEGORY 126
 #define TYPE_FOLDER 127
 
