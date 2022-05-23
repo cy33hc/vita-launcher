@@ -571,7 +571,7 @@ namespace Windows {
                         {
                             game->selected = !game->selected;
                         }
-                        else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                        else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM || game->type == TYPE_EASYRPG)
                         {
                             GAME::Launch(game);
                         }
@@ -779,7 +779,7 @@ namespace Windows {
                 {
                     game->selected = !game->selected;
                 }
-                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM || game->type == TYPE_EASYRPG)
                 {
                     GAME::Launch(game);
                 }
@@ -1064,7 +1064,7 @@ namespace Windows {
                 {
                     game->selected = !game->selected;
                 }
-                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                else if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM || game->type == TYPE_EASYRPG)
                 {
                     GAME::Launch(game);
                 }
@@ -1476,7 +1476,7 @@ namespace Windows {
                                 }
                             }
                             
-                            if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES
+                            if (current_category->rom_type == TYPE_ROM || current_category->id == PS1_GAMES || current_category->id == EASYRPG_GAMES
                                 || current_category->rom_type == TYPE_SCUMMVM || current_category->rom_type == TYPE_GMS)
                             {
                                 if (!remove_from_cache && !refresh_current_category && !move_game && !add_folder &&
@@ -1641,7 +1641,7 @@ namespace Windows {
                             ImGui::Separator();
                         }
 
-                        if (current_category->id != FAVORITES)
+                        if (current_category->id != FAVORITES && current_category->rom_type < 4)
                         {
                             ImGui::Text("Icon Path:"); ImGui::SameLine();
                             ImGui::SetCursorPosX(posX + 100);
@@ -3886,7 +3886,7 @@ namespace Windows {
                 sprintf(title, "%s##%s%d%d", games_selection[i].title, games_selection[i].category, search_count, i);
                 if (ImGui::Selectable(title, false, ImGuiSelectableFlags_DontClosePopups | ImGuiSelectableFlags_SpanAllColumns))
                 {
-                    if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM)
+                    if (game->type == TYPE_BUBBLE || game->type == TYPE_SCUMMVM || game->type == TYPE_EASYRPG)
                     {
                         GAME::Launch(game);
                     }

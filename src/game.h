@@ -255,6 +255,7 @@ namespace GAME {
     void ScanAdrenalineEbootGames(sqlite3 *db);
     void ScanScummVMGames(sqlite3 *db);
     void ScanGMSGames(sqlite3 *db);
+    void ScanEasyRpgGames(sqlite3 *db);
     bool Launch(Game *game, BootSettings *settings = nullptr, char* retro_core = nullptr);
     void LoadGamesCache(sqlite3 *db);
     void LoadGameImages(int category, int prev_page, int page_num, int games_per_page);
