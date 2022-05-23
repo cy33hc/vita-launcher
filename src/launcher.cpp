@@ -3444,7 +3444,8 @@ namespace Windows {
                             {
                                 if (!selection_mode)
                                 {
-                                    if ((selected_game->type == TYPE_ROM || selected_game->type == TYPE_SCUMMVM || selected_game->type == TYPE_FOLDER || selected_game->type == TYPE_GMS))
+                                    if ((selected_game->type == TYPE_ROM || selected_game->type == TYPE_SCUMMVM || selected_game->type == TYPE_FOLDER ||
+                                         selected_game->type == TYPE_GMS || selected_game->type == TYPE_EASYRPG))
                                     {
                                         sprintf(game_action_message, "Can't move ROM type games. Since they\nare dependent on RetroArch core of \nthe category.");
                                     }
@@ -3634,6 +3635,8 @@ namespace Windows {
                         sprintf(folder.category, "%s", categories_selection[i].category);
                         sprintf(folder.title, "%s", temp_folder.title);
                         sprintf(folder.icon_path, "%s", temp_folder.icon_path);
+                        folder.max_page = 1;
+                        folder.page_num = 1;
                         DB::InsertFolder(db, &folder);
                         int current_folder_id = category->current_folder->id;
                         category->folders.push_back(folder);
