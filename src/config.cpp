@@ -172,6 +172,12 @@ namespace CONFIG {
             WriteString(category->title, CONFIG_ROMS_PATH, category->roms_path);
         }
 
+        if (category->id == EASYRPG_GAMES)
+        {
+            sprintf(category->roms_path, "%s", ReadString(category->title, CONFIG_ROMS_PATH, EASYRPG_GAMES_PATH));
+            WriteString(category->title, CONFIG_ROMS_PATH, category->roms_path);
+        }
+
         if (default_file_filters != nullptr)
         {
             file_filters = ReadString(category->title, CONFIG_ROM_EXTENSIONS, default_file_filters);
@@ -360,6 +366,7 @@ namespace CONFIG {
         SetupCategory(&game_categories[MAME_2003_GAMES], MAME_2003_GAMES, "mame2k3", "MAME2003", "RETROVITA", "app0:mame2003_plus_libretro.self", MAME_2003_TITLE_ID_PREFIXES, MAME_2003_FILTERS, MAME_2003_ALT_CORES, TYPE_ROM, MAME_2003_DOWNLOAD_URL, 3);
         SetupCategory(&game_categories[GMS_GAMES], GMS_GAMES, "gms", "GMS", YOYO_LAUNCHER_ID, nullptr, nullptr, nullptr, nullptr, TYPE_GMS, GMS_DOWNLOAD_URL, 3);
         SetupCategory(&game_categories[SCUMMVM_GAMES], SCUMMVM_GAMES, "scummvm", "SCUMMVM", "VSCU00001", nullptr, nullptr, nullptr, nullptr, TYPE_SCUMMVM, SCUMMVM_DOWNLOAD_URL, 3);
+        SetupCategory(&game_categories[EASYRPG_GAMES], EASYRPG_GAMES, "easyrpg", "EasyRPG", "EASYRPG01", nullptr, nullptr, nullptr, nullptr, TYPE_EASYRPG, EASYRPG_DOWNLOAD_URL, 3);
         SetupCategory(&game_categories[PORT_GAMES], PORT_GAMES, "ports", "Ports", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
         SetupCategory(&game_categories[ORIGINAL_GAMES], ORIGINAL_GAMES, "original", "Originals", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);
         SetupCategory(&game_categories[UTILITIES], UTILITIES, "utilities", "Utilities", nullptr, nullptr, "", nullptr, nullptr, TYPE_BUBBLE, nullptr, 3);

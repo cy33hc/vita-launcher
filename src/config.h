@@ -43,6 +43,8 @@
 #define SCUMMVM_INI_FILE "ux0:data/scummvm/scummvm.ini"
 
 #define GMS_GAMES_PATH "ux0:data/gms"
+#define EASYRPG_GAMES_PATH "ux0:data/easyrpg-player"
+
 #define YOYO_LAUNCH_FILE_PATH "ux0:data/gms/launch.txt"
 
 #define PSP_ISO_PATH "ux0:pspemu/ISO"
@@ -79,6 +81,7 @@
 #define YOYO_LAUNCHER_ID "SMLA00002"
 #define ABM_APP_ID "ADRBUBMAN"
 #define ITLS_ENSO_APP_ID "SKGTLSE12"
+#define EASYRPG_APP_ID "EASYRPG01"
 
 #define VIEW_MODE_GRID 0
 #define VIEW_MODE_LIST 1
@@ -147,6 +150,7 @@
 #define MSX1_FILTERS ".zip,.bin"
 #define DREAMCAST_FILTERS ".chd,.cue,.iso"
 #define GMS_FILTERS ".apk"
+#define EASYRPG_FILTERS ""
 
 // Filters for title prefixes
 #define VITA_TITLE_ID_PREFIXES "PCSA,PCSB,PCSC,PCSD,PCSE,PCSF,PCSG,PCSH,PCSI"
@@ -188,6 +192,7 @@
 #define MSX1_TITLE_ID_PREFIXES "MSX1"
 #define DREAMCAST_TITLE_ID_PREFIXES "DCAST"
 #define GMS_TITLE_ID_PREFIXES "GMS"
+#define EASYRPG_TITLE_ID_PREFIXES "ERPG"
 
 
 // Alt retroarch cores
@@ -262,6 +267,7 @@
 #define MSX1_DOWNLOAD_URL "https://github.com/cy33hc/Microsoft_-_MSX/raw/master/Named_%s"
 #define DREAMCAST_DOWNLOAD_URL "https://github.com/cy33hc/Sega_-_Dreamcast/raw/master/Named_%s"
 #define GMS_DOWNLOAD_URL "https://github.com/cy33hc/Game_Maker_Studio/raw/master/Named_%s"
+#define EASYRPG_DOWNLOAD_URL "https://github.com/cy33hc/RPG_Maker/raw/master/Named_%s"
 
 extern bool show_all_categories;
 extern bool parental_control;

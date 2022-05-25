@@ -13,7 +13,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "Launcher")
 set(VITA_TITLEID  "SMLA00001")
-set(VITA_VERSION  "03.85")
+set(VITA_VERSION  "03.90")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 
@@ -131,6 +131,7 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE thumbnails_db/dreamcast.db thumbnails/dreamcast.db
   FILE thumbnails_db/mame_mapping.db thumbnails/mame_mapping.db
   FILE thumbnails_db/gms.db thumbnails/gms.db
+  FILE thumbnails_db/easyrpg.db thumbnails/easyrpg.db
   FILE icons/a2600.png icons/a2600.png
   FILE icons/a5200.png icons/a5200.png
   FILE icons/a7800.png icons/a7800.png
@@ -176,6 +177,7 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   FILE icons/vita.png icons/vita.png
   FILE icons/system.png icons/system.png
   FILE icons/gms.png icons/gms.png
+  FILE icons/easyrpg.png icons/easyrpg.png
   FILE noicon.png noicon.png
   FILE favorite.png favorite.png
   FILE square.png square.png

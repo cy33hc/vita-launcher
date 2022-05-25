@@ -619,6 +619,14 @@ namespace GAME {
             sceKernelDelayThread(1000);
             sceKernelExitProcess(0);
         }
+        else if (game->type == TYPE_EASYRPG)
+        {
+            char uri[512];
+            sprintf(uri, "psgm:play?titleid=%s&project-path=%s", EASYRPG_APP_ID, game->rom_path);
+            sceAppMgrLaunchAppByUri(0xFFFFF, uri);
+            sceKernelDelayThread(1000);
+            sceKernelExitProcess(0);
+        }
         else if (game->type == TYPE_GMS)
         {
             char uri[512];
@@ -917,7 +925,7 @@ namespace GAME {
                 }
             }
         }
-        else if (game->type == TYPE_SCUMMVM)
+        else if (game->type == TYPE_SCUMMVM || game->type == TYPE_EASYRPG)
         {
             sprintf(icon_path, "%s/icon0.png", game->rom_path);
         }
@@ -1119,7 +1127,7 @@ namespace GAME {
         sceKernelDelayThread(50000);
         sqlite3 *db;
         sqlite3_open(CACHE_DB_FILE, &db);
-        if (params->type == TYPE_ROM || params->type == TYPE_SCUMMVM || params->type == TYPE_GMS)
+        if (params->type == TYPE_ROM || params->type == TYPE_SCUMMVM || params->type == TYPE_GMS || params->type == TYPE_EASYRPG)
         {
             GameCategory *category = categoryMap[params->category];
             RemoveGamesFromCategoryByType(db, category, params->type);
@@ -1179,6 +1187,11 @@ namespace GAME {
         if (params->type == TYPE_GMS)
         {
             ScanGMSGames(db);
+        }
+
+        if (params->type == TYPE_EASYRPG)
+        {
+            ScanEasyRpgGames(db);
         }
 
         sqlite3_close(db);
@@ -1478,7 +1491,7 @@ namespace GAME {
         CloseIniFile();
     }
 
-    std::vector<std::string> GetGMSRomFiles(const std::string path)
+    std::vector<std::string> GetFolderRomFiles(const std::string path)
     {
         std::vector<std::string> files;
         if (strncmp(path.c_str(), "ftp0:", 5) == 0)
@@ -1510,7 +1523,7 @@ namespace GAME {
             if (ftpclient->Login(ftp_server_user, ftp_server_password) > 0)
             {
                 is_ftp_connected = true;
-                files = GetGMSRomFiles(game_categories[GMS_GAMES].roms_path);
+                files = GetFolderRomFiles(game_categories[GMS_GAMES].roms_path);
             }
             else
             {
@@ -1520,7 +1533,7 @@ namespace GAME {
         }
         else
         {
-            files = GetGMSRomFiles(game_categories[GMS_GAMES].roms_path);
+            files = GetFolderRomFiles(game_categories[GMS_GAMES].roms_path);
         }
         games_to_scan = files.size();
         games_scanned = 0;
@@ -1572,7 +1585,9 @@ namespace GAME {
                     sprintf(icon_path, "%s/%s/icon0.png", game_categories[GMS_GAMES].roms_path, game.title);
                     sprintf(icon_local_path, "%s/%s/icon0.png", GMS_GAMES_PATH, game.title);
                     FS::MkDirs(std::string(GMS_GAMES_PATH) + "/" + game.title);
-                    if (!FS::FileExists(icon_local_path))
+                    int64_t file_size;
+                    bool icon_exists = ftpclient->Size(std::string(icon_path).substr(5).c_str(), &file_size, FtpClient::image);
+                    if (!FS::FileExists(icon_local_path) && icon_exists)
                     {
                         ftpclient->Get(icon_local_path, std::string(icon_path).substr(5).c_str(), FtpClient::image, 0);
                     }
@@ -1585,6 +1600,42 @@ namespace GAME {
         if (is_ftp_enabled)
         {
             ftpclient->Quit();
+        }
+    }
+
+    void ScanEasyRpgGames(sqlite3 *db)
+    {
+        sprintf(scan_message, "Scanning for EasyRPG games in the %s folder", EASYRPG_GAMES_PATH);
+
+        std::vector<std::string> files = GetFolderRomFiles(game_categories[EASYRPG_GAMES].roms_path);
+        games_to_scan = files.size();
+        games_scanned = 0;
+
+        char rom_path[512];
+        char icon_path[512];
+        char icon_local_path[192];
+        int rom_length;
+        for(std::size_t j = 0; j < files.size(); j++)
+        {
+            sprintf(rom_path, "%s/%s", game_categories[EASYRPG_GAMES].roms_path, files[j].c_str());
+            rom_length = strlen(rom_path);
+
+            if (rom_length < 192 && FS::FolderExists(rom_path))
+            {
+                Game game;
+                game.type = TYPE_EASYRPG;
+                game.cache_state = 2;
+                sprintf(game.title, "%s", files[j].c_str());
+                sprintf(game.id, "%s", game_categories[EASYRPG_GAMES].title);
+                sprintf(game.category, "%s", game_categories[EASYRPG_GAMES].category);
+                sprintf(game.rom_path, "%s/%s", game_categories[EASYRPG_GAMES].roms_path, files[j].c_str());
+                game.tex = no_icon;
+                game_categories[EASYRPG_GAMES].current_folder->games.push_back(game);
+                DB::InsertGame(db, &game);
+
+                game_scan_inprogress = game;
+            }
+            games_scanned++;
         }
     }
 
@@ -1656,7 +1707,7 @@ namespace GAME {
             }
             
         }
-        else if (game->type == TYPE_SCUMMVM)
+        else if (game->type == TYPE_SCUMMVM || game->type == TYPE_EASYRPG)
         {
             sprintf(path, "%s/icon0.png", game->rom_path);
         }
@@ -1704,7 +1755,8 @@ namespace GAME {
         {
             if (cat->current_folder->games[i].type == TYPE_ROM ||
                 cat->current_folder->games[i].type == TYPE_SCUMMVM ||
-                cat->current_folder->games[i].type == TYPE_GMS )
+                cat->current_folder->games[i].type == TYPE_GMS ||
+                cat->current_folder->games[i].type == TYPE_EASYRPG)
             {
                 DownloadThumbnail(db, &cat->current_folder->games[i]);
                 game_scan_inprogress = cat->current_folder->games[i];
