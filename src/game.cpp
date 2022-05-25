@@ -622,7 +622,7 @@ namespace GAME {
         else if (game->type == TYPE_EASYRPG)
         {
             char uri[512];
-            sprintf(uri, "psgm:play?titleid=%s&project_path=%s", EASYRPG_APP_ID, game->rom_path);
+            sprintf(uri, "psgm:play?titleid=%s&project-path=%s", EASYRPG_APP_ID, game->rom_path);
             sceAppMgrLaunchAppByUri(0xFFFFF, uri);
             sceKernelDelayThread(1000);
             sceKernelExitProcess(0);
@@ -1620,7 +1620,7 @@ namespace GAME {
             sprintf(rom_path, "%s/%s", game_categories[EASYRPG_GAMES].roms_path, files[j].c_str());
             rom_length = strlen(rom_path);
 
-            if (rom_length < 192)
+            if (rom_length < 192 && FS::FolderExists(rom_path))
             {
                 Game game;
                 game.type = TYPE_EASYRPG;
