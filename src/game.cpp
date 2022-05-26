@@ -471,13 +471,13 @@ namespace GAME {
             ftpclient->Connect(ftp_server_ip, ftp_server_port);
             if (ftpclient->Login(ftp_server_user, ftp_server_password) > 0)
             {
-                files =  ftpclient->ListFiles(path.substr(5).c_str(), true);
+                files =  ftpclient->ListFiles(path.substr(5).c_str(), nullptr, true);
             }
             ftpclient->Quit();
         }
         else
         {
-            files = FS::ListFiles(path);
+            files = FS::ListFiles(path, nullptr);
         }
 
         return files;
@@ -925,9 +925,21 @@ namespace GAME {
                 }
             }
         }
-        else if (game->type == TYPE_SCUMMVM || game->type == TYPE_EASYRPG)
+        else if (game->type == TYPE_SCUMMVM)
         {
             sprintf(icon_path, "%s/icon0.png", game->rom_path);
+        }
+        else if (game->type == TYPE_EASYRPG)
+        {
+            std::string rom = game->rom_path;
+            if (rom.substr(rom.size()-4) == ".zip" || rom.substr(rom.size()-4) == ".ZIP")
+            {
+                sprintf(icon_path, "%s.png", rom.substr(0, rom.size()-4).c_str());
+            }
+            else
+            {
+                sprintf(icon_path, "%s/icon0.png", game->rom_path);
+            }
         }
         else if (game->type == TYPE_GMS)
         {
@@ -1607,28 +1619,40 @@ namespace GAME {
     {
         sprintf(scan_message, "Scanning for EasyRPG games in the %s folder", EASYRPG_GAMES_PATH);
 
-        std::vector<std::string> files = GetFolderRomFiles(game_categories[EASYRPG_GAMES].roms_path);
+        std::regex regexpr("RPG_RT.ldb$|RPG_RT.set$|.zip$|.ZIP$");
+
+        std::vector<std::string> files = FS::ListFiles(game_categories[EASYRPG_GAMES].roms_path, &regexpr);
         games_to_scan = files.size();
         games_scanned = 0;
 
-        char rom_path[512];
-        char icon_path[512];
-        char icon_local_path[192];
-        int rom_length;
+        std::string rom_path;
+        std::string title;
+        std::string cat_path = std::string(game_categories[EASYRPG_GAMES].roms_path);
         for(std::size_t j = 0; j < files.size(); j++)
         {
-            sprintf(rom_path, "%s/%s", game_categories[EASYRPG_GAMES].roms_path, files[j].c_str());
-            rom_length = strlen(rom_path);
+            if (files[j].substr(files[j].size()-4) == ".ldb" || files[j].substr(files[j].size()-4) == ".set")
+            {
+                // Game is in folder
+                rom_path = cat_path + "/" + files[j].substr(0, files[j].find_last_of("/"));
+                title = rom_path.substr(rom_path.find_last_of("/")+1);
+            }
+            else
+            {
+                rom_path = cat_path + "/" + files[j];
+                int slash_index = rom_path.find_last_of("/");
+                int dot_index = rom_path.find_last_of(".");
+                title = rom_path.substr(slash_index+1, dot_index-slash_index-1);
+            }
 
-            if (rom_length < 192 && FS::FolderExists(rom_path))
+            if (rom_path.size() < 192)
             {
                 Game game;
                 game.type = TYPE_EASYRPG;
                 game.cache_state = 2;
-                sprintf(game.title, "%s", files[j].c_str());
+                sprintf(game.title, "%s", title.c_str());
                 sprintf(game.id, "%s", game_categories[EASYRPG_GAMES].title);
                 sprintf(game.category, "%s", game_categories[EASYRPG_GAMES].category);
-                sprintf(game.rom_path, "%s/%s", game_categories[EASYRPG_GAMES].roms_path, files[j].c_str());
+                sprintf(game.rom_path, "%s", rom_path.c_str());
                 game.tex = no_icon;
                 game_categories[EASYRPG_GAMES].current_folder->games.push_back(game);
                 DB::InsertGame(db, &game);
@@ -1707,9 +1731,21 @@ namespace GAME {
             }
             
         }
-        else if (game->type == TYPE_SCUMMVM || game->type == TYPE_EASYRPG)
+        else if (game->type == TYPE_SCUMMVM)
         {
             sprintf(path, "%s/icon0.png", game->rom_path);
+        }
+        else if (game->type == TYPE_EASYRPG)
+        {
+            std::string rom = game->rom_path;
+            if (rom.substr(rom.size()-4) == ".zip" || rom.substr(rom.size()-4) == ".ZIP")
+            {
+                sprintf(path, "%s.png", rom.substr(0, rom.size()-4).c_str());
+            }
+            else
+            {
+                sprintf(path, "%s/icon0.png", game->rom_path);
+            }
         }
         else if (game->type == TYPE_GMS)
         {

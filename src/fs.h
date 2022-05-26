@@ -5,7 +5,7 @@
 
 #include <string>
 #include <vector>
-
+#include <regex>
 #include <cstdint>
 #define MAX_PATH_LENGTH 1024
 
@@ -45,7 +45,7 @@ namespace FS {
     void Save(const std::string& path, const void* data, uint32_t size);
 
     std::vector<std::string> ListDir(const std::string& path);
-    std::vector<std::string> ListFiles(const std::string& path);
+    std::vector<std::string> ListFiles(const std::string& path, std::regex *regexpr);
 }
 
 #endif

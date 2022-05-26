@@ -5,6 +5,7 @@
 #include <time.h>
 #include <string>
 #include <vector>
+#include <regex>
 
 #define FTP_CLIENT_MAX_FILENAME_LEN 128
 
@@ -109,7 +110,7 @@ public:
 	int RawClose(ftphandle* handle);
 	int RawWrite(void* buf, int len, ftphandle* handle);
 	int RawRead(void* buf, int max, ftphandle* handle);
-	std::vector<std::string> ListFiles(const char *path, bool includeSubDir=false);
+	std::vector<std::string> ListFiles(const char *path, std::regex *regexpr, bool includeSubDir=false);
 	std::vector<FtpDirEntry> ListDir(const char *path);
 	void SetCallbackXferFunction(FtpCallbackXfer pointer);
 	void SetCallbackArg(void *arg);

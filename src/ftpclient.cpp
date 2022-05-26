@@ -1350,7 +1350,7 @@ int FtpClient::ParseDirEntry(char *line, FtpDirEntry *dirEntry)
     return 1;
  }
 
-std::vector<std::string> FtpClient::ListFiles(const char *path, bool includeSubDir)
+std::vector<std::string> FtpClient::ListFiles(const char *path, std::regex *regexpr, bool includeSubDir)
 {
 	std::vector<std::string> out;
 	std::vector<FtpDirEntry> list = ListDir(path);
@@ -1359,16 +1359,36 @@ std::vector<std::string> FtpClient::ListFiles(const char *path, bool includeSubD
 		if (list[i].isDir && includeSubDir)
 		{
 			std::string new_path = std::string(path) + "/" + list[i].name;
-			std::vector<std::string> files = ListFiles(new_path.c_str(), includeSubDir);
+			std::vector<std::string> files = ListFiles(new_path.c_str(), regexpr, includeSubDir);
 			for (std::vector<std::string>::iterator it=files.begin(); it!=files.end(); )
 			{
-				out.push_back(std::string(list[i].name) + "/" + *it);
+				if (regexpr != nullptr)
+				{
+					if (std::regex_search(*it, *regexpr))
+					{
+						out.push_back(std::string(list[i].name) + "/" + *it);
+					}
+				}
+				else
+				{
+					out.push_back(std::string(list[i].name) + "/" + *it);
+				}
 				++it;
 			}
 		}
 		else
 		{
-			out.push_back(std::string(list[i].name));
+			if (regexpr != nullptr)
+			{
+				if (std::regex_search(list[i].name, *regexpr))
+				{
+					out.push_back(std::string(list[i].name));
+				}
+			}
+			else
+			{
+				out.push_back(std::string(list[i].name));
+			}
 		}
 	}
 	return out;

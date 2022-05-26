@@ -199,7 +199,7 @@ namespace FS {
         return out;
     }
 
-    std::vector<std::string> ListFiles(const std::string& path)
+    std::vector<std::string> ListFiles(const std::string& path, std::regex *regexpr)
     {
         const auto fd = sceIoDopen(path.c_str());
         if (static_cast<uint32_t>(fd) == 0x80010002)
@@ -221,16 +221,36 @@ namespace FS {
 
             if (SCE_S_ISDIR(dirent.d_stat.st_mode))
             {
-                std::vector<std::string> files = FS::ListFiles(path + "/" + dirent.d_name);
+                std::vector<std::string> files = FS::ListFiles(path + "/" + dirent.d_name, regexpr);
                 for (std::vector<std::string>::iterator it=files.begin(); it!=files.end(); )
                 {
-                    out.push_back(std::string(dirent.d_name) + "/" + *it);
+                    if (regexpr != nullptr)
+                    {
+                        if (std::regex_search(*it, *regexpr))
+                        {
+                            out.push_back(std::string(dirent.d_name) + "/" + *it);
+                        }
+                    }
+                    else
+                    {
+                        out.push_back(std::string(dirent.d_name) + "/" + *it);
+                    }
                     ++it;
                 }
             }
             else
             {
-                out.push_back(dirent.d_name);
+                if (regexpr != nullptr)
+                {
+                    if (std::regex_search(dirent.d_name, *regexpr))
+                    {
+                        out.push_back(dirent.d_name);
+                    }
+                }
+                else
+                {
+                    out.push_back(dirent.d_name);
+                }
             }
         }
         sceIoDclose(fd);
