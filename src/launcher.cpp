@@ -2750,31 +2750,183 @@ namespace Windows {
         char popup_title[64];
         sprintf(popup_title, "Boot %s Game", category->alt_title);
         ImGui::OpenPopup(popup_title);
-        ImGui::SetNextWindowPos(ImVec2(300, 65));
-        ImGui::SetNextWindowSize(ImVec2(420,415));
+        ImGui::SetNextWindowPos(ImVec2(260, 35));
+        ImGui::SetNextWindowSize(ImVec2(470,465));
 
         if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
         {
             float posX = ImGui::GetCursorPosX();
             ImGui::Checkbox("Force GLES1 Mode", &settings.gles1);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Enforces GLES1 as rendering backend mode. May improve performances or make a game go further when crashing.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Checkbox("Fake Windows as Platform", &settings.fake_win_mode);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Fakes the reported target mode to the Runner as Windows. Some games require it to properly handle inputs.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Checkbox("Run with Extended Mem Mode", &settings.mem_extended);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Allows the Runner to use approximately extra 12 MBs of memory. May break some debugging tools and breaks virtual keyboard usage from games.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Checkbox("Run with Extended Runner Pool", &settings.newlib_extended);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Increases the size of the memory pool available for the Runner. May solve some crashes.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Checkbox("Run with Mem Squeezing", &settings.squeeze_mem);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Makes the Loader setup vitaGL with the lowest amount possible of dedicated memory for internal buffers. Increases available mem for the game at the cost of potential performance loss.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
+            ImGui::Checkbox("Use Uncached Memory", &settings.uncached_mem);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Makes the game use mostly uncached memory internally. Reduces GPU workload and can potentially fasten memory copies but increases CPU workload.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
+            ImGui::Checkbox("Use Double Buffering", &settings.double_buffering);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Use double buffering instead of triple buffering. Lowers mem usage but may cause some artifacts.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Checkbox("Enable Video Player", &settings.video_support);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Enables Video Player implementation in the Runner at the cost of potentially reducing the total amount of memory available for the game.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Checkbox("Disable Audio", &settings.disable_audio);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Disables audio playback in order to reduce memory usage of the game.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Checkbox("Enable Network Features", &settings.has_net);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Enables network functionalities implementation in the Runner at the cost of potentially reducing the total amount of memory available for the game.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Separator();
 
             ImGui::Checkbox("Force Bilinear Filtering", &settings.bilinear);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Enforces bilinear filtering on textures.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Checkbox("Compress Textures", &settings.compress_textures);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Compresses textures during externalization of assets. Reduces memory usage of the game and speedups textures loading process but increases storage usage.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Separator();
 
             ImGui::Checkbox("Skip Splashscreen at Boot", &settings.skip_splash);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Disables splashscreen rendering at game boot.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Separator();
 
             ImGui::Checkbox("Run with Debug Mode", &settings.debug_mode);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Enables debug logging in ux0:data/gms/shared/yyl.log.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Checkbox("Run with Shaders Debug Mode", &settings.debug_shaders);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0.75f, 0, 1.0f));
+                ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                ImGui::Text("Enables dumping of attempted shader translations by the built-in GLSL to CG shader translator in ux0:data/gms/shared/glsl.");
+                ImGui::PopTextWrapPos();
+                ImGui::PopStyleColor();
+                ImGui::EndTooltip();
+            }
             ImGui::Separator();
 
             if (ImGui::Button("OK"))

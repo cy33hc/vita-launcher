@@ -106,6 +106,8 @@ typedef struct {
     bool has_net;
     bool squeeze_mem;
     bool disable_audio;
+    bool uncached_mem;
+    bool double_buffering;
 } BootSettings;
 
 struct PluginSetting {
