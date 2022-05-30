@@ -110,6 +110,23 @@ typedef struct {
     bool double_buffering;
 } BootSettings;
 
+typedef struct {
+  int magic[2];
+  int graphics_filtering;
+  int no_smooth_graphics;
+  int flux_mode;
+  int screen_size;
+  int ms_location;
+  int use_ds3_ds4;
+  int screen_mode;
+  int skip_logo;
+  float psp_screen_scale_x;
+  float psp_screen_scale_y;
+  float ps1_screen_scale_x;
+  float ps1_screen_scale_y;
+  int usbdevice;
+} AdrenalineConfig;
+
 struct PluginSetting {
     char plugin[256];
     bool enable;
@@ -185,6 +202,22 @@ struct PluginSetting {
 #define FOLDER_TYPE_SUBFOLDER 2
 #define FOLDER_ROOT_ID 0
 
+#define ADRENALINE_CFG_MAGIC_1 0x31483943
+#define ADRENALINE_CFG_MAGIC_2 0x334F4E33
+
+static char *graphics_options[] = { "Original", "Bilinear", "Sharp bilinear", "Advanced AA", "LCD3x", "Sharp bilinear without scanlines" };
+static char *flux_mode_options[] = { "None", "Yellow", "Blue", "Black" };
+static char *no_yes_options[] = { "No", "Yes" };
+static char *yes_no_options[] = { "Yes", "No" };
+static char *ms_location_options[] = { "ux0:pspemu", "ur0:pspemu", "imc0:pspemu", "xmc0:pspemu", "uma0:pspemu" };
+static char *usbdevice_options[] = { "Memory Card", "Internal Storage", "sd2vita", "psvsd" };
+static char *driver_options[] = { "Inferno", "March33", "NP9660" };
+static char *execute_options[] = { "eboot.bin", "boot.bin", "eboot.old" };
+static char *ps_button_mode[] = { "Menu", "LiveArea", "Standard" };
+static char *enable_options[] = { "Default", "Enable", "Disable" };
+static char *cpu_speed_options[] = { "Default", "20/10", "50/25", "75/37", "100/50", "111/55", "122/61", "133/66",
+                "166/83", "200/100", "222/111", "266/133", "288/144", "300/150", "333/166"};
+
 extern GameCategory game_categories[];
 extern GameCategory* sorted_categories[];
 extern std::map<std::string, GameCategory*> categoryMap;
@@ -198,6 +231,7 @@ extern char adernaline_launcher_boot_bin_path[];
 extern char adernaline_launcher_config_bin_path[];
 extern char adernaline_launcher_title_id[];
 extern BootSettings default_boot_settings;
+extern AdrenalineConfig default_adrenaline_config;
 extern std::vector<PluginSetting> default_psp_plugin_settings;
 extern std::vector<PluginSetting> default_ps1_plugin_settings;
 extern std::vector<std::string> psp_iso_extensions;
@@ -258,7 +292,7 @@ namespace GAME {
     void ScanScummVMGames(sqlite3 *db);
     void ScanGMSGames(sqlite3 *db);
     void ScanEasyRpgGames(sqlite3 *db);
-    bool Launch(Game *game, BootSettings *settings = nullptr, char* retro_core = nullptr);
+    bool Launch(Game *game, BootSettings *settings = nullptr, char* retro_core = nullptr, AdrenalineConfig *config = nullptr);
     void LoadGamesCache(sqlite3 *db);
     void LoadGameImages(int category, int prev_page, int page_num, int games_per_page);
     void LoadGameImage(Game *game);

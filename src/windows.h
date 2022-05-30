@@ -56,6 +56,7 @@ namespace Windows {
     void HandleAddNewFolder();
     void HandleEditDeleteFolder();
     void HandleUpdates();
+    void ShowPspBootSettings(BootSettings *boot_settings, AdrenalineConfig *adr_config);
     void ChangeCategory(GameCategory *previous_category, int category_id);
     void ChangeToRootFolder();
     void MultiValueImeCallback(int ime_result);

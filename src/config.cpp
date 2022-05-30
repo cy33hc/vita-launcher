@@ -230,16 +230,52 @@ namespace CONFIG {
 
 		OpenIniFile (CONFIG_INI_FILE);
 
-        // Adernaline Default Boot Settings
-        default_boot_settings.driver = INFERNO;
-        default_boot_settings.execute = EBOOT_BIN;
+        // Default Booter Settings
+        default_boot_settings.driver = ReadInt(CONFIG_GLOBAL, CONFIG_PSP_DRIVER, INFERNO);
+        default_boot_settings.execute = ReadInt(CONFIG_GLOBAL, CONFIG_PSP_EXECUTE, EBOOT_BIN);
         default_boot_settings.customized = true;
-        default_boot_settings.ps_button_mode = MENU;
-        default_boot_settings.suspend_threads = SUSPEND_YES;
-        default_boot_settings.plugins = PLUGINS_DISABLE;
-        default_boot_settings.nonpdrm = NONPDRM_DISABLE;
-        default_boot_settings.high_memory = HIGH_MEM_DISABLE;
-        default_boot_settings.cpu_speed = CPU_DEFAULT;
+        default_boot_settings.ps_button_mode = ReadInt(CONFIG_GLOBAL, CONFIG_PSP_PS_BUTTON_MODE, MENU);
+        default_boot_settings.suspend_threads = ReadInt(CONFIG_GLOBAL, CONFIG_PSP_SUSPEND_THREADS, SUSPEND_YES);
+        default_boot_settings.plugins = ReadInt(CONFIG_GLOBAL, CONFIG_PSP_PLUGINS, PLUGINS_DISABLE);
+        default_boot_settings.nonpdrm = ReadInt(CONFIG_GLOBAL, CONFIG_PSP_NODRM, NONPDRM_DISABLE);
+        default_boot_settings.high_memory = ReadInt(CONFIG_GLOBAL, CONFIG_PSP_HIGH_MEM, HIGH_MEM_DISABLE);
+        default_boot_settings.cpu_speed = ReadInt(CONFIG_GLOBAL, CONFIG_PSP_CPU_SPEED, CPU_DEFAULT);
+        WriteInt(CONFIG_GLOBAL, CONFIG_PSP_DRIVER, default_boot_settings.driver);
+        WriteInt(CONFIG_GLOBAL, CONFIG_PSP_EXECUTE, default_boot_settings.execute);
+        WriteInt(CONFIG_GLOBAL, CONFIG_PSP_PS_BUTTON_MODE, default_boot_settings.ps_button_mode);
+        WriteInt(CONFIG_GLOBAL, CONFIG_PSP_SUSPEND_THREADS, default_boot_settings.suspend_threads);
+        WriteInt(CONFIG_GLOBAL, CONFIG_PSP_PLUGINS, default_boot_settings.plugins);
+        WriteInt(CONFIG_GLOBAL, CONFIG_PSP_NODRM, default_boot_settings.nonpdrm);
+        WriteInt(CONFIG_GLOBAL, CONFIG_PSP_HIGH_MEM, default_boot_settings.high_memory);
+        WriteInt(CONFIG_GLOBAL, CONFIG_PSP_CPU_SPEED, default_boot_settings.cpu_speed);
+
+        // Default Adrenaline Settings
+        default_adrenaline_config.magic[1] = ADRENALINE_CFG_MAGIC_1;
+        default_adrenaline_config.magic[2] = ADRENALINE_CFG_MAGIC_2;
+        default_adrenaline_config.screen_mode = 0;
+        default_adrenaline_config.screen_size = 0;
+        default_adrenaline_config.flux_mode = ReadInt(CONFIG_GLOBAL, CONFIG_PSP_FLUX_FILTER_COLOR, 0);
+        default_adrenaline_config.graphics_filtering = ReadInt(CONFIG_GLOBAL, CONFIG_PSP_GRAPHICS_FILTER, 0);
+        default_adrenaline_config.ms_location = ReadInt(CONFIG_GLOBAL, CONFIG_PSP_MEM_STICK_LOCATION, 0);
+        default_adrenaline_config.no_smooth_graphics = ReadBool(CONFIG_GLOBAL, CONFIG_PSP_NO_SMOOTH_GRAPHICS, true);
+        default_adrenaline_config.psp_screen_scale_x = (float) ReadDouble(CONFIG_GLOBAL, CONFIG_PSP_PSP_SCALEX, 2.00f);
+        default_adrenaline_config.psp_screen_scale_y = (float) ReadDouble(CONFIG_GLOBAL, CONFIG_PSP_PSP_SCALEY, 2.00f);
+        default_adrenaline_config.ps1_screen_scale_x = (float) ReadDouble(CONFIG_GLOBAL, CONFIG_PSP_PS1_SCALEX, 1.00f);
+        default_adrenaline_config.ps1_screen_scale_y = (float) ReadDouble(CONFIG_GLOBAL, CONFIG_PSP_PS1_SCALEY, 1.00f);
+        default_adrenaline_config.skip_logo = ReadBool(CONFIG_GLOBAL, CONFIG_PSP_SKIP_BOOT_LOGO, false);
+        default_adrenaline_config.usbdevice = ReadInt(CONFIG_GLOBAL, CONFIG_PSP_USB_DEVICE, 0);
+        default_adrenaline_config.use_ds3_ds4 = ReadBool(CONFIG_GLOBAL, CONFIG_PSP_USE_CONTROLLER, false);
+        WriteInt(CONFIG_GLOBAL, CONFIG_PSP_FLUX_FILTER_COLOR, default_adrenaline_config.flux_mode);
+        WriteInt(CONFIG_GLOBAL, CONFIG_PSP_GRAPHICS_FILTER, default_adrenaline_config.graphics_filtering);
+        WriteInt(CONFIG_GLOBAL, CONFIG_PSP_MEM_STICK_LOCATION, default_adrenaline_config.ms_location);
+        WriteBool(CONFIG_GLOBAL, CONFIG_PSP_NO_SMOOTH_GRAPHICS, default_adrenaline_config.no_smooth_graphics);
+        WriteDouble(CONFIG_GLOBAL, CONFIG_PSP_PSP_SCALEX, default_adrenaline_config.psp_screen_scale_x);
+        WriteDouble(CONFIG_GLOBAL, CONFIG_PSP_PSP_SCALEY, default_adrenaline_config.psp_screen_scale_y);
+        WriteDouble(CONFIG_GLOBAL, CONFIG_PSP_PS1_SCALEX, default_adrenaline_config.ps1_screen_scale_x);
+        WriteDouble(CONFIG_GLOBAL, CONFIG_PSP_PS1_SCALEY, default_adrenaline_config.ps1_screen_scale_y);
+        WriteBool(CONFIG_GLOBAL, CONFIG_PSP_SKIP_BOOT_LOGO, default_adrenaline_config.skip_logo);
+        WriteInt(CONFIG_GLOBAL, CONFIG_PSP_USB_DEVICE, default_adrenaline_config.usbdevice);
+        WriteBool(CONFIG_GLOBAL, CONFIG_PSP_USE_CONTROLLER, default_adrenaline_config.use_ds3_ds4);
 
         // setup psp iso extensions
         psp_iso_extensions.push_back(".iso");
@@ -306,6 +342,7 @@ namespace CONFIG {
         sprintf(adernaline_launcher_boot_bin_path, "ux0:app/%s/data/boot.bin", adernaline_launcher_title_id);
         sprintf(adernaline_launcher_config_bin_path, "ux0:app/%s/data/config.bin", adernaline_launcher_title_id);
 
+        // Load PSP booter settings
         sprintf(ftp_server_ip, "%s", ReadString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_IP, "192.168.100.14"));
         WriteString(CONFIG_GLOBAL, CONFIG_FTP_SERVER_IP, ftp_server_ip);
 

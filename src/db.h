@@ -15,6 +15,7 @@
 #define PSP_GAME_SETTINGS_TABLE "psp_settings"
 #define PSP_PLUGINS_SETTINGS_TABLE "psp_plugin_settings"
 #define RETROROM_GAME_SETTINGS_TABLE "retrorom_settings"
+#define PSP_ADR_SETTINGS_TABLE "psp_adr_settings"
 #define APP_FOLDERS_TABLE "app_folders"
 #define UPDATED_TABLE "updated"
 
@@ -40,6 +41,18 @@
 #define COL_NONPDRM                   "nonpdrm"
 #define COL_HIGH_MEMORY               "high_memory"
 #define COL_CPU_SPEED                 "cpu_speed"
+
+#define COL_GRAPHIC_FILTER            "graphic_filter"
+#define COL_NO_SMOOTH_GRAPHICS        "no_smooth_graphics"
+#define COL_FLUX_FILTER_COLOR         "flux_filter_color"
+#define COL_PSP_SCALEX                "psp_scalex"
+#define COL_PSP_SCALEY                "psp_scaley"
+#define COL_PS1_SCALEX                "ps1_scalex"
+#define COL_PS1_SCALEY                "ps1_scaley"
+#define COL_MS_LOCATION               "ms_location"
+#define COL_USB_DEVICE                "usb_device"
+#define COL_USE_CONTROLLER            "use_controller"
+#define COL_SKIP_LOGO                 "skip_boot_logo"
 
 #define COL_RETRO_CORE                "retro_code"
 
@@ -74,9 +87,9 @@ namespace DB {
     bool FindMatchingThumbnail(sqlite3 *database, std::vector<std::string> &tokens, char* thumbnail);
     void SetupPerGameSettingsDatabase();
     void UpdateGameSettingsDatabase();
-    void GetPspGameSettings(char* rom_path, BootSettings *settings);
+    void GetPspGameSettings(char* rom_path, BootSettings *settings, AdrenalineConfig *config);
     void GetRomCoreSettings(char* rom_path, char* core);
-    void SavePspGameSettings(char* rom_path, BootSettings *settings);
+    void SavePspGameSettings(char* rom_path, BootSettings *settings, AdrenalineConfig *config);
     void SaveRomCoreSettings(char* rom_path, char* core);
     void GetPspPluginSettings(char* rom_path, std::vector<PluginSetting> &plugins);
     bool UpdatePspPluginSettings(sqlite3 *database, char* rom_path, const PluginSetting *settings);

@@ -112,6 +112,27 @@
 #define CONFIG_BILINEAR_FILTER "enable_bilinear_filter"
 #define CONFIG_YOYO_LOADER_SIZE "yoyo_loader_size"
 
+#define CONFIG_PSP_DRIVER  "psp_driver"
+#define CONFIG_PSP_EXECUTE  "psp_execute"
+#define CONFIG_PSP_PLUGINS  "psp_plugins"
+#define CONFIG_PSP_CPU_SPEED  "psp_cpu_speed"
+#define CONFIG_PSP_HIGH_MEM  "psp_high_mem"
+#define CONFIG_PSP_NODRM  "psp_nodrm"
+#define CONFIG_PSP_SUSPEND_THREADS "psp_suspend_threads"
+#define CONFIG_PSP_PS_BUTTON_MODE "psp_ps_button_mode"
+
+#define CONFIG_PSP_GRAPHICS_FILTER "psp_graphics_filter"
+#define CONFIG_PSP_NO_SMOOTH_GRAPHICS "psp_no_smooth_graphics"
+#define CONFIG_PSP_FLUX_FILTER_COLOR "psp_flux_filter_color"
+#define CONFIG_PSP_PSP_SCALEX "psp_psp_scalex"
+#define CONFIG_PSP_PSP_SCALEY "psp_psp_scaley"
+#define CONFIG_PSP_PS1_SCALEX "psp_ps1_scalex"
+#define CONFIG_PSP_PS1_SCALEY "psp_ps1_scaley"
+#define CONFIG_PSP_MEM_STICK_LOCATION "psp_memory_stick_location"
+#define CONFIG_PSP_USB_DEVICE "psp_usb_device"
+#define CONFIG_PSP_USE_CONTROLLER "psp_use_game_controller"
+#define CONFIG_PSP_SKIP_BOOT_LOGO "psp_skip_boot_logo"
+
 #define ICON_TYPE_BOXARTS "Boxarts"
 #define ICON_TYPE_TITLES "Titles"
 

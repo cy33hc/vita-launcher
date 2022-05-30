@@ -1039,6 +1039,28 @@ namespace DB {
             sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
         }
 
+        if (!TableExists(db, PSP_ADR_SETTINGS_TABLE))
+        {
+            std::string sql = std::string("CREATE TABLE ") + PSP_ADR_SETTINGS_TABLE + "(" +
+                COL_ROM_PATH + " TEXT," +
+                COL_GRAPHIC_FILTER + " INTEGER," +
+                COL_NO_SMOOTH_GRAPHICS + " INTEGER," +
+                COL_FLUX_FILTER_COLOR + " INTEGER," +
+                COL_PSP_SCALEX + " REAL," +
+                COL_PSP_SCALEY + " REAL," +
+                COL_PS1_SCALEX + " REAL," +
+                COL_PS1_SCALEY + " REAL," +
+                COL_MS_LOCATION + " INTEGER," +
+                COL_USB_DEVICE + " INTEGER," +
+                COL_USE_CONTROLLER + " INTEGER," +
+                COL_SKIP_LOGO + " INTEGER)";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX psp_adr_settings_index ON ") + PSP_ADR_SETTINGS_TABLE + "(" + 
+                COL_ROM_PATH + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+        }
+
         if (!TableExists(db, PSP_PLUGINS_SETTINGS_TABLE))
         {
             std::string sql = std::string("CREATE TABLE ") + PSP_PLUGINS_SETTINGS_TABLE + "(" +
@@ -1117,6 +1139,28 @@ namespace DB {
             sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
         }
 
+        if (!TableExists(db, PSP_ADR_SETTINGS_TABLE))
+        {
+            std::string sql = std::string("CREATE TABLE ") + PSP_ADR_SETTINGS_TABLE + "(" +
+                COL_ROM_PATH + " TEXT," +
+                COL_GRAPHIC_FILTER + " INTEGER," +
+                COL_NO_SMOOTH_GRAPHICS + " INTEGER," +
+                COL_FLUX_FILTER_COLOR + " INTEGER," +
+                COL_PSP_SCALEX + " REAL," +
+                COL_PSP_SCALEY + " REAL," +
+                COL_PS1_SCALEX + " REAL," +
+                COL_PS1_SCALEY + " REAL," +
+                COL_MS_LOCATION + " INTEGER," +
+                COL_USB_DEVICE + " INTEGER," +
+                COL_USE_CONTROLLER + " INTEGER," +
+                COL_SKIP_LOGO + " INTEGER)";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+
+            sql = std::string("CREATE INDEX psp_adr_settings_index ON ") + PSP_ADR_SETTINGS_TABLE + "(" + 
+                COL_ROM_PATH + ")";
+            sqlite3_exec(db, sql.c_str(), NULL, NULL, NULL);
+        }
+
         if (!TableExists(db, PSP_PLUGINS_SETTINGS_TABLE))
         {
             std::string sql = std::string("CREATE TABLE ") + PSP_PLUGINS_SETTINGS_TABLE + "(" +
@@ -1171,7 +1215,7 @@ namespace DB {
 
     }
 
-    void GetPspGameSettings(char* rom_path, BootSettings *settings)
+    void GetPspGameSettings(char* rom_path, BootSettings *settings, AdrenalineConfig *config)
     {
         sqlite3 *db;
         sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
@@ -1203,6 +1247,34 @@ namespace DB {
             sqlite3_finalize(res);
         }
 
+        sql = std::string("SELECT ") + COL_GRAPHIC_FILTER + "," + COL_NO_SMOOTH_GRAPHICS + "," + 
+            COL_FLUX_FILTER_COLOR + "," + COL_PSP_SCALEX + "," + COL_PSP_SCALEY + "," + COL_PS1_SCALEX + "," + 
+            COL_PS1_SCALEY + "," + COL_MS_LOCATION + "," + COL_USB_DEVICE + "," + COL_USE_CONTROLLER + "," +
+            COL_SKIP_LOGO + " FROM " + PSP_ADR_SETTINGS_TABLE + " WHERE " + COL_ROM_PATH + "=?";
+
+        rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+
+        if (rc == SQLITE_OK)
+        {
+            sqlite3_bind_text(res, 1, rom_path, strlen(rom_path), NULL);
+            int step = sqlite3_step(res);
+            if (step == SQLITE_ROW)
+            {
+                config->graphics_filtering = sqlite3_column_int(res, 0);
+                config->no_smooth_graphics = sqlite3_column_int(res, 1);
+                config->flux_mode = sqlite3_column_int(res, 2);
+                config->psp_screen_scale_x = (float) sqlite3_column_double(res, 3);
+                config->psp_screen_scale_y = (float) sqlite3_column_double(res, 4);
+                config->ps1_screen_scale_x = (float) sqlite3_column_double(res, 5);
+                config->ps1_screen_scale_y = (float) sqlite3_column_double(res, 6);
+                config->ms_location = sqlite3_column_int(res, 7);
+                config->usbdevice = sqlite3_column_int(res, 8);
+                config->use_ds3_ds4 = sqlite3_column_int(res, 9);
+                config->skip_logo = sqlite3_column_int(res, 10);
+            }
+            sqlite3_finalize(res);
+        }
+
         sqlite3_close(db);
     }
 
@@ -1230,7 +1302,7 @@ namespace DB {
         sqlite3_close(db);
     }
 
-    void SavePspGameSettings(char* rom_path, BootSettings *settings)
+    void SavePspGameSettings(char* rom_path, BootSettings *settings, AdrenalineConfig *config)
     {
         sqlite3 *db;
         sqlite3_open(PER_GAME_SETTINGS_DB_FILE, &db);
@@ -1278,6 +1350,59 @@ namespace DB {
                     sqlite3_bind_int(res, 8, settings->nonpdrm);
                     sqlite3_bind_int(res, 9, settings->high_memory);
                     sqlite3_bind_int(res, 10, settings->cpu_speed);
+                    step = sqlite3_step(res);
+                    sqlite3_finalize(res);
+                }
+            }
+        }
+
+        sql = std::string("UPDATE ") + PSP_ADR_SETTINGS_TABLE + " SET " + 
+                COL_GRAPHIC_FILTER + "=?, " + COL_NO_SMOOTH_GRAPHICS + "=?, " + COL_FLUX_FILTER_COLOR + "=?, " +
+                COL_PSP_SCALEX + "=?, " + COL_PSP_SCALEY + "=?, " + COL_PS1_SCALEX + "=?, " + 
+                COL_PS1_SCALEY + "=?, " + COL_MS_LOCATION + "=?, " + COL_USB_DEVICE + "=?, " +
+                COL_USE_CONTROLLER + "=?, " + COL_SKIP_LOGO + "=? " +
+                "WHERE " + COL_ROM_PATH + "=?";
+        rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+        if (rc == SQLITE_OK) {
+            sqlite3_bind_int(res, 1, config->graphics_filtering);
+            sqlite3_bind_int(res, 2, config->no_smooth_graphics);
+            sqlite3_bind_int(res, 3, config->flux_mode);
+            sqlite3_bind_double(res, 4, static_cast<double>(config->psp_screen_scale_x));
+            sqlite3_bind_double(res, 5, static_cast<double>(config->psp_screen_scale_y));
+            sqlite3_bind_double(res, 6, static_cast<double>(config->ps1_screen_scale_x));
+            sqlite3_bind_double(res, 7, static_cast<double>(config->ps1_screen_scale_y));
+            sqlite3_bind_int(res, 8, config->ms_location);
+            sqlite3_bind_int(res, 9, config->usbdevice);
+            sqlite3_bind_int(res, 10, config->use_ds3_ds4);
+            sqlite3_bind_int(res, 11, config->skip_logo);
+            sqlite3_bind_text(res, 12, rom_path, strlen(rom_path), NULL);
+            int step = sqlite3_step(res);
+            int updated = sqlite3_changes(db);
+            sqlite3_finalize(res);
+
+            if (updated == 0)
+            {
+                sql = std::string("INSERT INTO ") + PSP_ADR_SETTINGS_TABLE + "(" + COL_ROM_PATH + "," + 
+                    COL_GRAPHIC_FILTER + ", " + COL_NO_SMOOTH_GRAPHICS + ", " + COL_FLUX_FILTER_COLOR + ", " +
+                    COL_PSP_SCALEX + ", " + COL_PSP_SCALEY + ", " + COL_PS1_SCALEX + ", " + 
+                    COL_PS1_SCALEY + ", " + COL_MS_LOCATION + ", " + COL_USB_DEVICE + ", " + 
+                    COL_USE_CONTROLLER + ", " + COL_SKIP_LOGO + ") " + 
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                rc = sqlite3_prepare_v2(db, sql.c_str(), -1, &res, nullptr);
+                if (rc == SQLITE_OK)
+                {
+                    sqlite3_bind_text(res, 1, rom_path, strlen(rom_path), NULL);
+                    sqlite3_bind_int(res, 2, config->graphics_filtering);
+                    sqlite3_bind_int(res, 3, config->no_smooth_graphics);
+                    sqlite3_bind_int(res, 4, config->flux_mode);
+                    sqlite3_bind_double(res, 5, static_cast<double>(config->psp_screen_scale_x));
+                    sqlite3_bind_double(res, 6, static_cast<double>(config->psp_screen_scale_y));
+                    sqlite3_bind_double(res, 7, static_cast<double>(config->ps1_screen_scale_x));
+                    sqlite3_bind_double(res, 8, static_cast<double>(config->ps1_screen_scale_y));
+                    sqlite3_bind_int(res, 9, config->ms_location);
+                    sqlite3_bind_int(res, 10, config->usbdevice);
+                    sqlite3_bind_int(res, 11, config->use_ds3_ds4);
+                    sqlite3_bind_int(res, 12, config->skip_logo);
                     step = sqlite3_step(res);
                     sqlite3_finalize(res);
                 }

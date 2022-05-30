@@ -55,6 +55,7 @@ char adernaline_launcher_boot_bin_path[32];
 char adernaline_launcher_config_bin_path[50];
 char adernaline_launcher_title_id[12];
 BootSettings default_boot_settings;
+AdrenalineConfig default_adrenaline_config;
 std::vector<PluginSetting> default_psp_plugin_settings;
 std::vector<PluginSetting> default_ps1_plugin_settings;
 FtpClient *ftpclient;
@@ -559,7 +560,7 @@ namespace GAME {
         }
     }
 
-    bool Launch(Game *game, BootSettings *settings, char* retro_core) {
+    bool Launch(Game *game, BootSettings *settings, char* retro_core, AdrenalineConfig *adr_config) {
         GameCategory* category = categoryMap[game->category];
         if (game->type == TYPE_BUBBLE)
         {
@@ -696,6 +697,10 @@ namespace GAME {
             void* fd;
             fd = FS::Create(adernaline_launcher_boot_bin_path);
             FS::Write(fd, boot_data, 320);
+            FS::Close(fd);
+
+            fd = FS::Create(adernaline_launcher_config_bin_path);
+            FS::Write(fd, adr_config, sizeof(AdrenalineConfig));
             FS::Close(fd);
 
             char uri[32];

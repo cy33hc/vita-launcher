@@ -47,7 +47,8 @@ static ime_callback_t ime_before_update = nullptr;
 static std::vector<std::string> retro_cores;
 static char txt_search_text[32];
 static std::vector<Game> games_selection;
-static BootSettings settings;
+static BootSettings boot_settings;
+static AdrenalineConfig adr_config;
 static char retro_core[128];
 static int move_location = 0;
 static Folder temp_folder;
@@ -581,7 +582,7 @@ namespace Windows {
                             {
                                 handle_boot_yoyo_game = true;
                                 game_to_boot = game;
-                                GAME::LoadYoYoSettings(game_to_boot, &settings);
+                                GAME::LoadYoYoSettings(game_to_boot, &boot_settings);
                             }
                             else
                             {
@@ -617,8 +618,9 @@ namespace Windows {
                             {
                                 handle_boot_game = true;
                                 game_to_boot = game;
-                                settings = default_boot_settings;
-                                DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                                boot_settings = default_boot_settings;
+                                adr_config = default_adrenaline_config;
+                                DB::GetPspGameSettings(game_to_boot->rom_path, &boot_settings, &adr_config);
                                 GAME::GetPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                             }
                             else
@@ -789,7 +791,7 @@ namespace Windows {
                     {
                         handle_boot_yoyo_game = true;
                         game_to_boot = game;
-                        GAME::LoadYoYoSettings(game_to_boot, &settings);
+                        GAME::LoadYoYoSettings(game_to_boot, &boot_settings);
                     }
                     else
                     {
@@ -825,8 +827,9 @@ namespace Windows {
                     {
                         handle_boot_game = true;
                         game_to_boot = game;
-                        settings = default_boot_settings;
-                        DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                        boot_settings = default_boot_settings;
+                        adr_config = default_adrenaline_config;
+                        DB::GetPspGameSettings(game_to_boot->rom_path, &boot_settings, &adr_config);
                         GAME::GetPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                     }
                     else
@@ -1074,7 +1077,7 @@ namespace Windows {
                     {
                         handle_boot_yoyo_game = true;
                         game_to_boot = game;
-                        GAME::LoadYoYoSettings(game_to_boot, &settings);
+                        GAME::LoadYoYoSettings(game_to_boot, &boot_settings);
                     }
                     else
                     {
@@ -1110,8 +1113,9 @@ namespace Windows {
                     {
                         handle_boot_game = true;
                         game_to_boot = game;
-                        settings = default_boot_settings;
-                        DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                        boot_settings = default_boot_settings;
+                        adr_config = default_adrenaline_config;
+                        DB::GetPspGameSettings(game_to_boot->rom_path, &boot_settings, &adr_config);
                         GAME::GetPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                     }
                     else
@@ -1820,6 +1824,15 @@ namespace Windows {
                     ImGui::EndTabItem();
                 }
 
+                if (current_category->id == PSP_GAMES || current_category->id == PS1_GAMES || current_category->id == PS_MIMI_GAMES)
+                {
+                    if (ImGui::BeginTabItem("Boot Settings"))
+                    {
+                        ShowPspBootSettings(&default_boot_settings, &default_adrenaline_config);
+                        ImGui::EndTabItem();
+                    }
+                }
+
                 if (current_category->id == PSP_GAMES || current_category->id == PS_MIMI_GAMES)
                 {
                     if (ImGui::BeginTabItem("PSP Plugins"))
@@ -2263,6 +2276,28 @@ namespace Windows {
                 ftpclient->SetConnmode(pasv_mode ? FtpClient::pasv : FtpClient::port);
                 WriteString(CONFIG_GLOBAL, CONFIG_FTP_CACHE_PATH, ftp_cache_path);
 
+                WriteInt(CONFIG_GLOBAL, CONFIG_PSP_DRIVER, default_boot_settings.driver);
+                WriteInt(CONFIG_GLOBAL, CONFIG_PSP_EXECUTE, default_boot_settings.execute);
+                WriteInt(CONFIG_GLOBAL, CONFIG_PSP_PS_BUTTON_MODE, default_boot_settings.ps_button_mode);
+                WriteInt(CONFIG_GLOBAL, CONFIG_PSP_SUSPEND_THREADS, default_boot_settings.suspend_threads);
+                WriteInt(CONFIG_GLOBAL, CONFIG_PSP_PLUGINS, default_boot_settings.plugins);
+                WriteInt(CONFIG_GLOBAL, CONFIG_PSP_NODRM, default_boot_settings.nonpdrm);
+                WriteInt(CONFIG_GLOBAL, CONFIG_PSP_HIGH_MEM, default_boot_settings.high_memory);
+                WriteInt(CONFIG_GLOBAL, CONFIG_PSP_CPU_SPEED, default_boot_settings.cpu_speed);
+
+                // Default Adrenaline Settings
+                WriteInt(CONFIG_GLOBAL, CONFIG_PSP_FLUX_FILTER_COLOR, default_adrenaline_config.flux_mode);
+                WriteInt(CONFIG_GLOBAL, CONFIG_PSP_GRAPHICS_FILTER, default_adrenaline_config.graphics_filtering);
+                WriteInt(CONFIG_GLOBAL, CONFIG_PSP_MEM_STICK_LOCATION, default_adrenaline_config.ms_location);
+                WriteBool(CONFIG_GLOBAL, CONFIG_PSP_NO_SMOOTH_GRAPHICS, default_adrenaline_config.no_smooth_graphics);
+                WriteDouble(CONFIG_GLOBAL, CONFIG_PSP_PSP_SCALEX, default_adrenaline_config.psp_screen_scale_x);
+                WriteDouble(CONFIG_GLOBAL, CONFIG_PSP_PSP_SCALEY, default_adrenaline_config.psp_screen_scale_y);
+                WriteDouble(CONFIG_GLOBAL, CONFIG_PSP_PS1_SCALEX, default_adrenaline_config.ps1_screen_scale_x);
+                WriteDouble(CONFIG_GLOBAL, CONFIG_PSP_PS1_SCALEY, default_adrenaline_config.ps1_screen_scale_y);
+                WriteBool(CONFIG_GLOBAL, CONFIG_PSP_SKIP_BOOT_LOGO, default_adrenaline_config.skip_logo);
+                WriteInt(CONFIG_GLOBAL, CONFIG_PSP_USB_DEVICE, default_adrenaline_config.usbdevice);
+                WriteBool(CONFIG_GLOBAL, CONFIG_PSP_USE_CONTROLLER, default_adrenaline_config.use_ds3_ds4);
+
                 if (remove_from_cache && selected_game != nullptr)
                 {
                     if (!selection_mode)
@@ -2502,6 +2537,307 @@ namespace Windows {
         }
     }
 
+    void ShowPspBootSettings(BootSettings *boot_settings, AdrenalineConfig *adr_config)
+    {
+        float posX = ImGui::GetCursorPosX();
+        ImGui::Text("Graphics Filtering:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 145);
+        if (ImGui::BeginCombo("##GraphicsFiltering", graphics_options[adr_config->graphics_filtering], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 6; n++)
+            {
+                const bool is_selected = adr_config->graphics_filtering == n;
+                if (ImGui::Selectable(graphics_options[n], is_selected))
+                {
+                    adr_config->graphics_filtering = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::Text("Smooth Graphics:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 145); ImGui::SetNextItemWidth(80);
+        if (ImGui::BeginCombo("##SmoothGraphics", yes_no_options[adr_config->no_smooth_graphics], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 2; n++)
+            {
+                const bool is_selected = adr_config->no_smooth_graphics == n;
+                if (ImGui::Selectable(yes_no_options[n], is_selected))
+                {
+                    adr_config->no_smooth_graphics = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::SameLine();
+
+        ImGui::Text("Flux Filter Color:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 385); ImGui::SetNextItemWidth(80);
+        if (ImGui::BeginCombo("##FluxFilterColor", flux_mode_options[adr_config->flux_mode], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 4; n++)
+            {
+                const bool is_selected = adr_config->flux_mode == n;
+                if (ImGui::Selectable(flux_mode_options[n], is_selected))
+                {
+                    adr_config->flux_mode = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::Text("Scale X (PSP):"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 145); ImGui::SetNextItemWidth(80);
+        ImGui::DragFloat("##ScaleXPSP", &adr_config->psp_screen_scale_x, 0.005f, 0.0f, 3.0f, "%.3f", ImGuiSliderFlags_None);
+        ImGui::SameLine();
+        
+        ImGui::Text("Scale Y (PSP):"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 385); ImGui::SetNextItemWidth(80);
+        ImGui::DragFloat("##ScaleYPSP", &adr_config->psp_screen_scale_y, 0.005f, 0.0f, 3.0f, "%.3f", ImGuiSliderFlags_None);
+
+        ImGui::Text("Scale X (PS1):"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 145); ImGui::SetNextItemWidth(80);
+        ImGui::DragFloat("##ScaleXPS1", &adr_config->ps1_screen_scale_x, 0.005f, 0.0f, 3.0f, "%.3f", ImGuiSliderFlags_None);
+        ImGui::SameLine();
+
+        ImGui::Text("Scale Y (PS1):"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 385); ImGui::SetNextItemWidth(80);
+        ImGui::DragFloat("##ScaleYPS1", &adr_config->ps1_screen_scale_y, 0.005f, 0.0f, 3.0f, "%.3f", ImGuiSliderFlags_None);
+
+        ImGui::Text("MS Location:"); ImGui::SameLine();
+        ImGui::SetNextItemWidth(115);
+        if (ImGui::BeginCombo("##MSLocation", ms_location_options[adr_config->ms_location], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 5; n++)
+            {
+                const bool is_selected = adr_config->ms_location == n;
+                if (ImGui::Selectable(ms_location_options[n], is_selected))
+                {
+                    adr_config->ms_location = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::SameLine();
+
+        ImGui::SetCursorPosX(posX + 235); 
+        ImGui::Text("USB Device:"); ImGui::SameLine();
+        ImGui::SetNextItemWidth(125);
+        if (ImGui::BeginCombo("##USBDevice", usbdevice_options[adr_config->usbdevice], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 4; n++)
+            {
+                const bool is_selected = adr_config->usbdevice == n;
+                if (ImGui::Selectable(usbdevice_options[n], is_selected))
+                {
+                    adr_config->usbdevice = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::Text("Use DS3/4 Controller:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 175); ImGui::SetNextItemWidth(50);
+        if (ImGui::BeginCombo("##UseDS3/4Controller", no_yes_options[adr_config->use_ds3_ds4], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 2; n++)
+            {
+                const bool is_selected = adr_config->use_ds3_ds4 == n;
+                if (ImGui::Selectable(no_yes_options[n], is_selected))
+                {
+                    adr_config->use_ds3_ds4 = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::SameLine();
+
+        ImGui::Text("Skip Boot Logo:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 385); ImGui::SetNextItemWidth(80);
+        if (ImGui::BeginCombo("##SkipBootLogo", no_yes_options[adr_config->skip_logo], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 2; n++)
+            {
+                const bool is_selected = adr_config->skip_logo == n;
+                if (ImGui::Selectable(no_yes_options[n], is_selected))
+                {
+                    adr_config->skip_logo = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::Separator();
+
+        ImGui::Text("Driver:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 145); ImGui::SetNextItemWidth(80);
+        if (ImGui::BeginCombo("##Driver", driver_options[boot_settings->driver], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 3; n++)
+            {
+                const bool is_selected = boot_settings->driver == n;
+                if (ImGui::Selectable(driver_options[n], is_selected))
+                {
+                    boot_settings->driver = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::SameLine();
+
+        ImGui::Text("Execute:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 385); ImGui::SetNextItemWidth(80);
+        if (ImGui::BeginCombo("##Execute", execute_options[boot_settings->execute], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 3; n++)
+            {
+                const bool is_selected = boot_settings->execute == n;
+                if (ImGui::Selectable(execute_options[n], is_selected))
+                {
+                    boot_settings->execute = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::Text("PS Button Mode:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 145); ImGui::SetNextItemWidth(80);
+        if (ImGui::BeginCombo("##PsButtonMode", ps_button_mode[boot_settings->ps_button_mode], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 3; n++)
+            {
+                const bool is_selected = boot_settings->ps_button_mode == n;
+                if (ImGui::Selectable(ps_button_mode[n], is_selected))
+                {
+                    boot_settings->ps_button_mode = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::SameLine();
+
+        ImGui::Text("Suspend Threads:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 385); ImGui::SetNextItemWidth(80);
+        if (ImGui::BeginCombo("##SuspendThreads", yes_no_options[boot_settings->suspend_threads], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 2; n++)
+            {
+                const bool is_selected = boot_settings->suspend_threads == n;
+                if (ImGui::Selectable(yes_no_options[n], is_selected))
+                {
+                    boot_settings->suspend_threads = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::Text("Plugins:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 145); ImGui::SetNextItemWidth(80);
+        if (ImGui::BeginCombo("##Plugins", enable_options[boot_settings->plugins], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 3; n++)
+            {
+                const bool is_selected = boot_settings->plugins == n;
+                if (ImGui::Selectable(enable_options[n], is_selected))
+                {
+                    boot_settings->plugins = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::SameLine();
+
+        ImGui::Text("NoNpDrm:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 385); ImGui::SetNextItemWidth(80);
+        if (ImGui::BeginCombo("##NoNpDrm", enable_options[boot_settings->nonpdrm], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 3; n++)
+            {
+                const bool is_selected = boot_settings->nonpdrm == n;
+                if (ImGui::Selectable(enable_options[n], is_selected))
+                {
+                    boot_settings->nonpdrm = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::Text("Cpu Speed:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 145); ImGui::SetNextItemWidth(80);
+        if (ImGui::BeginCombo("##CpuSpeed", cpu_speed_options[boot_settings->cpu_speed], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 15; n++)
+            {
+                const bool is_selected = boot_settings->cpu_speed == n;
+                if (ImGui::Selectable(cpu_speed_options[n], is_selected))
+                {
+                    boot_settings->cpu_speed = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::SameLine();
+
+        ImGui::Text("High Memory:"); ImGui::SameLine();
+        ImGui::SetCursorPosX(posX + 385); ImGui::SetNextItemWidth(80);
+        if (ImGui::BeginCombo("##HighMemory", enable_options[boot_settings->high_memory], ImGuiComboFlags_PopupAlignLeft | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_NoArrowButton))
+        {
+            for (int n = 0; n < 3; n++)
+            {
+                const bool is_selected = boot_settings->high_memory == n;
+                if (ImGui::Selectable(enable_options[n], is_selected))
+                {
+                    boot_settings->high_memory = n;
+                }
+
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+    }
+
     void HandleAdrenalineGame()
     {
         SetModalMode(true);
@@ -2543,87 +2879,11 @@ namespace Windows {
                 {
                     if (ImGui::BeginTabItem("Boot Settings"))
                     {
-                        ImGui::Text("Driver:"); ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 110);
-                        if (ImGui::RadioButton("Inferno", settings.driver == INFERNO)) { settings.driver = INFERNO; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 220);
-                        if (ImGui::RadioButton("March33", settings.driver == MARCH33)) { settings.driver = MARCH33; } ImGui::SameLine();
-                        if (ImGui::RadioButton("NP9660", settings.driver == NP9660)) { settings.driver = NP9660; }
-
-                        ImGui::Text("Execute:"); ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 110);
-                        if (ImGui::RadioButton("eboot.bin", settings.execute == EBOOT_BIN)) { settings.execute = EBOOT_BIN; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 220);
-                        if (ImGui::RadioButton("boot.bin", settings.execute == BOOT_BIN)) { settings.execute = BOOT_BIN; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 320);
-                        if (ImGui::RadioButton("eboot.old", settings.execute == EBOOT_OLD)) { settings.execute = EBOOT_OLD; }
-
-                        ImGui::Text("PS Button Mode:"); ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 150);
-                        if (ImGui::RadioButton("Menu", settings.ps_button_mode == MENU)) { settings.ps_button_mode = MENU; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 220);
-                        if (ImGui::RadioButton("LiveArea", settings.ps_button_mode == LIVEAREA)) { settings.ps_button_mode = LIVEAREA; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 320);
-                        if (ImGui::RadioButton("Standard", settings.ps_button_mode == STANDARD)) { settings.ps_button_mode = STANDARD; }
-
-                        ImGui::Text("Suspend Threads:"); ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 150);
-                        if (ImGui::RadioButton("Yes", settings.suspend_threads == SUSPEND_YES)) { settings.suspend_threads = SUSPEND_YES; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 220);
-                        if (ImGui::RadioButton("No", settings.suspend_threads == SUSPEND_NO)) { settings.suspend_threads = SUSPEND_NO; }
-
-                        ImGui::Text("Plugins:"); ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 110);
-                        if (ImGui::RadioButton("Default##plugins", settings.plugins == PLUGINS_DEFAULT)) { settings.plugins = PLUGINS_DEFAULT; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 220);
-                        if (ImGui::RadioButton("Enable##plugins", settings.plugins == PLUGINS_ENABLE)) { settings.plugins = PLUGINS_ENABLE; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 320);
-                        if (ImGui::RadioButton("Disable##plugins", settings.plugins == PLUGINS_DISABLE)) { settings.plugins = PLUGINS_DISABLE; }
-
-                        ImGui::Text("NoNpDrm:"); ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 110);
-                        if (ImGui::RadioButton("Default##nonpdrm", settings.nonpdrm == NONPDRM_DEFAULT)) { settings.nonpdrm = NONPDRM_DEFAULT; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 220);
-                        if (ImGui::RadioButton("Enable##nonpdrm", settings.nonpdrm == NONPDRM_ENABLE)) { settings.nonpdrm = NONPDRM_ENABLE; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 320);
-                        if (ImGui::RadioButton("Disable##nonpdrm", settings.nonpdrm == NONPDRM_DISABLE)) { settings.nonpdrm = NONPDRM_DISABLE; }
-
-                        ImGui::Text("High Memory:"); ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 110);
-                        if (ImGui::RadioButton("Default##highmem", settings.high_memory == HIGH_MEM_DEFAULT)) { settings.high_memory = HIGH_MEM_DEFAULT; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 220);
-                        if (ImGui::RadioButton("Enable##highmem", settings.high_memory == HIGH_MEM_ENABLE)) { settings.high_memory = HIGH_MEM_ENABLE; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 320);
-                        if (ImGui::RadioButton("Disable##highmem", settings.high_memory == HIGH_MEM_DISABLE)) { settings.high_memory = HIGH_MEM_DISABLE; }
-
-                        ImGui::Text("Cpu Speed:"); ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 110);
-                        if (ImGui::RadioButton("Default##cpuspeed", settings.cpu_speed == CPU_DEFAULT)) { settings.cpu_speed = CPU_DEFAULT; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 220);
-                        if (ImGui::RadioButton("333/166", settings.cpu_speed == CPU_333_166)) { settings.cpu_speed = CPU_333_166; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 320);
-                        if (ImGui::RadioButton("300/150", settings.cpu_speed == CPU_300_150)) { settings.cpu_speed = CPU_300_150; }
-                        ImGui::SetCursorPosX(posX + 110);
-                        if (ImGui::RadioButton("288/144", settings.cpu_speed == CPU_288_144)) { settings.cpu_speed = CPU_288_144; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 220);
-                        if (ImGui::RadioButton("266/133", settings.cpu_speed == CPU_266_133)) { settings.cpu_speed = CPU_266_133; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 320);
-                        if (ImGui::RadioButton("222/111", settings.cpu_speed == CPU_222_111)) { settings.cpu_speed = CPU_222_111; }
-                        ImGui::SetCursorPosX(posX + 110);
-                        if (ImGui::RadioButton("200/100", settings.cpu_speed == CPU_200_100)) { settings.cpu_speed = CPU_200_100; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 220);
-                        if (ImGui::RadioButton("166/83", settings.cpu_speed == CPU_166_83)) { settings.cpu_speed = CPU_166_83; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 320);
-                        if (ImGui::RadioButton("100/50", settings.cpu_speed == CPU_100_50)) { settings.cpu_speed = CPU_100_50; }
-                        ImGui::SetCursorPosX(posX + 110);
-                        if (ImGui::RadioButton("133/66", settings.cpu_speed == CPU_133_66)) { settings.cpu_speed = CPU_133_66; } ImGui::SameLine();
-                        ImGui::SetCursorPosX(posX + 220);
-                        if (ImGui::RadioButton("50/25", settings.cpu_speed == CPU_50_25)) { settings.cpu_speed = CPU_50_25; }
-
+                        ShowPspBootSettings(&boot_settings, &adr_config);
                         ImGui::EndTabItem();
                     }
 
-                    if (settings.plugins != PLUGINS_DISABLE)
+                    if (boot_settings.plugins != PLUGINS_DISABLE)
                     {
                         if (ImGui::BeginTabItem("Plugins"))
                         {
@@ -2713,19 +2973,19 @@ namespace Windows {
                     WriteIniFile(CONFIG_INI_FILE);
                     CloseIniFile();
                 }
-                DB::SavePspGameSettings(game_to_boot->rom_path, &settings);
+                DB::SavePspGameSettings(game_to_boot->rom_path, &boot_settings, &adr_config);
                 if (settings_modified)
                 {
                     GAME::SyncPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                     settings_modified = false;
                 }
-                if (settings.plugins != PLUGINS_DISABLE)
+                if (boot_settings.plugins != PLUGINS_DISABLE)
                 {
                     GAME::WritePerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                 }
                 SetModalMode(false);
                 handle_boot_game = false;
-                GAME::Launch(game_to_boot, &settings);
+                GAME::Launch(game_to_boot, &boot_settings, nullptr, &adr_config);
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SetItemDefaultFocus();
@@ -2733,7 +2993,8 @@ namespace Windows {
             if (ImGui::Button("Cancel"))
             {
                 SetModalMode(false);
-                settings = default_boot_settings;
+                boot_settings = default_boot_settings;
+                adr_config = default_adrenaline_config;
                 handle_boot_game = false;
                 settings_modified = false;
                 ImGui::CloseCurrentPopup();
@@ -2756,7 +3017,7 @@ namespace Windows {
         if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar))
         {
             float posX = ImGui::GetCursorPosX();
-            ImGui::Checkbox("Force GLES1 Mode", &settings.gles1);
+            ImGui::Checkbox("Force GLES1 Mode", &boot_settings.gles1);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2767,7 +3028,7 @@ namespace Windows {
                 ImGui::PopStyleColor();
                 ImGui::EndTooltip();
             }
-            ImGui::Checkbox("Fake Windows as Platform", &settings.fake_win_mode);
+            ImGui::Checkbox("Fake Windows as Platform", &boot_settings.fake_win_mode);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2778,7 +3039,7 @@ namespace Windows {
                 ImGui::PopStyleColor();
                 ImGui::EndTooltip();
             }
-            ImGui::Checkbox("Run with Extended Mem Mode", &settings.mem_extended);
+            ImGui::Checkbox("Run with Extended Mem Mode", &boot_settings.mem_extended);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2789,7 +3050,7 @@ namespace Windows {
                 ImGui::PopStyleColor();
                 ImGui::EndTooltip();
             }
-            ImGui::Checkbox("Run with Extended Runner Pool", &settings.newlib_extended);
+            ImGui::Checkbox("Run with Extended Runner Pool", &boot_settings.newlib_extended);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2800,7 +3061,7 @@ namespace Windows {
                 ImGui::PopStyleColor();
                 ImGui::EndTooltip();
             }
-            ImGui::Checkbox("Run with Mem Squeezing", &settings.squeeze_mem);
+            ImGui::Checkbox("Run with Mem Squeezing", &boot_settings.squeeze_mem);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2811,7 +3072,7 @@ namespace Windows {
                 ImGui::PopStyleColor();
                 ImGui::EndTooltip();
             }
-            ImGui::Checkbox("Use Uncached Memory", &settings.uncached_mem);
+            ImGui::Checkbox("Use Uncached Memory", &boot_settings.uncached_mem);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2822,7 +3083,7 @@ namespace Windows {
                 ImGui::PopStyleColor();
                 ImGui::EndTooltip();
             }
-            ImGui::Checkbox("Use Double Buffering", &settings.double_buffering);
+            ImGui::Checkbox("Use Double Buffering", &boot_settings.double_buffering);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2833,7 +3094,7 @@ namespace Windows {
                 ImGui::PopStyleColor();
                 ImGui::EndTooltip();
             }
-            ImGui::Checkbox("Enable Video Player", &settings.video_support);
+            ImGui::Checkbox("Enable Video Player", &boot_settings.video_support);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2844,7 +3105,7 @@ namespace Windows {
                 ImGui::PopStyleColor();
                 ImGui::EndTooltip();
             }
-            ImGui::Checkbox("Disable Audio", &settings.disable_audio);
+            ImGui::Checkbox("Disable Audio", &boot_settings.disable_audio);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2855,7 +3116,7 @@ namespace Windows {
                 ImGui::PopStyleColor();
                 ImGui::EndTooltip();
             }
-            ImGui::Checkbox("Enable Network Features", &settings.has_net);
+            ImGui::Checkbox("Enable Network Features", &boot_settings.has_net);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2868,7 +3129,7 @@ namespace Windows {
             }
             ImGui::Separator();
 
-            ImGui::Checkbox("Force Bilinear Filtering", &settings.bilinear);
+            ImGui::Checkbox("Force Bilinear Filtering", &boot_settings.bilinear);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2879,7 +3140,7 @@ namespace Windows {
                 ImGui::PopStyleColor();
                 ImGui::EndTooltip();
             }
-            ImGui::Checkbox("Compress Textures", &settings.compress_textures);
+            ImGui::Checkbox("Compress Textures", &boot_settings.compress_textures);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2892,7 +3153,7 @@ namespace Windows {
             }
             ImGui::Separator();
 
-            ImGui::Checkbox("Skip Splashscreen at Boot", &settings.skip_splash);
+            ImGui::Checkbox("Skip Splashscreen at Boot", &boot_settings.skip_splash);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2905,7 +3166,7 @@ namespace Windows {
             }
             ImGui::Separator();
 
-            ImGui::Checkbox("Run with Debug Mode", &settings.debug_mode);
+            ImGui::Checkbox("Run with Debug Mode", &boot_settings.debug_mode);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2916,7 +3177,7 @@ namespace Windows {
                 ImGui::PopStyleColor();
                 ImGui::EndTooltip();
             }
-            ImGui::Checkbox("Run with Shaders Debug Mode", &settings.debug_shaders);
+            ImGui::Checkbox("Run with Shaders Debug Mode", &boot_settings.debug_shaders);
             if (ImGui::IsItemHovered())
             {
                 ImGui::BeginTooltip();
@@ -2931,10 +3192,10 @@ namespace Windows {
 
             if (ImGui::Button("OK"))
             {
-                GAME::SaveYoYoSettings(game_to_boot, &settings);
+                GAME::SaveYoYoSettings(game_to_boot, &boot_settings);
                 SetModalMode(false);
                 handle_boot_yoyo_game = false;
-                GAME::Launch(game_to_boot, &settings);
+                GAME::Launch(game_to_boot, &boot_settings);
                 ImGui::CloseCurrentPopup();
             }
 
@@ -3044,13 +3305,14 @@ namespace Windows {
                     else if (game_to_boot->type == TYPE_PSP_ISO || game_to_boot->type == TYPE_EBOOT)
                     {
                         handle_boot_game = true;
-                        settings = default_boot_settings;
-                        DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                        boot_settings = default_boot_settings;
+                        adr_config = default_adrenaline_config;
+                        DB::GetPspGameSettings(game_to_boot->rom_path, &boot_settings, &adr_config);
                         GAME::GetPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                     }
                     else if (game_to_boot->type == TYPE_GMS)
                     {
-                        GAME::LoadYoYoSettings(game_to_boot, &settings);
+                        GAME::LoadYoYoSettings(game_to_boot, &boot_settings);
                         handle_boot_yoyo_game = true;
                     }
                     handle_download_rom = false;
@@ -4051,7 +4313,7 @@ namespace Windows {
                         {
                             handle_boot_yoyo_game = true;
                             game_to_boot = game;
-                            GAME::LoadYoYoSettings(game_to_boot, &settings);
+                            GAME::LoadYoYoSettings(game_to_boot, &boot_settings);
                         }
                         else
                         {
@@ -4087,8 +4349,9 @@ namespace Windows {
                         {
                             handle_boot_game = true;
                             game_to_boot = game;
-                            settings = default_boot_settings;
-                            DB::GetPspGameSettings(game_to_boot->rom_path, &settings);
+                            boot_settings = default_boot_settings;
+                            adr_config = default_adrenaline_config;
+                            DB::GetPspGameSettings(game_to_boot->rom_path, &boot_settings, &adr_config);
                             GAME::GetPerGamePluginSettings(game_to_boot, per_game_plugin_settings);
                         }
                         else
