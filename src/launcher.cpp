@@ -2602,11 +2602,11 @@ namespace Windows {
         
         ImGui::Text("Scale X (PS1):"); ImGui::SameLine();
         ImGui::SetCursorPosX(posX + 385); ImGui::SetNextItemWidth(80);
-        ImGui::DragFloat("##ScaleYPS1", &adr_config->ps1_screen_scale_x, 0.005f, 0.0f, 3.0f, "%.3f", ImGuiSliderFlags_None);
+        ImGui::DragFloat("##ScaleXPS1", &adr_config->ps1_screen_scale_x, 0.005f, 0.0f, 3.0f, "%.3f", ImGuiSliderFlags_None);
 
         ImGui::Text("Scale Y (PSP):"); ImGui::SameLine();
         ImGui::SetCursorPosX(posX + 145); ImGui::SetNextItemWidth(80);
-        ImGui::DragFloat("##ScaleXPS1", &adr_config->psp_screen_scale_y, 0.005f, 0.0f, 3.0f, "%.3f", ImGuiSliderFlags_None);
+        ImGui::DragFloat("##ScaleYPSP", &adr_config->psp_screen_scale_y, 0.005f, 0.0f, 3.0f, "%.3f", ImGuiSliderFlags_None);
         ImGui::SameLine();
 
         ImGui::Text("Scale Y (PS1):"); ImGui::SameLine();
