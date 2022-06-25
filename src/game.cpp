@@ -432,7 +432,7 @@ namespace GAME {
             {
                 game_index++;
                 int index = files[j].find_last_of(".");
-                if (index != std::string::npos && IsRomExtension(files[j].substr(index), eboot_extensions) && files[j].find_first_of("_cache/") != 0)
+                if (files[j].length() > 10 && strcasecmp(files[j].substr(files[j].length()-10).c_str(), "/eboot.pbp")==0 && files[j].find_first_of("_cache/") != 0)
                 {
                     Game game;
                     try
