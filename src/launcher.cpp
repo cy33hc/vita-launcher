@@ -1684,7 +1684,7 @@ namespace Windows {
                             ImGui::RadioButton("Screenshot", &current_category->icon_type, 2);
                             ImGui::Separator();
 
-                            if (strcmp(current_category->rom_launcher_title_id, "DEDALOX64") != 0)
+                            if (strcmp(current_category->rom_launcher_title_id, "DEDALOX64") != 0 && current_category->id != SEGA_DREAMCAST_GAMES)
                             {
                                 ImGui::PushID("retro_core");
                                 ImGui::Text("Retro Core:"); ImGui::SameLine();

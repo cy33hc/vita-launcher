@@ -143,6 +143,10 @@ namespace CONFIG {
             WriteString(category->title, CONFIG_RETRO_CORE, category->core);
 
             category->boot_with_alt_core = ReadBool(category->title, CONFIG_BOOT_WITH_ALT_CORE, true);
+            if (category->id == SEGA_DREAMCAST_GAMES)
+            {
+                category->boot_with_alt_core = false;
+            }
             WriteBool(category->title, CONFIG_BOOT_WITH_ALT_CORE, category->boot_with_alt_core);
         }
 

@@ -580,7 +580,20 @@ namespace GAME {
         {
             if (category != nullptr)
             {
-                if (strcmp(category->rom_launcher_title_id, "RETROVITA") == 0 || category->id == PS1_GAMES)
+                if (strcmp(category->rom_launcher_title_id, "DEDALOX64") == 0 || category->id == SEGA_DREAMCAST_GAMES)
+                {
+                    char uri[512];
+                    std::string game_path = std::string(game->rom_path);
+                    if (game_path.rfind("ftp0:", 0) == 0)
+                    {
+                        game_path = std::string(ftp_cache_path) + "/" + game->category + "/" + game_path.substr(5);
+                    }
+                    sprintf(uri, "psgm:play?titleid=%s&param=%s", category->id == SEGA_DREAMCAST_GAMES ? FLYCAST_APP_ID : category->rom_launcher_title_id, game_path.c_str());
+                    sceAppMgrLaunchAppByUri(0xFFFFF, uri);
+                    sceKernelDelayThread(1000);
+                    sceKernelExitProcess(0);
+                }
+                else if (strcmp(category->rom_launcher_title_id, "RETROVITA") == 0 || category->id == PS1_GAMES)
                 {
                     char uri[512];
                     if (retro_core == nullptr)
@@ -593,19 +606,6 @@ namespace GAME {
                         game_path = std::string(ftp_cache_path) + "/" + game->category + "/" + game_path.substr(5);
                     }
                     sprintf(uri, "psgm:play?titleid=%s&param=%s&param2=%s", RETROARCH_TITLE_ID, retro_core, game_path.c_str());
-                    sceAppMgrLaunchAppByUri(0xFFFFF, uri);
-                    sceKernelDelayThread(1000);
-                    sceKernelExitProcess(0);
-                }
-                else if (strcmp(category->rom_launcher_title_id, "DEDALOX64") == 0)
-                {
-                    char uri[512];
-                    std::string game_path = std::string(game->rom_path);
-                    if (game_path.rfind("ftp0:", 0) == 0)
-                    {
-                        game_path = std::string(ftp_cache_path) + "/" + game->category + "/" + game_path.substr(5);
-                    }
-                    sprintf(uri, "psgm:play?titleid=%s&param=%s", category->rom_launcher_title_id, game_path.c_str());
                     sceAppMgrLaunchAppByUri(0xFFFFF, uri);
                     sceKernelDelayThread(1000);
                     sceKernelExitProcess(0);

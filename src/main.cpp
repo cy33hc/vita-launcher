@@ -20,6 +20,7 @@
 #include "net.h"
 #include "ftpclient.h"
 #include "updater.h"
+//#include "debugnet.h"
 
 extern "C" {
 	#include "audio.h"
