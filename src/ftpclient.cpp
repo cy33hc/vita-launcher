@@ -7,7 +7,7 @@
 #include <ftpclient.h>
 #include <errno.h>
 
-#define FTP_CLIENT_BUFSIZ 16384
+#define FTP_CLIENT_BUFSIZ 1048576
 #define ACCEPT_TIMEOUT 30
 
 /* io types */
@@ -468,6 +468,19 @@ int FtpClient::FtpOpenPasv(ftphandle *nControl, ftphandle **nData, transfermode 
 		return -1;
 	}
 
+	int const size = FTP_CLIENT_BUFSIZ;
+	if (sceNetSetsockopt(sData, SCE_NET_SOL_SOCKET, SCE_NET_SO_RCVBUF, &size, sizeof (size)) == -1)
+	{
+		sceNetSocketClose(sData);
+		return -1;
+	}
+
+	if (sceNetSetsockopt(sData, SCE_NET_SOL_SOCKET, SCE_NET_SO_SNDBUF, &size, sizeof (size)) == -1)
+	{
+		sceNetSocketClose(sData);
+		return -1;
+	}
+
 	if (nControl->dir != FTP_CLIENT_CONTROL) return -1;
 	memcpy(cmd + strlen(cmd), "\r\n\0", 3);
 	ret = sceNetSend(nControl->handle, cmd, strlen(cmd), 0);
@@ -567,6 +580,19 @@ int FtpClient::FtpOpenPort(ftphandle *nControl, ftphandle **nData, transfermode 
 	}
 
 	if (sceNetSetsockopt(sData, SCE_NET_SOL_SOCKET, SCE_NET_SO_LINGER, &lng, sizeof(lng)) == -1)
+	{
+		sceNetSocketClose(sData);
+		return -1;
+	}
+
+	int const size = FTP_CLIENT_BUFSIZ;
+	if (sceNetSetsockopt(sData, SCE_NET_SOL_SOCKET, SCE_NET_SO_RCVBUF, &size, sizeof (size)) == -1)
+	{
+		sceNetSocketClose(sData);
+		return -1;
+	}
+
+	if (sceNetSetsockopt(sData, SCE_NET_SOL_SOCKET, SCE_NET_SO_SNDBUF, &size, sizeof (size)) == -1)
 	{
 		sceNetSocketClose(sData);
 		return -1;
